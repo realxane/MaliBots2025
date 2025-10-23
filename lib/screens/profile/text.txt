@@ -1,0 +1,1 @@
+ce dossier contient la page profile de l'utilisateur. L'utilisateur peut voir et modifier ses informations personnelles.
