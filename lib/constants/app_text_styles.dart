@@ -6,13 +6,13 @@ class AppTextStyles {
   static const TextStyle titre1 = TextStyle(
     fontSize: 32,
     fontWeight: FontWeight.bold,
-    color: AppColors.textPrimary,
+    color: AppColors.primary,
   );
 
   static const TextStyle titre2 = TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.bold,
-    color: AppColors.textPrimary,
+    color: AppColors.primary,
   );
 
   // Sous-titres
