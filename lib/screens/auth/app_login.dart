@@ -113,7 +113,7 @@ class _LoginPageState extends State<Login> {
                     text_bouton(
                       hint: "S'inscrire",
                       onPressed: () {
-
+                        Navigator.pushNamed(context, AppRoutes.inscrire);
                       }
                       )
                   ],

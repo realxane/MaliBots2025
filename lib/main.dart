@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:malibots_challenge_eni/screens/auth/app_cond_utilisation.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_google_apple.dart';
+import 'package:malibots_challenge_eni/screens/auth/app_inscription.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
@@ -29,6 +31,8 @@ class MyApp extends StatelessWidget {
         AppRoutes.choixprofil: (context) => const ChoixProfilPage(),
         AppRoutes.connecter: (context) => const Login(),
         AppRoutes.authGoogleApple: (context) => const AuthGoogleApple(),
+        AppRoutes.inscrire: (context) =>  InscriptionPage(),
+        AppRoutes.conditionsUtilisation: (context) => const CondUtilisation(),
       },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
