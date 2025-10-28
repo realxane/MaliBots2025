@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_images.dart';
-// import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
@@ -145,18 +146,23 @@ class _LoginPageState extends State<Login> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // SocialIconButton(
-                    //   icon: FontAwesomeIcons.google,
-                    //   color: Colors.red,
-                    //   onPressed: () {},
-                    // ),
-                    // const SizedBox(width: 16),
-                    // SocialIconButton(
-                    //   icon: FontAwesomeIcons.apple,
-                    //   color: Colors.black,
-                    //   onPressed: () {},
-                    // ),
-                  ],
+
+                    SocialIconButton(
+                      icon: FontAwesomeIcons.google,
+                      color: Colors.red,
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.authGoogleApple);
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                    SocialIconButton(
+                      icon: FontAwesomeIcons.apple,
+                      color: Colors.black,
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.authGoogleApple);
+                      },
+                    ),
+       ],
                 ),
                 const SizedBox(height: 24),
               ],
