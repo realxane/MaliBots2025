@@ -37,6 +37,9 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   flutter_native_splash: ^2.4.7
   font_awesome_flutter: ^10.12.0
+  iconsax: ^0.0.8
+  carousel_slider: ^5.1.1
+  material_design_icons_flutter: ^7.0.7
 
 
 flutter_icons:
@@ -75,6 +78,8 @@ flutter:
   assets:
     # - assets/
     - assets/images/
+    - assets/images/Acceuil/
+
 
   # fonts:
   #   - family: Schyler
