@@ -13,10 +13,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentIndex = 0;
 
   final List<String> images = [
-    'assets/images/OnBoardingScreen1.jpg',
-    'assets/images/OnBoardingScreen2.png',
-    'assets/images/OnBoardingScreen3.png',
-    'assets/images/splashScreenNoire.jpg',
+    'assets/images/OnB1.jpg',
+    'assets/images/OnB2.jpg',
+    'assets/images/OnB3.jpg',
+    'assets/images/OnB4.jpg',
   ];
 
   @override
