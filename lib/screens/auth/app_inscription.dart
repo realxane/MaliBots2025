@@ -3,6 +3,7 @@ import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_images.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
+import 'package:malibots_challenge_eni/widgets/buttons/bouton_retour.dart';
 import 'package:malibots_challenge_eni/widgets/text_fields/text_field_decor.dart';
 
 class InscriptionPage extends StatefulWidget {
@@ -28,6 +29,14 @@ class _InscriptionPageState extends State<InscriptionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        leading: Navigator.canPop(context)
+            ? fleche_retour(onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.choixprofil);
+            })
+            : null,
+      ),
       body: ListView(
         children: [
           // Logo

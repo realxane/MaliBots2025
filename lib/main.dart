@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_cond_utilisation.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_google_apple.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_inscription.dart';
+import 'package:malibots_challenge_eni/screens/auth/app_inscription_vendeur.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Anw ka Dambe',
-      initialRoute: '/onboarding',
+      initialRoute: AppRoutes.onboarding,
       // routes: {
       //   '/onboarding': (context) => const OnboardingScreen(),
       //   '/home': (context) => const HomeScreen(),
@@ -32,10 +33,12 @@ class MyApp extends StatelessWidget {
         AppRoutes.connecter: (context) => const Login(),
         AppRoutes.authGoogleApple: (context) => const AuthGoogleApple(),
         AppRoutes.inscrire: (context) =>  InscriptionPage(),
+        AppRoutes.inscrire_vendeur: (context) => InscriptionVendeurPage(),
         AppRoutes.conditionsUtilisation: (context) => const CondUtilisation(),
       },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        
       ),
       home: const Login(),
     );
