@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/home_screen.dart';
 
@@ -18,6 +19,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/onboarding': (context) => const OnboardingScreen(),
         '/home': (context) => const HomeScreen(),
+        '/musiqueScreen': (context) => const MusiqueScreen(),
       },
     );
   }
