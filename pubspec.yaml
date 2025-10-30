@@ -77,12 +77,9 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    # - assets/
+
     - assets/images/
     - assets/images/Acceuil/
-
-
-
     - assets/images/artistes/
     - assets/musics/bambara/
     - assets/musics/songhoy/
@@ -90,9 +87,6 @@ flutter:
     - assets/musics/dogon/
     - assets/musics/soninke/
     - assets/musics/senoufu/
-
-
-
 
 
   # fonts:

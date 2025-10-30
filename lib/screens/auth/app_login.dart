@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_images.dart';
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
+import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_social.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/text_button.dart';
@@ -85,6 +87,7 @@ class _LoginPageState extends State<Login> {
                   child: text_bouton(
                     hint : "Mot de passe oublié ?",
                     onPressed: (){
+                      Navigator.pushNamed(context, AppRoutes.forgotPassword);
                       
                     }
                     )
@@ -146,6 +149,7 @@ class _LoginPageState extends State<Login> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+
                     SocialIconButton(
                       icon: FontAwesomeIcons.google,
                       color: Colors.red,
@@ -161,6 +165,7 @@ class _LoginPageState extends State<Login> {
                         Navigator.pushNamed(context, AppRoutes.authGoogleApple);
                       },
                     ),
+<<<<<<< HEAD
                     const SizedBox(width: 16),
                     SocialIconButton(
                       icon: FontAwesomeIcons.facebook,
@@ -170,6 +175,9 @@ class _LoginPageState extends State<Login> {
                       },
                     ),
                   ],
+=======
+       ],
+>>>>>>> 0a1d1b4f121ad434c51f956f15f91fc2717db0c4
                 ),
                 const SizedBox(height: 24),
               ],

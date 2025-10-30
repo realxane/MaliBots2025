@@ -25,4 +25,3 @@ class SocialIconButton extends StatelessWidget {
     );
   }
 }
-

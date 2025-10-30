@@ -72,7 +72,12 @@ class ChoixProfilPage extends StatelessWidget {
                       'Pour vendre votre création et partager votre savoir faire',
                   onTap: () {
                     // Naviguez vers l’écran vendeur
+<<<<<<< HEAD
                     Navigator.of(context).pushNamed(AppRoutes.inscrire_vendeur);
+=======
+                    // Navigator.of(context).pushNamed('/vendeur');
+                  
+>>>>>>> 0a1d1b4f121ad434c51f956f15f91fc2717db0c4
                   },
                 ),
               ],
