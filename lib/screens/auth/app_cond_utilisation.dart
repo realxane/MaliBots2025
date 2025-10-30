@@ -141,6 +141,7 @@ class _CondUtilisationState extends State<CondUtilisation> {
                         : null, // Désactiver le bouton si non coché
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
+                      disabledBackgroundColor: AppColors.textfieldcolor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.0), // Rayon arrondi
                       ),
@@ -196,72 +197,6 @@ class _CondUtilisationState extends State<CondUtilisation> {
 }
 
 
-// Définition des couleurs personnalisées basées sur les images
-const Color primaryBrown = Color(0xFF8B4513); // Marron foncé pour les boutons et le texte principal
-const Color accentOrange = Color(0xFFB85C28); // Couleur d'accent pour les titres
-const Color logoBlack = Colors.black;
-const Color logoGrey = Colors.grey;
-const Color white = Colors.white;
 
-// Widget utilitaire pour les cercles du logo (simplifié)
-Widget buildLogoCircle(Color color) {
-  return Container(
-    width: 20,
-    height: 20,
-    decoration: BoxDecoration(
-      color: color,
-      shape: BoxShape.circle,
-    ),
-  );
-}
 
-// Widget pour la section Logo et Titre Principal
-Widget buildHeaderSection() {
-  return Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: <Widget>[
-      // Placeholder pour l'image/logo
-      Container(
-        width: 50,
-        height: 50,
-        decoration: BoxDecoration(
-          border: Border.all(color: logoBlack),
-          shape: BoxShape.rectangle,
-        ),
-        child: Center(
-          child: Stack(
-            children: [
-              Positioned(top: 0, left: 0, child: buildLogoCircle(primaryBrown)),
-              Positioned(top: 0, right: 0, child: buildLogoCircle(logoBlack)),
-              Positioned(bottom: 0, left: 0, child: buildLogoCircle(logoBlack)),
-              Positioned(bottom: 0, right: 0, child: buildLogoCircle(primaryBrown)),
-              Center(child: Container(width: 5, height: 5, decoration: const BoxDecoration(color: logoBlack, shape: BoxShape.circle))),
-            ],
-          ),
-        ),
-      ),
-      const SizedBox(width: 15),
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          const Text(
-            'Anw ka Dambe',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: logoBlack,
-            ),
-          ),
-          Text(
-            'Découvrez l\'âme du Mali',
-            style: TextStyle(
-              fontSize: 16,
-              color: logoGrey,
-            ),
-          ),
-        ],
-      ),
-    ],
-  );
-}
 

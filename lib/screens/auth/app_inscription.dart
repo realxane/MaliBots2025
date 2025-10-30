@@ -72,20 +72,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
         TextField(
           controller: _nameController,
           keyboardType: TextInputType.text,
-          decoration: InputDecoration(
-            labelText: 'Nom et Prénom',
-            labelStyle: const TextStyle(color: Colors.white),
-            filled: true,
-            fillColor: AppColors.textfieldcolor,
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.textfieldcolor, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.textfieldcolor, width: 2),
-            ),
-          ),
+          decoration: decor('Nom et prénom'),
         ),
         const SizedBox(height: 10),
       
@@ -93,20 +80,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
         TextField(
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
-          decoration: InputDecoration(
-            labelText: 'Email',
-            labelStyle: const TextStyle(color: Colors.white),
-            filled: true,
-            fillColor: AppColors.textfieldcolor,
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.textfieldcolor, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.textfieldcolor, width: 2),
-            ),
-          ),
+          decoration: decor('Email'),
         ),
         const SizedBox(height: 10),
       
@@ -150,20 +124,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
         TextField(
           controller: _regionController,
           keyboardType: TextInputType.text,
-          decoration: InputDecoration(
-            labelText: 'Ville / Région',
-            labelStyle: const TextStyle(color: Colors.white),
-            filled: true,
-            fillColor: AppColors.textfieldcolor,
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.textfieldcolor, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.textfieldcolor, width: 2),
-            ),
-          ),
+          decoration: decor('Région'),
         ),
       ],
           ),
@@ -187,10 +148,8 @@ class _InscriptionPageState extends State<InscriptionPage> {
                     _buildCultureChip(context, 'Tenues', AppColors.primary),
                     _buildCultureChip(context, 'Accessoires', AppColors.primary),
                     _buildCultureChip(context, 'Cuisines', AppColors.primary),
-                    _buildCultureChip(context, 'Plats', AppColors.primary),
-                    _buildCultureChip(context, 'Traditions', AppColors.primary),
                   ],
-                               ),
+                ),
                ),
       
               const SizedBox(height: 20),
@@ -202,14 +161,9 @@ class _InscriptionPageState extends State<InscriptionPage> {
                     onPressed: (){
                       Navigator.pushNamed(context, AppRoutes.conditionsUtilisation);
                     }, 
-                    
                     ),
                 ),
               )
-      
-            
-          
-      
         ],
       )
     );
@@ -221,9 +175,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
     return ActionChip(
       onPressed: () {
         // Logique de sélection/désélection
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$label sélectionné!')),
-        );
+        
       },
       label: Text(
         label,
