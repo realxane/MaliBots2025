@@ -16,8 +16,9 @@ class AppColors {
 
   // Couleurs texte
   static const Color textPrimary = Colors.white;
-  static const Color textSecondary = Color.fromARGB(183, 137, 82, 9);
-  static const Color textTertiary = Color.fromARGB(183, 249, 194, 13);
+  static const Color textSecondary = Color.fromRGBO(163, 90, 59, 1);
+  static const Color textTertiary = Color.fromRGBO(75, 46, 42, 1);
+  static const Color textfieldcolor = Color(0xFFC98A6F);
 
   // Couleurs erreurs
   static const Color error = Color(0xFFB00020);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:malibots_challenge_eni/routes/app_routes.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -93,7 +94,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   );
                 } else {
                   // Aller vers la page principale via route
-                  Navigator.pushReplacementNamed(context, '/home');
+                  Navigator.pushReplacementNamed(context, AppRoutes.connecter);
                 }
               },
               child: Text(

@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
-import 'screens/onboarding_screen.dart';
-import 'screens/home_screen.dart';
+
+import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart';
+import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
+import 'package:malibots_challenge_eni/screens/home/home_screen.dart';
+import 'package:malibots_challenge_eni/screens/onboarding/onboarding_screen.dart';
+// import 'screens/onboarding_screen.dart';
+// import 'screens/home_screen.dart';
+
+import 'package:malibots_challenge_eni/screens/auth/app_google_apple.dart';
+import 'screens/onboarding/onboarding_screen.dart';
+import 'screens/home/home_screen.dart';
+import 'package:malibots_challenge_eni/routes/app_routes.dart';
+import 'package:malibots_challenge_eni/screens/auth/app_choixprofil.dart';
+import 'package:malibots_challenge_eni/screens/auth/app_login.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,6 +21,7 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,9 +30,15 @@ class MyApp extends StatelessWidget {
       initialRoute: '/onboarding',
       routes: {
         '/onboarding': (context) => const OnboardingScreen(),
+        '/connexion': (context) => const Login(),
         '/home': (context) => const HomeScreen(),
-        '/musiqueScreen': (context) => const MusiqueScreen(),
+        '/login': (context) => const Login(),
+        // '/cree_nouveau_motdepasse': (context) =>  CreeNouveauMotDePasse(),
+        '/mot_de_passe_oublié': (context) => MotDePasseOublie(),
+        '/choix_profil': (context) => const ChoixProfilPage(),
+        // '/app_google_apple': (context) => const AppGoogleApple(),
       },
+      home: Login(),
     );
   }
 }
