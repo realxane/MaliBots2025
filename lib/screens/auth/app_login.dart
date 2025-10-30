@@ -95,7 +95,7 @@ class _LoginPageState extends State<Login> {
                   child: bouton_large(
                     hint: "se connecter",
                     onPressed: () {
-                      Navigator.pushNamed(context, AppRoutes.choixprofil);
+                      // Navigator.pushNamed(context, AppRoutes.choixprofil);
                     },
                   ),
                 ),
@@ -106,8 +106,16 @@ class _LoginPageState extends State<Login> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Vous n'avez pas de compte ?"),
-                    text_bouton(hint: "S'inscrire", onPressed: () {}),
+                    const Text(
+                      "Vous n'avez pas de compte ?",
+                      style: AppTextStyles.body,
+                    ),
+                    text_bouton(
+                      hint: "S'inscrire",
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.choixprofil);
+                      },
+                    ),
                   ],
                 ),
 
@@ -130,7 +138,7 @@ class _LoginPageState extends State<Login> {
                 ),
 
                 const SizedBox(height: 12),
-                Text('Se connecter avec'),
+                Text('Se connecter avec', style: AppTextStyles.body),
                 const SizedBox(height: 12),
 
                 // Boutons sociaux
@@ -148,6 +156,14 @@ class _LoginPageState extends State<Login> {
                     SocialIconButton(
                       icon: FontAwesomeIcons.apple,
                       color: Colors.black,
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.authGoogleApple);
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                    SocialIconButton(
+                      icon: FontAwesomeIcons.facebook,
+                      color: Colors.blue,
                       onPressed: () {
                         Navigator.pushNamed(context, AppRoutes.authGoogleApple);
                       },

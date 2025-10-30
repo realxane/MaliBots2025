@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
-
-import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart';
-import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
-import 'package:malibots_challenge_eni/screens/home/home_screen.dart';
-import 'package:malibots_challenge_eni/screens/onboarding/onboarding_screen.dart';
-// import 'screens/onboarding_screen.dart';
-// import 'screens/home_screen.dart';
-
+import 'package:malibots_challenge_eni/screens/auth/app_cond_utilisation.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_google_apple.dart';
+import 'package:malibots_challenge_eni/screens/auth/app_inscription.dart';
+import 'package:malibots_challenge_eni/screens/auth/app_inscription_vendeur.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
@@ -27,18 +22,25 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Anw ka Dambe',
-      initialRoute: '/onboarding',
+      initialRoute: AppRoutes.onboarding,
+      // routes: {
+      //   '/onboarding': (context) => const OnboardingScreen(),
+      //   '/home': (context) => const HomeScreen(),
+      // },
       routes: {
-        '/onboarding': (context) => const OnboardingScreen(),
-        '/connexion': (context) => const Login(),
-        '/home': (context) => const HomeScreen(),
-        '/login': (context) => const Login(),
-        // '/cree_nouveau_motdepasse': (context) =>  CreeNouveauMotDePasse(),
-        '/mot_de_passe_oublié': (context) => MotDePasseOublie(),
-        '/choix_profil': (context) => const ChoixProfilPage(),
-        // '/app_google_apple': (context) => const AppGoogleApple(),
+        AppRoutes.accueil: (context) => const HomeScreen(),
+        AppRoutes.onboarding: (context) => const OnboardingScreen(),
+        AppRoutes.choixprofil: (context) => const ChoixProfilPage(),
+        AppRoutes.connecter: (context) => const Login(),
+        AppRoutes.authGoogleApple: (context) => const AuthGoogleApple(),
+        AppRoutes.inscrire: (context) => InscriptionPage(),
+        AppRoutes.inscrire_vendeur: (context) => InscriptionVendeurPage(),
+        AppRoutes.conditionsUtilisation: (context) => const CondUtilisation(),
       },
-      home: Login(),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      ),
+      home: const Login(),
     );
   }
 }
