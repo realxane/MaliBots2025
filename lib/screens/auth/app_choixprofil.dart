@@ -57,7 +57,7 @@ class ChoixProfilPage extends StatelessWidget {
                       'Pour découvrir les habits, les accessoires, et la culture malienne',
                   onTap: () {
                     // Naviguez vers l’écran acheteur
-                    // Navigator.of(context).pushNamed('/acheteur');
+                    Navigator.of(context).pushNamed(AppRoutes.inscrire);
                   },
                 ),
                 const SizedBox(height: 14),
@@ -72,7 +72,7 @@ class ChoixProfilPage extends StatelessWidget {
                       'Pour vendre votre création et partager votre savoir faire',
                   onTap: () {
                     // Naviguez vers l’écran vendeur
-                    // Navigator.of(context).pushNamed('/vendeur');
+                    Navigator.of(context).pushNamed(AppRoutes.inscrire_vendeur);
                   },
                 ),
               ],
