@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -151,13 +152,19 @@ class _HomeScreenState extends State<HomeScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildCategory(MdiIcons.tshirtV, "Tenues"),
-                  // _buildCategory(Iconsax.shield, "Tenues"),
-                  _buildCategory(Icons.restaurant, "Plats"),
-                  //_buildCategory(Iconsax.cup, "Plats"),
-                  _buildCategory(Iconsax.music, "Musique"),
-                  _buildCategory(Iconsax.story, "Contes"),
-                  _buildCategory(Iconsax.shopping_bag, "Accessoires"),
+                  _buildCategory(MdiIcons.tshirtV, "Tenues", () {}),
+                  _buildCategory(Icons.restaurant, "Plats", () {}),
+                  _buildCategory(Iconsax.music, "Musique", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const MusiqueScreen(), // 👈 navigation vers Musique
+                      ),
+                    );
+                  }),
+                  _buildCategory(Iconsax.story, "Contes", () {}),
+                  _buildCategory(Iconsax.shopping_bag, "Accessoires", () {}),
                 ],
               ),
             ),
@@ -185,9 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemBuilder: (context, index) {
                   var item = aLaUne[index];
                   return GestureDetector(
-                    onTap: () {
-                      // Action pour voir les détails
-                    },
+                    onTap: () {},
                     child: Container(
                       width: 150,
                       margin: const EdgeInsets.only(left: 16),
@@ -321,15 +326,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 10),
 
-            // Explorer la culture
             Align(
               alignment: Alignment.centerRight,
               child: Padding(
                 padding: const EdgeInsets.only(right: 20.0),
                 child: GestureDetector(
-                  onTap: () {
-                    // Lien vers une autre page
-                  },
+                  onTap: () {},
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -368,11 +370,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategory(IconData icon, String label) {
+  Widget _buildCategory(IconData icon, String label, VoidCallback onTap) {
     return GestureDetector(
-      onTap: () {
-        // Navigation future
-      },
+      onTap: onTap,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 8),
         child: Column(

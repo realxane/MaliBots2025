@@ -40,6 +40,7 @@ dependencies:
   iconsax: ^0.0.8
   carousel_slider: ^5.1.1
   material_design_icons_flutter: ^7.0.7296
+  audioplayers: ^6.5.1
 
 
 flutter_icons:
@@ -79,6 +80,19 @@ flutter:
     # - assets/
     - assets/images/
     - assets/images/Acceuil/
+
+
+
+    - assets/images/artistes/
+    - assets/musics/bambara/
+    - assets/musics/songhoy/
+    - assets/musics/tamasheq/
+    - assets/musics/dogon/
+    - assets/musics/soninke/
+    - assets/musics/senoufu/
+
+
+
 
 
   # fonts:

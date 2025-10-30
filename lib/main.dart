@@ -8,6 +8,11 @@ import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_choixprofil.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_login.dart';
 
+import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
+// import 'screens/onboarding_screen.dart';
+// import 'screens/home_screen.dart';
+
+
 void main() {
   runApp(const MyApp());
 }
@@ -26,6 +31,7 @@ class MyApp extends StatelessWidget {
       //   '/home': (context) => const HomeScreen(),
       // },
       routes: {
+
         AppRoutes.accueil: (context) => const HomeScreen(),
         AppRoutes.onboarding: (context) => const OnboardingScreen(),
         AppRoutes.choixprofil: (context) => const ChoixProfilPage(),
@@ -33,6 +39,10 @@ class MyApp extends StatelessWidget {
         AppRoutes.authGoogleApple: (context) => const AuthGoogleApple(),
         AppRoutes.inscrire: (context) =>  InscriptionPage(),
         AppRoutes.inscrire_vendeur: (context) => InscriptionVendeurPage(),
+
+        '/onboarding': (context) => const OnboardingScreen(),
+        '/home': (context) => const HomeScreen(),
+        '/musiqueScreen': (context) => const MusiqueScreen(),
       },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),

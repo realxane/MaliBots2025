@@ -2,7 +2,17 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Couleurs principales
+<<<<<<< HEAD
   static const Color primary =  Color.fromRGBO(140, 63, 46, 1); // chocolat-marron
+=======
+  static const Color primary = Color(0xFF7B3F00);
+  // static const Color primary = Color.fromARGB(
+  //   183,
+  //   164,
+  //   96,
+  //   6,
+  // ); // chocolat-marron
+>>>>>>> 515d65ddc1eebbbdf3969f3be8b9a727de5d80f4
   static const Color secondary = Colors.white; // blanc
 
   // Couleurs de fond
