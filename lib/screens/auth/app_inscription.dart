@@ -25,6 +25,12 @@ class _InscriptionPageState extends State<InscriptionPage> {
   bool _accepted = false;
   bool _obscurePwd = true;
 
+   // Liste des options sélectionnées pour la culture
+  List<String> _selectedCultures = [];
+
+  final List<String> _cultureOptions = ['Tenues', 'Accessoires', 'Cuisines'];
+
+
   @override
   void dispose() {
     _nameCtrl.dispose();
@@ -150,17 +156,36 @@ class _InscriptionPageState extends State<InscriptionPage> {
                     ),
                     const SizedBox(height: 10),
 
-                    Center(
-                 child: Wrap(
-                  spacing: 20.0, // Espace horizontal entre les chips
-                  runSpacing: 20.0, // Espace vertical entre les lignes de chips
-                  children: <Widget>[
-                    _buildCultureChip(context, 'Tenues', AppColors.primary),
-                    _buildCultureChip(context, 'Accessoires', AppColors.primary),
-                    _buildCultureChip(context, 'Cuisines', AppColors.primary),
-                  ],
-                ),
-               ),
+                   
+                 Center(
+                      child: Row(
+                        children: [
+                          Wrap(
+                            spacing: 20,
+                            runSpacing: 20,
+                            children: _cultureOptions.map((option) {
+                              final isSelected = _selectedCultures.contains(option);
+                              return _buildCultureChip(
+                                option,
+                                isSelected,
+                                () {
+                                  setState(() {
+                                    if (isSelected) {
+                                      _selectedCultures.remove(option);
+                                    } else {
+                                      _selectedCultures.add(option);
+                                    }
+                                  });
+                                },
+                              AppColors.primary,
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+                    ),
+
+
                     const SizedBox(height: 12),
 
                     // Conditions
@@ -283,9 +308,13 @@ class _InscriptionPageState extends State<InscriptionPage> {
 }
 
 // Widget utilitaire pour les boutons de sélection (Chips)
-Widget _buildCultureChip(BuildContext context, String label, Color color) {
+Widget _buildCultureChip(
+  String label,
+  bool selected,
+  VoidCallback onSelected,
+  Color color,
+) {
   return ActionChip(
-    onPressed: () {},
     label: Text(
       label,
       style: const TextStyle(
@@ -293,11 +322,12 @@ Widget _buildCultureChip(BuildContext context, String label, Color color) {
         fontWeight: FontWeight.w600,
       ),
     ),
-    backgroundColor: color,
+    backgroundColor: selected ? color : color.withOpacity(0.7),
     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(15.0),
     ),
     elevation: 0,
+    onPressed: onSelected,
   );
 }
