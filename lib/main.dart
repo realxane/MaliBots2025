@@ -35,10 +35,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Anw ka Dambe',
       initialRoute: AppRoutes.onboarding,
-      // routes: {
-      //   '/onboarding': (context) => const OnboardingScreen(),
-      //   '/home': (context) => const HomeScreen(),
-      // },
       routes: {
 
         AppRoutes.accueil: (context) => const HomeScreen(),
@@ -48,10 +44,12 @@ class MyApp extends StatelessWidget {
         AppRoutes.authGoogleApple: (context) => const AuthGoogleApple(),
         AppRoutes.inscrire: (context) =>  InscriptionPage(),
         AppRoutes.inscrire_vendeur: (context) => InscriptionVendeurPage(),
+        AppRoutes.forgotPassword: (context) => MotDePasseOublie(),
+        AppRoutes.newPassword: (context) => CreeNouveauMotdepasse(),
+        AppRoutes.musique: (context) => const MusiqueScreen(),
 
-        '/onboarding': (context) => const OnboardingScreen(),
-        '/home': (context) => const HomeScreen(),
-        '/musiqueScreen': (context) => const MusiqueScreen(),
+        // '/onboarding': (context) => const OnboardingScreen(),
+        // '/home': (context) => const HomeScreen(),
       },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),

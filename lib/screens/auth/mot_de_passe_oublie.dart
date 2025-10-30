@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
+import 'package:malibots_challenge_eni/constants/app_images.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
+import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
 // import 'package:malibots_challenge_eni/widgets/custum_button.dart';
 // import 'package:malibots_challenge_eni/widgets/custum_textfileid.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
+import 'package:malibots_challenge_eni/widgets/buttons/bouton_retour.dart';
 
 
 import 'package:malibots_challenge_eni/widgets/text_fields/text_field_decor.dart';
@@ -18,8 +21,16 @@ class MotDePasseOublie extends StatelessWidget {
 
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        elevation: 0,
+        leading: Navigator.canPop(context)
+            ? fleche_retour(onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.connecter);
+            })
+            : null,
+      ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -32,7 +43,7 @@ class MotDePasseOublie extends StatelessWidget {
                   height: 100,
                   width: 100,
                   child: Image.asset(  
-                    "assets/images/icone.jpeg",),
+                    AppImages.logo, height: 64,),
                 ),
                   Column(
                     children: [
@@ -62,7 +73,7 @@ class MotDePasseOublie extends StatelessWidget {
           ),
           SizedBox(height: 30,),
           Padding(padding: EdgeInsets.only(right: MediaQuery.of(context).size.width * 0.07),
-          child:Text("Entrez votre adresse email\net nous vous enverrons un lien\npour reinitialiser votre mot de passe", style: AppTextStyles.soustitre,),
+          child:Text("Entrez votre adresse email et nous \nvous enverrons un lien pour reinitialiser \nvotre mot de passe", style: AppTextStyles.soustitre,),
           ),
          SizedBox(height: 20,),
 

@@ -259,7 +259,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Veuillez accepter les conditions.')),
                             );
-                            return;
+                          Navigator.pushNamed(context, AppRoutes.accueil);
                           }
                           // if (_formKey.currentState?.validate() ?? false) {
                           //   ScaffoldMessenger.of(context).showSnackBar(
