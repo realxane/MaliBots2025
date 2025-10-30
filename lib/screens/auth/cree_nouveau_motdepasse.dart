@@ -105,7 +105,9 @@ class _CreeNouveauMotdepasseState extends State<CreeNouveauMotdepasse> {
         ),
          const SizedBox(height: 20,),
         //  CustomButton(text:"Confirmer",onPressed: (){},)
-        bouton_large(hint:"Confirmer",onPressed: (){},),
+        SizedBox(
+          width: double.infinity,
+          child: bouton_large(hint:"Confirmer",onPressed: (){},)),
           
         ]),
       ) ,

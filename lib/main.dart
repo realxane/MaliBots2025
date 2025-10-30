@@ -30,9 +30,15 @@ class MyApp extends StatelessWidget {
       initialRoute: '/onboarding',
       routes: {
         '/onboarding': (context) => const OnboardingScreen(),
+        '/connexion':(context) => const Login(),
         '/home': (context) => const HomeScreen(),
+        '/login': (context) => const Login(),
+        // '/cree_nouveau_motdepasse': (context) =>  CreeNouveauMotDePasse(),
+        '/mot_de_passe_oublié': (context) =>  MotDePasseOublie(),
+        '/choix_profil': (context) => const ChoixProfilPage(),
+        // '/app_google_apple': (context) => const AppGoogleApple(),
       },
-      // home:MotDePasseOublie() ,
+      home:Login() ,
     );
   }
 }

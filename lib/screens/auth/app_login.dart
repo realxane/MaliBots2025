@@ -5,6 +5,7 @@ import 'package:malibots_challenge_eni/constants/app_images.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
+import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_social.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/text_button.dart';
@@ -86,6 +87,7 @@ class _LoginPageState extends State<Login> {
                   child: text_bouton(
                     hint : "Mot de passe oublié ?",
                     onPressed: (){
+                      Navigator.pushNamed(context, AppRoutes.forgotPassword);
                       
                     }
                     )

@@ -13,6 +13,7 @@ ElevatedButton bouton_large({
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
+                      // maximumSize: Size(1000, 50),
                       textStyle: const TextStyle(
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.2,

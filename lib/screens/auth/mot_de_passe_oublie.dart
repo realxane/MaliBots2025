@@ -5,6 +5,9 @@ import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
 // import 'package:malibots_challenge_eni/widgets/custum_button.dart';
 // import 'package:malibots_challenge_eni/widgets/custum_textfileid.dart';
+import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
+
+
 import 'package:malibots_challenge_eni/widgets/text_fields/text_field_decor.dart';
 
 class MotDePasseOublie extends StatelessWidget {
@@ -62,7 +65,7 @@ class MotDePasseOublie extends StatelessWidget {
           child:Text("Entrez votre adresse email\net nous vous enverrons un lien\npour reinitialiser votre mot de passe", style: AppTextStyles.soustitre,),
           ),
          SizedBox(height: 20,),
-        //  CustumTextfileid(label:"email",hint:"Entrez votre adresse email",),
+
         TextField(
           controller: _emailrecuperationCtrl,
            keyboardType: TextInputType.emailAddress,
@@ -74,9 +77,12 @@ class MotDePasseOublie extends StatelessWidget {
         //  CustomButton(text:"Envoyer le code",onPressed: (){
         //    Navigator.push(context, MaterialPageRoute(builder:(context)=> CreeNouveauMotdepasse()));
         //  },)
-        bouton_large( hint:"Envoyer le code",onPressed: (){
-          Navigator.push(context, MaterialPageRoute(builder:(context)=> CreeNouveauMotdepasse()));
-        },),
+        SizedBox(
+          width: double.infinity,
+          child: bouton_large( hint:"Envoyer le code",onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder:(context)=> CreeNouveauMotdepasse()));
+          },),
+        ),
           
         ]),
       ),
