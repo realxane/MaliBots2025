@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
+import 'package:malibots_challenge_eni/constants/app_images.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
+import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
+import 'package:malibots_challenge_eni/widgets/buttons/bouton_retour.dart';
 import 'package:malibots_challenge_eni/widgets/text_fields/text_field_decor.dart';
 
 class CreeNouveauMotdepasse extends StatefulWidget {
@@ -21,8 +24,16 @@ class _CreeNouveauMotdepasseState extends State<CreeNouveauMotdepasse> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        elevation: 0,
+        leading: Navigator.canPop(context)
+            ? fleche_retour(onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.forgotPassword);
+            })
+            : null,
+      ),
       body:SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           children: [
             const SizedBox(height: 60,),
@@ -34,7 +45,7 @@ class _CreeNouveauMotdepasseState extends State<CreeNouveauMotdepasse> {
                   height: 100,
                   width: 100,
                   child:  Image.asset(  
-                    "assets/images/logo_appli.png",),
+                    AppImages.logo),
                 ),
                   const Column(
                     children: [
