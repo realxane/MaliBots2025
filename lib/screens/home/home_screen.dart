@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
@@ -110,7 +111,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       right: 10,
                       child: GestureDetector(
                         onTap: () {
-                          // Action "Découvrir"
+                          Navigator.pushNamed(
+                            context, 
+                            AppRoutes.catalogue,
+                            arguments: 'Types',);
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -152,8 +156,18 @@ class _HomeScreenState extends State<HomeScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildCategory(MdiIcons.tshirtV, "Tenues", () {}),
-                  _buildCategory(Icons.restaurant, "Plats", () {}),
+                  _buildCategory(MdiIcons.tshirtV, "Tenues", () {
+                          Navigator.pushNamed(
+                            context, 
+                            AppRoutes.catalogue,
+                            arguments: 'Tenues',);
+                        }),
+                  _buildCategory(Icons.restaurant, "Plats", () {
+                          Navigator.pushNamed(
+                            context, 
+                            AppRoutes.catalogue,
+                            arguments: 'Plats',);
+                        }),
                   _buildCategory(Iconsax.music, "Musique", () {
                     Navigator.push(
                       context,
@@ -164,7 +178,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   }),
                   _buildCategory(Iconsax.story, "Contes", () {}),
-                  _buildCategory(Iconsax.shopping_bag, "Accessoires", () {}),
+                  _buildCategory(Iconsax.shopping_bag, "Accessoires", () {
+                          Navigator.pushNamed(
+                            context, 
+                            AppRoutes.catalogue,
+                            arguments: 'Accessoires',);
+                        }),
                 ],
               ),
             ),
