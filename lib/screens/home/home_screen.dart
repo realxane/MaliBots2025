@@ -375,6 +375,9 @@ class _HomeScreenState extends State<HomeScreen> {
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() => _currentIndex = index);
+          if(index == 3) {
+            Navigator.pushNamed(context, AppRoutes.panier);
+          }
         },
         selectedItemColor: bogolan,
         unselectedItemColor: Colors.brown[300],

@@ -112,7 +112,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.apps, color: AppColors.textSecondary),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pushNamed(context, AppRoutes.accueil);
+          },
         ),
         title: const Text('Catalogue',
             style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold)),

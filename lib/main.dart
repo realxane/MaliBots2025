@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:malibots_challenge_eni/data/list_product.dart';
+import 'package:malibots_challenge_eni/providers/favoris_store.dart';
+import 'package:malibots_challenge_eni/providers/product_store.dart';
 
 import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart';
 import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_catalog_screen.dart';
+import 'package:malibots_challenge_eni/screens/catalogue/app_panier.dart';
+import 'package:malibots_challenge_eni/screens/catalogue/app_produit_detail.dart';
 import 'package:malibots_challenge_eni/screens/home/home_screen.dart';
 import 'package:malibots_challenge_eni/screens/onboarding/onboarding_screen.dart';
 // import 'screens/onboarding_screen.dart';
@@ -11,6 +16,7 @@ import 'package:malibots_challenge_eni/screens/onboarding/onboarding_screen.dart
 import 'package:malibots_challenge_eni/screens/auth/app_google_apple.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_inscription.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_inscription_vendeur.dart';
+import 'package:provider/provider.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
@@ -23,7 +29,21 @@ import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
 
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => ProductsStore(kProducts), // ta liste initiale de Product
+        ),
+        ChangeNotifierProvider(
+          create: (_) => FavoritesStore(),
+        ),
+        
+      ],
+      child: const MyApp(),
+    )
+    
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -49,6 +69,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.newPassword: (context) => CreeNouveauMotdepasse(),
         AppRoutes.musique: (context) => const MusiqueScreen(),
         AppRoutes.catalogue: (context) => const CatalogScreen(),
+        AppRoutes.panier: (context) => const CartPage(),
 
         // '/onboarding': (context) => const OnboardingScreen(),
         // '/home': (context) => const HomeScreen(),

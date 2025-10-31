@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
+import 'package:malibots_challenge_eni/providers/product_store.dart';
+import 'package:malibots_challenge_eni/screens/catalogue/app_produit_detail.dart';
+import 'package:provider/provider.dart';
 
 /// ----------------------
 /// Modèles et contrôleur
@@ -110,7 +113,9 @@ class CartPage extends StatelessWidget {
         elevation: 0.5,
         leading: IconButton(
           icon: const Icon(Icons.grid_view_rounded),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.of(context).maybePop();
+          },
         ),
         title: const Text('Mon panier'),
         centerTitle: true,
@@ -163,100 +168,130 @@ class _CartRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final key = item.key;
     final swatch = _parseColor(item.color);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image du produit
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: Image.asset(
-              item.assetImagePath,
-              width: 88,
-              height: 88,
-              fit: BoxFit.cover,
-            ),
-          ),
-          const SizedBox(width: 10),
-          // Infos produit
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Ligne titre + supprimer
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        item.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () => CartController.I.remove(key),
-                      child: const Padding(
-                        padding: EdgeInsets.all(4.0),
-                        child: Text('x', style: TextStyle(fontSize: 16)),
-                      ),
-                    ),
-                  ],
+
+    void _openDetails() {
+      final products = context.read<ProductsStore>();
+      final product = products.byId(item.productId);
+      if (product == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Produit introuvable')),
+        );
+        return;
+      }
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ProductDetailPage(product: product),
+        ),
+      );
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _openDetails, // Rend toute la ligne cliquable
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image du produit
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.asset(
+                  item.assetImagePath,
+                  width: 88,
+                  height: 88,
+                  fit: BoxFit.cover,
                 ),
-                const SizedBox(height: 6),
-                // Couleurs
-                if (item.color != null && item.color!.isNotEmpty)
-                  Row(
-                    children: [
-                      const Text('Couleur   '),
-                      if (swatch != null)
-                        Container(
-                          width: 36,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: swatch,
-                            borderRadius: BorderRadius.circular(2),
-                            border: Border.all(color: Colors.black12),
-                          ),
-                        )
-                      else
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black12),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            item.color!, // label texte (ex: "Marron")
-                            style: const TextStyle(fontSize: 12),
+              ),
+              const SizedBox(width: 10),
+              // Infos produit
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Ligne titre + supprimer
+                    Row(
+                      children: [
+                        // Rendre aussi le titre cliquable explicitement (optionnel)
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: _openDetails,
+                            behavior: HitTestBehavior.opaque,
+                            child: const SizedBox(), // occupe l'espace du titre
                           ),
                         ),
-                    ],
-                  ),
-                const SizedBox(height: 6),
-                // Prix + quantité
-                Row(
-                  children: [
+                        InkWell(
+                          onTap: () => CartController.I.remove(key),
+                          child: const Padding(
+                            padding: EdgeInsets.all(4.0),
+                            child: Text('x', style: TextStyle(fontSize: 16)),
+                          ),
+                        ),
+                      ],
+                    ),
+                    // On remet le texte du titre en dessous pour l'affichage
+                    // (alternative: garder le Text dans la Row et enlever le GestureDetector ci-dessus)
                     Text(
-                      'Prix : ${_formatMoney(item.price)}',
-                      style: const TextStyle(fontWeight: FontWeight.w500),
+                      item.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
-                    const Spacer(),
-                    _QtyControl(
-                      qty: item.qty,
-                      accent: accent,
-                      onMinus: () => CartController.I.decrement(key),
-                      onPlus: () => CartController.I.increment(key),
+                    const SizedBox(height: 6),
+                    // Couleurs
+                    if (item.color != null && item.color!.isNotEmpty)
+                      Row(
+                        children: [
+                          const Text('Couleur   '),
+                          if (swatch != null)
+                            Container(
+                              width: 36,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: swatch,
+                                borderRadius: BorderRadius.circular(2),
+                                border: Border.all(color: Colors.black12),
+                              ),
+                            )
+                          else
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.black12),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                item.color!, // label texte (ex: "Marron")
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                        ],
+                      ),
+                    const SizedBox(height: 6),
+                    // Prix + quantité
+                    Row(
+                      children: [
+                        Text(
+                          'Prix : ${_formatMoney(item.price)}',
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        const Spacer(),
+                        _QtyControl(
+                          qty: item.qty,
+                          accent: accent,
+                          onMinus: () => CartController.I.decrement(key),
+                          onPlus: () => CartController.I.increment(key),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

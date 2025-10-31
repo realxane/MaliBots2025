@@ -4,8 +4,11 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
 import 'package:malibots_challenge_eni/models/product.dart';
+import 'package:malibots_challenge_eni/providers/favoris_store.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_panier.dart';
+import 'package:malibots_challenge_eni/screens/favoris/app_favoris.dart';
+import 'package:provider/provider.dart';
 
 class Comment {
   final String userName;
@@ -309,8 +312,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           child: Row(
             children: [
               OutlinedButton(
-                onPressed: () {
-                  // Favori
+                onPressed: () { 
+                  final store = context.read<FavoritesStore>();
+                  if (!store.isProductFavorite(product.id)) {
+                    store.toggleProduct(product);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('${product.name} ajouté aux favoris')),
+                    );
+                  }
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const FavoritesPage()),
+                  );
                 },
                 style: OutlinedButton.styleFrom(
                   shape: const CircleBorder(),

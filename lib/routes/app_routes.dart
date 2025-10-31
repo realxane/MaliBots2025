@@ -25,6 +25,9 @@ class AppRoutes {
 
   //page catalogue
   static const String catalogue = '/catalogue';
+  //page panier
+  //page catalogue
+  static const String panier = '/panier';
 
 
 }
