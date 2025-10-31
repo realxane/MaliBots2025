@@ -27,7 +27,6 @@ import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
 // import 'screens/onboarding_screen.dart';
 // import 'screens/home_screen.dart';
 
-
 void main() {
   runApp(
     MultiProvider(
@@ -57,13 +56,13 @@ class MyApp extends StatelessWidget {
       title: 'Anw ka Dambe',
       initialRoute: AppRoutes.onboarding,
       routes: {
-
-        AppRoutes.accueil: (context) => const HomeScreen(),
+        AppRoutes.accueil: (context) => MainScreen(),
+        //AppRoutes.accueil: (context) => const HomeScreen(),
         AppRoutes.onboarding: (context) => const OnboardingScreen(),
         AppRoutes.choixprofil: (context) => const ChoixProfilPage(),
         AppRoutes.connecter: (context) => const Login(),
         AppRoutes.authGoogleApple: (context) => const AuthGoogleApple(),
-        AppRoutes.inscrire: (context) =>  InscriptionPage(),
+        AppRoutes.inscrire: (context) => InscriptionPage(),
         AppRoutes.inscrire_vendeur: (context) => InscriptionVendeurPage(),
         AppRoutes.forgotPassword: (context) => MotDePasseOublie(),
         AppRoutes.newPassword: (context) => CreeNouveauMotdepasse(),
@@ -76,8 +75,7 @@ class MyApp extends StatelessWidget {
       },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        
-      )
+      ),
     );
   }
 }

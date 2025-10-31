@@ -1,4 +1,3 @@
-// lib/screens/product_detail_page.dart
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
@@ -44,8 +43,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   int _currentImage = 0;
   Color? _selectedColor;
 
+  // NEW: liste mutable des commentaires dans l'état
+  late List<Comment> _comments;
+
+  // NEW: controller pour la saisie
+  final TextEditingController _commentCtrl = TextEditingController();
+
   String _colorToHex(Color c) =>
-    '#${c.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+      '#${c.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
 
   Color get brown => AppColors.primary;
   Color get lightBrown => const Color(0xFFF3E6E0);
@@ -65,36 +70,124 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     if (colors != null && colors.isNotEmpty) {
       _selectedColor = colors.first;
     }
+
+    // Initialise la liste des commentaires
+    _comments = List<Comment>.from(
+      widget.comments ??
+          [
+            Comment(
+              userName: "Le papa de xavier",
+              text:
+                  "J'ai déjà acheté chez lui et ses produits sont vraiment de bonne qualité !",
+            ),
+            Comment(
+              userName: "Le papa de xavier",
+              text:
+                  "J'ai déjà acheté chez lui et ses produits sont vraiment de bonne qualité !",
+            ),
+            Comment(
+              userName: "Le papa de xavier",
+              text:
+                  "J'ai déjà acheté chez lui et ses produits sont vraiment de bonne qualité !",
+            ),
+          ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _commentCtrl.dispose();
+    super.dispose();
+  }
+
+  // Ouvre une feuille modale pour saisir un commentaire
+  void _openAddCommentSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 12,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Ajouter un commentaire',
+                style: TextStyle(fontWeight: FontWeight.w700, color: brown),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _commentCtrl,
+                maxLines: 4,
+                textInputAction: TextInputAction.done,
+                decoration: const InputDecoration(
+                  hintText: 'Votre commentaire…',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: const Text('Annuler'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final text = _commentCtrl.text.trim();
+                        if (text.isEmpty) return;
+                        setState(() {
+                          _comments.insert(
+                            0,
+                            Comment(userName: 'Vous', text: text),
+                          );
+                        });
+                        _commentCtrl.clear();
+                        Navigator.of(ctx).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Commentaire ajouté')),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: brown,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Publier'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
-    final comments = widget.comments ??
-        [
-          Comment(
-            userName: "Le papa de xavier",
-            text:
-                "J'ai déjà acheté chez lui et ses produits sont vraiment de bonne qualité !",
-          ),
-          Comment(
-            userName: "Le papa de xavier",
-            text:
-                "J'ai déjà acheté chez lui et ses produits sont vraiment de bonne qualité !",
-          ),
-          Comment(
-            userName: "Le papa de xavier",
-            text:
-                "J'ai déjà acheté chez lui et ses produits sont vraiment de bonne qualité !",
-          ),
-        ];
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
-        title: Text(product.name, style: TextStyle(color: brown, fontWeight: FontWeight.w700)),
+        title: Text(product.name,
+            style: TextStyle(color: brown, fontWeight: FontWeight.w700)),
         iconTheme: IconThemeData(color: brown),
         actions: [
           Padding(
@@ -159,9 +252,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           height: 8,
                           margin: const EdgeInsets.symmetric(horizontal: 3),
                           decoration: BoxDecoration(
-                            color: active ? brown : Colors.white.withOpacity(0.8),
+                            color: active
+                                ? brown
+                                : Colors.white.withOpacity(0.8),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: brown.withOpacity(0.5), width: 0.6),
+                            border: Border.all(
+                                color: brown.withOpacity(0.5), width: 0.6),
                           ),
                         );
                       }),
@@ -184,7 +280,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       Expanded(
                         child: Text(
                           product.name,
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: brown),
+                          style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: brown),
                         ),
                       ),
                       _Stars(rating: product.rating, color: Colors.amber),
@@ -195,22 +294,28 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     children: [
                       Icon(Icons.place, color: brown, size: 18),
                       const SizedBox(width: 6),
-                      Text(product.region, style: TextStyle(color: brown.withOpacity(0.8))),
+                      Text(product.region,
+                          style: TextStyle(color: brown.withOpacity(0.8))),
                       const SizedBox(width: 12),
-                      Text('•', style: TextStyle(color: brown.withOpacity(0.5))),
+                      Text('•',
+                          style: TextStyle(color: brown.withOpacity(0.5))),
                       const SizedBox(width: 12),
                       Icon(Icons.category, color: brown, size: 18),
                       const SizedBox(width: 6),
-                      Text(product.type, style: TextStyle(color: brown.withOpacity(0.8))),
+                      Text(product.type,
+                          style: TextStyle(color: brown.withOpacity(0.8))),
                     ],
                   ),
                   const SizedBox(height: 6),
-                  Text('Artisan: ${product.artisan}', style: TextStyle(color: brown)),
+                  Text('Artisan: ${product.artisan}',
+                      style: TextStyle(color: brown)),
 
                   const SizedBox(height: 14),
                   // Couleurs disponibles (si fournies)
                   if ((widget.availableColors?.isNotEmpty ?? false)) ...[
-                    Text('Couleurs disponible', style: TextStyle(fontWeight: FontWeight.w700, color: brown)),
+                    Text('Couleurs disponible',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700, color: brown)),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 10,
@@ -225,7 +330,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   color: c,
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: _selectedColor == c ? brown : Colors.grey.shade300,
+                                    color: _selectedColor == c
+                                        ? brown
+                                        : Colors.grey.shade300,
                                     width: _selectedColor == c ? 2 : 1,
                                   ),
                                 ),
@@ -242,7 +349,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     children: [
                       Text(
                         'Prix : ${product.price} F',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: brown),
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: brown),
                       ),
                       const Spacer(),
                       Icon(Icons.favorite_border, color: brown),
@@ -258,13 +368,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text('Commentaires',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: brown)),
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: brown)),
             ),
             const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
-                children: comments
+                children: _comments
                     .map(
                       (c) => Container(
                         margin: const EdgeInsets.only(bottom: 10),
@@ -286,7 +399,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(c.userName, style: TextStyle(fontWeight: FontWeight.w700, color: brown)),
+                                  Text(c.userName,
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          color: brown)),
                                   const SizedBox(height: 4),
                                   Text(c.text),
                                 ],
@@ -309,62 +425,97 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           color: Colors.white,
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              OutlinedButton(
-                onPressed: () { 
-                  final store = context.read<FavoritesStore>();
-                  if (!store.isProductFavorite(product.id)) {
-                    store.toggleProduct(product);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${product.name} ajouté aux favoris')),
-                    );
-                  }
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const FavoritesPage()),
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  shape: const CircleBorder(),
-                  side: BorderSide(color: brown),
-                  foregroundColor: brown,
-                  padding: const EdgeInsets.all(10),
-                ),
-                child: const Icon(Icons.favorite_border),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  
-                  onPressed: () {
-                    final hasColors = (widget.availableColors?.isNotEmpty ?? false) && _selectedColor != null;
-                    final colorHex = hasColors ? _colorToHex(_selectedColor!) : null;
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${product.name} ajouté au panier !')),
-                    );
-
-                    CartController.I.addItem(
-                      productId: product.id,
-                      name: product.name,
-                      color: colorHex, // <- null si pas de couleur
-                      price: product.price,
-                      assetImagePath: product.imageUrl,
-                      qty: 1,
-                    );
-
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const CartPage()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: brown,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              // Bouton "Ajouter un commentaire" AU-DESSUS
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _openAddCommentSheet,
+                  icon: Icon(Icons.add_comment, color: brown),
+                  label: Text(
+                    'Ajouter un commentaire',
+                    style: TextStyle(
+                        color: brown, fontWeight: FontWeight.w600),
                   ),
-                  child: const Text('Ajouter au panier'),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: brown),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  ),
                 ),
+              ),
+              const SizedBox(height: 12),
+              // Ligne favoris + panier (existant)
+              Row(
+                children: [
+                  OutlinedButton(
+                    onPressed: () {
+                      final store = context.read<FavoritesStore>();
+                      if (!store.isProductFavorite(product.id)) {
+                        store.toggleProduct(product);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(
+                                  '${product.name} ajouté aux favoris')),
+                        );
+                      }
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (_) => const FavoritesPage()),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      shape: const CircleBorder(),
+                      side: BorderSide(color: brown),
+                      foregroundColor: brown,
+                      padding: const EdgeInsets.all(10),
+                    ),
+                    child: const Icon(Icons.favorite_border),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final hasColors =
+                            (widget.availableColors?.isNotEmpty ?? false) &&
+                                _selectedColor != null;
+                        final colorHex =
+                            hasColors ? _colorToHex(_selectedColor!) : null;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(
+                                  '${product.name} ajouté au panier !')),
+                        );
+
+                        CartController.I.addItem(
+                          productId: product.id,
+                          name: product.name,
+                          color: colorHex, // <- null si pas de couleur
+                          price: product.price,
+                          assetImagePath: product.imageUrl,
+                          qty: 1,
+                        );
+
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => const CartPage()),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: brown,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('Ajouter au panier'),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
