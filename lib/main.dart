@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart';
 import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
+import 'package:malibots_challenge_eni/screens/catalogue/app_catalog_screen.dart';
 import 'package:malibots_challenge_eni/screens/home/home_screen.dart';
 import 'package:malibots_challenge_eni/screens/onboarding/onboarding_screen.dart';
 // import 'screens/onboarding_screen.dart';
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.forgotPassword: (context) => MotDePasseOublie(),
         AppRoutes.newPassword: (context) => CreeNouveauMotdepasse(),
         AppRoutes.musique: (context) => const MusiqueScreen(),
+        AppRoutes.catalogue: (context) => const CatalogScreen(),
 
         // '/onboarding': (context) => const OnboardingScreen(),
         // '/home': (context) => const HomeScreen(),
@@ -53,7 +55,6 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const Login(),
     );
   }
 }

@@ -82,6 +82,7 @@ flutter:
   assets:
 
     - assets/images/
+    - assets/images/produits/
     - assets/images/Acceuil/
     - assets/images/artistes/
     - assets/musics/bambara/
@@ -90,6 +91,7 @@ flutter:
     - assets/musics/dogon/
     - assets/musics/soninke/
     - assets/musics/senoufu/
+    
 
 
   # fonts:
