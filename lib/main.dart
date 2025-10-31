@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart';
 import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
 import 'package:malibots_challenge_eni/screens/home/home_screen.dart';
@@ -15,6 +16,7 @@ import 'screens/home/home_screen.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_choixprofil.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_login.dart';
+import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,7 +40,11 @@ class MyApp extends StatelessWidget {
         // '/cree_nouveau_motdepasse': (context) =>  CreeNouveauMotDePasse(),
         '/mot_de_passe_oublié': (context) =>  MotDePasseOublie(),
         '/choix_profil': (context) => const ChoixProfilPage(),
+        '/profilVendeur':(context) => const ProfileScrennVendeur(),
+        '/profilUser': (context) => const ProfileScreenUser(),
         // '/app_google_apple': (context) => const AppGoogleApple(),
+        '/home': (context) => const HomeScreen(),
+        '/musiqueScreen': (context) => const MusiqueScreen(),
       },
       // home:ProfileScreenUser(),
       // home: ProfileScrennVendeur(),
