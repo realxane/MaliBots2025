@@ -8,6 +8,8 @@ import 'package:malibots_challenge_eni/screens/onboarding/onboarding_screen.dart
 // import 'screens/home_screen.dart';
 
 import 'package:malibots_challenge_eni/screens/auth/app_google_apple.dart';
+import 'package:malibots_challenge_eni/screens/profile/profile_screen_user.dart';
+import 'package:malibots_challenge_eni/screens/profile/profile_screnn_vendeur.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
@@ -31,14 +33,15 @@ class MyApp extends StatelessWidget {
       routes: {
         '/onboarding': (context) => const OnboardingScreen(),
         '/connexion':(context) => const Login(),
-        '/home': (context) => const HomeScreen(),
+        '/accueil': (context) => const HomeScreen(),
         '/login': (context) => const Login(),
         // '/cree_nouveau_motdepasse': (context) =>  CreeNouveauMotDePasse(),
         '/mot_de_passe_oublié': (context) =>  MotDePasseOublie(),
         '/choix_profil': (context) => const ChoixProfilPage(),
         // '/app_google_apple': (context) => const AppGoogleApple(),
       },
-      home:Login() ,
+      // home:ProfileScreenUser(),
+      // home: ProfileScrennVendeur(),
     );
   }
 }

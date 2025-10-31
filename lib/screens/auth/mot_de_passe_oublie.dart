@@ -15,76 +15,90 @@ class MotDePasseOublie extends StatelessWidget {
   final _emailrecuperationCtrl = TextEditingController(); // controller de l'email de recuperation de mot de passeCtrl
 
   @override
-
   Widget build(BuildContext context) {
+    final taill_sreen=MediaQuery.of(context).size;
+   final width = taill_sreen.width;
+    final height = taill_sreen.height;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(height: 60,),
-          Center(
-            child: Row(
-              // mainAxisAlignment: MainAxisAlignment.center,
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: width * 0.08, // marge adaptative
+            vertical: height * 0.04,),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+            SizedBox(height: height * 0.05),            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  height: 100,
-                  width: 100,
+                 height: height * 0.12,
+                  width: height * 0.12,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                  ),
                   child: Image.asset(  
                     "assets/images/icone.jpeg",),
                 ),
+                  SizedBox(width: width * 0.03),
                   Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                     Text("Anw Ka Dembe",style: TextStyle(
-                      fontSize: 25,
+                       fontSize: width * 0.06,
                       color: Colors.black,
                       fontWeight: FontWeight.bold
                     ),),
-                    // SizedBox(height: 0,),
                     Padding(
-                      padding: const EdgeInsets.only(left: 50),
-                      child: Text("Découvrez l'âme du Mali",style: AppTextStyles.soustitre,),
+                      padding: const EdgeInsets.only(left: 40),
+                      child: Text("Découvrez l'âme du Mali",style: AppTextStyles.soustitre.copyWith(
+                          fontSize: width * 0.036,
+                        ),),
                     ),
                   ])
               
             ]),
-          ),
-          SizedBox(height: 30,),
-          Padding(
-            padding:  EdgeInsets.only(right: MediaQuery.of(context).size.width * 0.2),
-            child: Text("Mot de passe oublié ?",style:TextStyle(
-              fontSize: 25,
-              color:AppColors.primary,
-              fontWeight: FontWeight.bold
-              )
+            SizedBox(height: height * 0.06),            
+               Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Mot de passe oublié ?",
+                  style: TextStyle(
+                    fontSize: width * 0.06,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-          ),
-          SizedBox(height: 30,),
-          Padding(padding: EdgeInsets.only(right: MediaQuery.of(context).size.width * 0.07),
-          child:Text("Entrez votre adresse email\net nous vous enverrons un lien\npour reinitialiser votre mot de passe", style: AppTextStyles.soustitre,),
-          ),
-         SizedBox(height: 20,),
-
-        TextField(
-          controller: _emailrecuperationCtrl,
-           keyboardType: TextInputType.emailAddress,
-           textInputAction: TextInputAction.next,
-          decoration: decor("Entrez votre adresse email"),
-        
-        ),
-         SizedBox(height: 20,),
-        //  CustomButton(text:"Envoyer le code",onPressed: (){
-        //    Navigator.push(context, MaterialPageRoute(builder:(context)=> CreeNouveauMotdepasse()));
-        //  },)
-        SizedBox(
-          width: double.infinity,
-          child: bouton_large( hint:"Envoyer le code",onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder:(context)=> CreeNouveauMotdepasse()));
-          },),
-        ),
+             SizedBox(height: height * 0.03),
+             Text(
+                "Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+                style: AppTextStyles.soustitre.copyWith(
+                  fontSize: width * 0.045,
+                ),
+                textAlign: TextAlign.center,
+              ),
+           SizedBox(height: height * 0.04),
           
-        ]),
+          TextField(
+            controller: _emailrecuperationCtrl,
+             keyboardType: TextInputType.emailAddress,
+             textInputAction: TextInputAction.next,
+            decoration: decor("Entrez votre adresse email"),
+          
+          ),
+            SizedBox(height: height * 0.05),
+          SizedBox(
+            width: double.infinity,
+            child: bouton_large( hint:"Envoyer le code",onPressed: (){
+              Navigator.push(context, MaterialPageRoute(builder:(context)=> CreeNouveauMotdepasse()));
+            },),
+          ),
+            
+          ]),
+        ),
       ),
     );
   }

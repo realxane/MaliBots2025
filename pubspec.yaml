@@ -46,7 +46,7 @@ dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/icon3.png" 
+  image_path: "assets/images/logo_appli.png" 
 flutter_native_splash:
   color: "#ffffff"  # couleur de fond du splash
   image: "assets/images/splashScreenNoire.jpg"  # chemin vers ton image de splash

@@ -101,7 +101,7 @@ class _LoginPageState extends State<Login> {
                   child: bouton_large(
                     hint : "se connecter",
                     onPressed : (){
-                      Navigator.pushNamed(context, AppRoutes.choixprofil);
+                      Navigator.pushNamed(context, AppRoutes.accueil);
                     }
                     )
                 ),
