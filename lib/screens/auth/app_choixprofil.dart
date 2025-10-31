@@ -71,6 +71,8 @@ class ChoixProfilPage extends StatelessWidget {
                 onTap: () {
                   // Naviguez vers l’écran vendeur
                   Navigator.of(context).pushNamed(AppRoutes.inscrire_vendeur);
+
+                  // Navigator.of(context).pushNamed('/vendeur');
                 },
               ),
             ],

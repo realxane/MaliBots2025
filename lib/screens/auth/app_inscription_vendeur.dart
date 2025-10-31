@@ -167,23 +167,89 @@ class _InscriptionVendeurPageState extends State<InscriptionVendeurPage> {
                     const SizedBox(height: 12),
 
                     // Conditions
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: _accepted,
-                          onChanged: (v) => setState(() => _accepted = v ?? false),
-                          activeColor: AppColors.textSecondary,
-                          checkColor: Colors.white,
-                          side: const BorderSide(color: AppColors.textSecondary),
-                        ),
-                        const Expanded(
-                          child: Text(
-                            "J'accepte les conditions et je m'engage",
-                            style: TextStyle(fontSize: 13, color: AppColors.primary),
+                 Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Checkbox(
+                value: _accepted,
+                onChanged: (value) async {
+                  if (value == true && !_accepted) {
+                    // Affiche la boîte de dialogue avant de cocher
+                    bool? agree = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text("Conditions d’utilisation", style: TextStyle(fontWeight: FontWeight.bold,color: AppColors.textSecondary)),
+                        content: SizedBox(
+                          height: 300,
+                          child: const SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "• Vous acceptez de fournir des informations exactes et véridiques lors de votre inscription.",
+                                  style: TextStyle(fontSize: 15, height: 1.5),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "• Vous vous engagez à respecter les règles et valeurs de la communauté Anw ka Dambe.",
+                                  style: TextStyle(fontSize: 15, height: 1.5),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "• Vous reconnaissez que toute utilisation abusive de la plateforme peut entraîner une suspension ou une suppression de votre compte.",
+                                  style: TextStyle(fontSize: 15, height: 1.5),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "• Vos données personnelles seront protégées et traitées conformément à notre politique de confidentialité.",
+                                  style: TextStyle(fontSize: 15, height: 1.5),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "• En cliquant sur « Accepter », vous confirmez avoir lu, compris et accepté l’ensemble de ces conditions.",
+                                  style: TextStyle(fontSize: 15, height: 1.5),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ],
-                    ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            style: TextButton.styleFrom(
+                              backgroundColor: AppColors.primary
+                            ),
+                            child: const Text("Refuser",style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary),
+                            child: const Text("Accepter",style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    // Si l’utilisateur accepte
+                    if (agree == true) {
+                      setState(() => _accepted = true);
+                    }
+                  } else {
+                    setState(() => _accepted = false);
+                  }
+                },
+                activeColor: Colors.brown,
+              ),
+              const Expanded(
+                child: Text(
+                  "J’accepte les conditions d’utilisation",
+                  style: TextStyle(fontSize: 14, color: Colors.brown),
+                ),
+              ),
+            ],
+          ),
+
                     const SizedBox(height: 8),
 
                     // Bouton

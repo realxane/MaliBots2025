@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_images.dart';
-
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
-import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_social.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/text_button.dart';
@@ -51,7 +49,8 @@ class _LoginPageState extends State<Login> {
                   ),
                 ),
                 const SizedBox(height: 18),
-                //champ E-mail
+
+                // Champ E-mail
                 TextField(
                   controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
@@ -60,7 +59,8 @@ class _LoginPageState extends State<Login> {
                   decoration: decor('E-mail'),
                 ),
                 const SizedBox(height: 12),
-                //champ Mot de passe
+
+                // Champ Mot de passe
                 TextField(
                   controller: _passwordCtrl,
                   obscureText: _obscure,
@@ -87,7 +87,7 @@ class _LoginPageState extends State<Login> {
                   ),
                 ),
 
-                const SizedBox(height: 4),
+                const SizedBox(height: 12),
 
                 // Bouton Connexion
                 SizedBox(
@@ -127,8 +127,8 @@ class _LoginPageState extends State<Login> {
                     Expanded(
                       child: Divider(color: Colors.grey.shade300, thickness: 1),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
                       child: Text('ou'),
                     ),
                     Expanded(
@@ -170,6 +170,7 @@ class _LoginPageState extends State<Login> {
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 24),
               ],
             ),
