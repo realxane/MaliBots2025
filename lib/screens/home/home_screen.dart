@@ -428,26 +428,26 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
 
-      // Barre de navigation inférieure
+      //Barre de navigation inférieure
 
-      // bottomNavigationBar: BottomNavigationBar(
-      //   currentIndex: _currentIndex,
-      //   onTap: (index) {
-      //     setState(() => _currentIndex = index);
-      //     if(index == 3) {
-      //       Navigator.pushNamed(context, AppRoutes.panier);
-      //     }
-      //   },
-      //   selectedItemColor: bogolan,
-      //   unselectedItemColor: Colors.brown[300],
-      //   items: const [
-      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
-      //     BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: ""),
-      //     BottomNavigationBarItem(icon: Icon(Icons.add_box), label: ""),
-      //     BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: ""),
-      //     BottomNavigationBarItem(icon: Icon(Icons.person), label: ""),
-      //   ],
-      // ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() => _currentIndex = index);
+          if(index == 3) {
+            Navigator.pushNamed(context, AppRoutes.panier);
+          }
+        },
+        selectedItemColor: bogolan,
+        unselectedItemColor: Colors.brown[300],
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
+          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: ""),
+          BottomNavigationBarItem(icon: Icon(Icons.add_box), label: ""),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: ""),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: ""),
+        ],
+      ),
     );
   }
 
