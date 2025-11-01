@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'playlist_screen.dart';
 
 const Color bogolan = Color(0xFF7B3F00);
-const Color background = Color(0xFFD2B48C);
+// const Color background = Color(0xFFD2B48C);
+const Color background = Colors.white;
 
 class MusiqueScreen extends StatefulWidget {
   const MusiqueScreen({super.key});

@@ -1,6 +1,7 @@
 // lib/screens/seller_dashboard.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
 import 'produit.dart';
 import 'modifie_produit.dart';
 
@@ -275,7 +276,7 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text('Tableau de bord', style: titleStyle),
+        title: Text('Tableau de bord', style: AppTextStyles.titre1),
         centerTitle: true,
       ),
       body: Padding(
@@ -346,7 +347,10 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Ajouter un produit'),
+                child: const Text(
+                  'Ajouter un produit',
+                  style: AppTextStyles.button,
+                ),
               ),
             ),
           ],

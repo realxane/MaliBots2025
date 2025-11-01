@@ -2,6 +2,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
 import 'package:uuid/uuid.dart';
 import 'produit.dart';
 
@@ -313,7 +314,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                       onPressed: _submit,
                       child: Text(
                         isEdit ? 'Mettre à jour' : 'Publier',
-                        style: const TextStyle(fontSize: 16),
+                        style: AppTextStyles.button,
                       ),
                     ),
                   ),
