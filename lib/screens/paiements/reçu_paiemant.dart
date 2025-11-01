@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_images.dart';
+import 'package:malibots_challenge_eni/routes/app_routes.dart';
 
 
 class ReceiptPage extends StatelessWidget {
@@ -66,6 +67,7 @@ class ReceiptPage extends StatelessWidget {
             // Bouton "Fermer"
             ElevatedButton(
               onPressed: () {
+                Navigator.pushNamed(context, AppRoutes.accueil);
                 // Logique pour fermer la page (ex: Navigator.pop(context))
               },
               style: ElevatedButton.styleFrom(
