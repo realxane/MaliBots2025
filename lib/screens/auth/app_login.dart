@@ -31,10 +31,7 @@ class _LoginPageState extends State<Login> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Image.asset(
-                  AppImages.logo, 
-                  height: 64,
-                ),
+                Image.asset(AppImages.logo, height: 64),
                 const SizedBox(height: 16),
 
                 Text(
@@ -83,10 +80,10 @@ class _LoginPageState extends State<Login> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: text_bouton(
-                    hint : "Mot de passe oublié ?",
+                    hint: "Mot de passe oublié ?",
                     onPressed: () {
                       Navigator.pushNamed(context, AppRoutes.forgotPassword);
-                    }
+                    },
                   ),
                 ),
 
@@ -96,10 +93,10 @@ class _LoginPageState extends State<Login> {
                 SizedBox(
                   width: double.infinity,
                   child: bouton_large(
-                    hint : "se connecter",
-                    onPressed : () {
+                    hint: "se connecter",
+                    onPressed: () {
                       // Navigator.pushNamed(context, AppRoutes.choixprofil);
-                    }
+                    },
                   ),
                 ),
 
@@ -109,12 +106,15 @@ class _LoginPageState extends State<Login> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Vous n'avez pas de compte ?", style: AppTextStyles.body),
+                    const Text(
+                      "Vous n'avez pas de compte ?",
+                      style: AppTextStyles.body,
+                    ),
                     text_bouton(
                       hint: "S'inscrire",
                       onPressed: () {
                         Navigator.pushNamed(context, AppRoutes.choixprofil);
-                      }
+                      },
                     ),
                   ],
                 ),

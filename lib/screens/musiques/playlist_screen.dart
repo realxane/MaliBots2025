@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'music_player_screen.dart';
 
 const Color bogolan = Color(0xFF7B3F00);
-const Color background = Color(0xFFD2B48C);
+//const Color background = Color(0xFFD2B48C);
+const Color background = Colors.white;
 
 class PlaylistScreen extends StatefulWidget {
   final String categoryType;
@@ -145,7 +147,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
 
       body: Column(
         children: [
-          // ✅ Barre de recherche
+          //  Barre de recherche
           Padding(
             padding: const EdgeInsets.all(12),
             child: TextField(
@@ -153,7 +155,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                 hintText: "Rechercher artiste ou titre...",
                 prefixIcon: const Icon(Icons.search),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: AppColors.textfieldcolor,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,

@@ -1,8 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:malibots_challenge_eni/routes/app_routes.dart';
+import 'package:malibots_challenge_eni/screens/home/vendeurpages/vendeur_dashboard.dart';
 import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+
+class MainScreen extends StatefulWidget {
+  @override
+  _MainScreenState createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  final Color bogolan = const Color(0xFF7B3F00); // couleur bogolan
+  int _currentIndex = 0;
+  final pages = [
+    HomeScreen(),
+    HomeScreen(),
+    HomeScreen(),
+    HomeScreen(),
+    HomeScreen(),
+    SellerDashboardScreen(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: pages[_currentIndex], // ✅ afficher la page sélectionnée
+
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() => _currentIndex = index);
+          if(index == 3) {
+            Navigator.pushNamed(context, AppRoutes.panier);
+          }
+        },
+        selectedItemColor: bogolan, // ta couleur
+        unselectedItemColor: Colors.brown[300],
+        type: BottomNavigationBarType.fixed, // ✅ Important si + de 3 items
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),
+          BottomNavigationBarItem(icon: Icon(Icons.store), label: "Boutique"),
+          BottomNavigationBarItem(icon: Icon(Icons.add_box), label: "Ajouter"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: "Panier",
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: "Dashboard",
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,6 +68,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final Color bogolan = const Color(0xFF7B3F00); // couleur bogolan
   int _currentIndex = 0;
+  // final pages = [HomeScreen(),SellerDashboardScreen()];
 
   // Citations du jour
   final List<String> citations = [
@@ -110,7 +165,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       right: 10,
                       child: GestureDetector(
                         onTap: () {
-                          // Action "Découvrir"
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.catalogue,
+                            arguments: 'Types',
+                          );
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -152,8 +211,20 @@ class _HomeScreenState extends State<HomeScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildCategory(MdiIcons.tshirtV, "Tenues", () {}),
-                  _buildCategory(Icons.restaurant, "Plats", () {}),
+                  _buildCategory(MdiIcons.tshirtV, "Tenues", () {
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.catalogue,
+                      arguments: 'Tenues',
+                    );
+                  }),
+                  _buildCategory(Icons.restaurant, "Plats", () {
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.catalogue,
+                      arguments: 'Plats',
+                    );
+                  }),
                   _buildCategory(Iconsax.music, "Musique", () {
                     Navigator.push(
                       context,
@@ -164,7 +235,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   }),
                   _buildCategory(Iconsax.story, "Contes", () {}),
-                  _buildCategory(Iconsax.shopping_bag, "Accessoires", () {}),
+                  _buildCategory(Iconsax.shopping_bag, "Accessoires", () {
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.catalogue,
+                      arguments: 'Accessoires',
+                    );
+                  }),
                 ],
               ),
             ),
@@ -352,21 +429,25 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
 
       // Barre de navigation inférieure
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() => _currentIndex = index);
-        },
-        selectedItemColor: bogolan,
-        unselectedItemColor: Colors.brown[300],
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
-          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: ""),
-          BottomNavigationBarItem(icon: Icon(Icons.add_box), label: ""),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: ""),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: ""),
-        ],
-      ),
+
+      // bottomNavigationBar: BottomNavigationBar(
+      //   currentIndex: _currentIndex,
+      //   onTap: (index) {
+      //     setState(() => _currentIndex = index);
+      //     if(index == 3) {
+      //       Navigator.pushNamed(context, AppRoutes.panier);
+      //     }
+      //   },
+      //   selectedItemColor: bogolan,
+      //   unselectedItemColor: Colors.brown[300],
+      //   items: const [
+      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
+      //     BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: ""),
+      //     BottomNavigationBarItem(icon: Icon(Icons.add_box), label: ""),
+      //     BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: ""),
+      //     BottomNavigationBarItem(icon: Icon(Icons.person), label: ""),
+      //   ],
+      // ),
     );
   }
 

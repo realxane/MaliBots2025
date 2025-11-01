@@ -42,14 +42,19 @@ dependencies:
   material_design_icons_flutter: ^7.0.7296
   audioplayers: ^6.5.1
 
+  provider: ^6.1.5+1
+  google_fonts: ^6.3.2
+  image_picker: ^1.2.0
+  uuid: ^4.2.1
+
 
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/icon3.png" 
+  image_path: "assets/images/logo_appli.png" 
 flutter_native_splash:
   color: "#ffffff"  # couleur de fond du splash
-  image: "assets/images/splashScreenNoire.jpg"  # chemin vers ton image de splash
+  image: "assets/images/splashScreenNoire.png"  # chemin vers ton image de splash
   android: true
   ios: true
 
@@ -79,6 +84,7 @@ flutter:
   assets:
 
     - assets/images/
+    - assets/images/produits/
     - assets/images/Acceuil/
     - assets/images/artistes/
     - assets/musics/bambara/
@@ -87,6 +93,7 @@ flutter:
     - assets/musics/dogon/
     - assets/musics/soninke/
     - assets/musics/senoufu/
+    
 
 
   # fonts:

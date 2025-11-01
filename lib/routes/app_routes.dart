@@ -23,4 +23,10 @@ class AppRoutes {
   //page authentification google,apple
   static const String authGoogleApple = '/auth_google_apple';
 
+  //page catalogue
+  static const String catalogue = '/catalogue';
+  //page panier
+  static const String panier = '/panier';
+
+
 }
