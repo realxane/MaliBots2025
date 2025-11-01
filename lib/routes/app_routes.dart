@@ -27,6 +27,8 @@ class AppRoutes {
   static const String catalogue = '/catalogue';
   //page panier
   static const String panier = '/panier';
+  //page admin dashboard
+  static const String admin_dash = '/admin_dashboard';
   //page choix mode payement
   static const String choixmodepayemnt = '/choix_mode_payement';
 

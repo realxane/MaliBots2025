@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/data/list_product.dart';
 import 'package:malibots_challenge_eni/providers/favoris_store.dart';
 import 'package:malibots_challenge_eni/providers/product_store.dart';
+import 'package:malibots_challenge_eni/screens/admins/app_admin_dashboard.dart';
 
 import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart';
 import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
@@ -55,6 +56,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Anw ka Dambe',
       initialRoute: AppRoutes.onboarding,
+      // initialRoute: AppRoutes.admin_dash,
       routes: {
         AppRoutes.accueil: (context) => const HomeScreen(),
         //AppRoutes.accueil: (context) => MainScreen(),
@@ -70,6 +72,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.musique: (context) => const MusiqueScreen(),
         AppRoutes.catalogue: (context) => const CatalogScreen(),
         AppRoutes.panier: (context) => const CartPage(),
+        AppRoutes.admin_dash: (context) => const AdminDashboardPage(),
         AppRoutes.choixmodepayemnt: (context) => const PaymentScreen(),
 
         // '/onboarding': (context) => const OnboardingScreen(),
