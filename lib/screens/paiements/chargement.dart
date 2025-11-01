@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
-import 'package:malibots_challenge_eni/screens/home/paiements/re%C3%A7u_paiemant.dart';
+import 'package:malibots_challenge_eni/screens/paiements/re%C3%A7u_paiemant.dart';
 
 class PaymentProcessingScreen extends StatelessWidget {
   final double totalAmount;

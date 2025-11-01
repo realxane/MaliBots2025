@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
-import 'package:malibots_challenge_eni/screens/home/paiements/chargement.dart';
+import 'package:malibots_challenge_eni/screens/paiements/chargement.dart';
 
 class OrangeMoneyPaymentPage extends StatefulWidget {
   final int montant;

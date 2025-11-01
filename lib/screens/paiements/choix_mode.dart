@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
-import 'package:malibots_challenge_eni/screens/home/paiements/orange.dart';
-import 'package:malibots_challenge_eni/screens/home/paiements/wave.dart';
+import 'package:malibots_challenge_eni/screens/paiements/orange.dart';
+import 'package:malibots_challenge_eni/screens/paiements/wave.dart';
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
