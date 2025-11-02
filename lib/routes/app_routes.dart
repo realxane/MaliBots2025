@@ -34,6 +34,14 @@ class AppRoutes {
   static const String admin_dash = '/admin_dashboard';
   //page choix mode payement
   static const String choixmodepayemnt = '/choix_mode_payement';
-
-
+  //page admin liste users
+  static const String adminListeUsers = '/admin_liste_users';
+  //page admin liste vendeurs
+  static const String adminListeVendeurs = '/admin_liste_vendeurs';
+  //page admin liste produits
+  static const String adminListeProduits = '/admin_liste_produits';
+  //page admin liste commandes
+  static const String adminListeCultures = '/admin_liste_cultures';
+  //page admin profil
+  static const String adminprofile = '/adminprofile';
 }
