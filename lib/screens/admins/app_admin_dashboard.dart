@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/models/product.dart';
+import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/admins/app_approbation_produit.dart';
+import 'package:malibots_challenge_eni/screens/admins/app_liste_users.dart';
+import 'package:malibots_challenge_eni/screens/admins/app_liste_vendeurs.dart';
 
 // Couleur thème locale
 final Color _brown = AppColors.textSecondary;
@@ -86,6 +89,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         ),
       ];
 
+      final List<Widget> _pages = const [
+        UserListPage(),
+        VendeursListePage(),
+      ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,7 +106,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, 
+        children: [
           _chipHeader(),
           const SizedBox(height: 16),
           Row(children: [
@@ -125,9 +134,18 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           for (final a in _activities) _activityItem(a),
         ]),
       ),
+       
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,
-        onTap: (i) => setState(() => _index = i),
+        onTap: (i) {
+        setState(() => _index = i);
+        if(i==0){Navigator.pushNamed(context, AppRoutes.admin_dash);}
+        if(i==1){Navigator.pushNamed(context, AppRoutes.adminListeUsers);}
+        if(i==2){Navigator.pushNamed(context, AppRoutes.adminListeVendeurs);}
+        if(i==3){Navigator.pushNamed(context, AppRoutes.adminListeProduits);}
+        if(i==4){Navigator.pushNamed(context, AppRoutes.adminListeCultures);}
+
+        },
         showSelectedLabels: false,
         showUnselectedLabels: false,
         type: BottomNavigationBarType.fixed,
@@ -135,6 +153,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         selectedItemColor: _brown,
         unselectedItemColor: _brown.withOpacity(.5),
         items: const [
+          BottomNavigationBarItem(icon: Text('D', style: TextStyle(fontSize: 18)), label: ''),
           BottomNavigationBarItem(icon: Text('U', style: TextStyle(fontSize: 18)), label: ''),
           BottomNavigationBarItem(icon: Text('V', style: TextStyle(fontSize: 18)), label: ''),
           BottomNavigationBarItem(icon: Text('P', style: TextStyle(fontSize: 18)), label: ''),

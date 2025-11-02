@@ -3,6 +3,10 @@ import 'package:malibots_challenge_eni/data/list_product.dart';
 import 'package:malibots_challenge_eni/providers/favoris_store.dart';
 import 'package:malibots_challenge_eni/providers/product_store.dart';
 import 'package:malibots_challenge_eni/screens/admins/app_admin_dashboard.dart';
+import 'package:malibots_challenge_eni/screens/admins/app_liste_culture.dart';
+import 'package:malibots_challenge_eni/screens/admins/app_liste_produits.dart';
+import 'package:malibots_challenge_eni/screens/admins/app_liste_users.dart';
+import 'package:malibots_challenge_eni/screens/admins/app_liste_vendeurs.dart';
 
 import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart';
 import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
@@ -55,8 +59,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Anw ka Dambe',
-      initialRoute: AppRoutes.onboarding,
+      //initialRoute: AppRoutes.onboarding,
       // initialRoute: AppRoutes.admin_dash,
+      initialRoute: AppRoutes.admin_dash,
+      
       routes: {
         AppRoutes.accueil: (context) => const HomeScreen(),
         //AppRoutes.accueil: (context) => MainScreen(),
@@ -74,6 +80,10 @@ class MyApp extends StatelessWidget {
         AppRoutes.panier: (context) => const CartPage(),
         AppRoutes.admin_dash: (context) => const AdminDashboardPage(),
         AppRoutes.choixmodepayemnt: (context) => const PaymentScreen(),
+        AppRoutes.adminListeUsers: (context) => const UserListPage(),
+        AppRoutes.adminListeVendeurs: (context) => const VendeursListePage(),
+        AppRoutes.adminListeProduits: (context) => const ProduitsListePage(),
+        AppRoutes.adminListeCultures: (context) => const CulturesListePage(),
 
         // '/onboarding': (context) => const OnboardingScreen(),
         // '/home': (context) => const HomeScreen(),
