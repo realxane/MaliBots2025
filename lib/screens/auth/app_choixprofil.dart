@@ -45,6 +45,7 @@ class ChoixProfilPage extends StatelessWidget {
               Text('Choisissez votre profil', style: AppTextStyles.soustitre),
               const SizedBox(height: 20),
 
+
               // Carte Acheteur/Curieux culturel
               ProfileOptionCard(
                 color: AppColors.textSecondary,

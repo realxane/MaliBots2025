@@ -93,9 +93,10 @@ class _LoginPageState extends State<Login> {
                 SizedBox(
                   width: double.infinity,
                   child: bouton_large(
+
                     hint: "se connecter",
                     onPressed: () {
-                      // Navigator.pushNamed(context, AppRoutes.choixprofil);
+                      Navigator.pushNamed(context, AppRoutes.choixprofil);
                     },
                   ),
                 ),
