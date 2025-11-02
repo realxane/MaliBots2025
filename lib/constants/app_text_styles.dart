@@ -25,7 +25,7 @@ class AppTextStyles {
   // Texte normal
   static const TextStyle body = TextStyle(
     fontSize: 16,
-    color: AppColors.textPrimary,
+    color: AppColors.primary,
   );
 
   // Boutons

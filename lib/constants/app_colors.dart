@@ -4,6 +4,7 @@ class AppColors {
   // Couleurs principales
   static const Color primary =  Color.fromRGBO(140, 63, 46, 1); // chocolat-marron
   // static const Color primary = Color(0xFF7B3F00);
+
   // static const Color primary = Color.fromARGB(
   //   183,
   //   164,

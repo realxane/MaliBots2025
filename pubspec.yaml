@@ -36,12 +36,16 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_launcher_icons: ^0.14.4
   flutter_native_splash: ^2.4.7
+  font_awesome_flutter: ^10.12.0
   iconsax: ^0.0.8
   carousel_slider: ^5.1.1
   material_design_icons_flutter: ^7.0.7296
   audioplayers: ^6.5.1
 
-  font_awesome_flutter: ^10.12.0
+  provider: ^6.1.5+1
+  google_fonts: ^6.3.2
+  image_picker: ^1.2.0
+  uuid: ^4.2.1
 
 
 flutter_icons:
@@ -50,7 +54,7 @@ flutter_icons:
   image_path: "assets/images/logo_appli.png" 
 flutter_native_splash:
   color: "#ffffff"  # couleur de fond du splash
-  image: "assets/images/splashScreenNoire.jpg"  # chemin vers ton image de splash
+  image: "assets/images/splashScreenNoire.png"  # chemin vers ton image de splash
   android: true
   ios: true
 
@@ -80,9 +84,8 @@ flutter:
   assets:
 
     - assets/images/
+    - assets/images/produits/
     - assets/images/Acceuil/
-
-
     - assets/images/artistes/
     - assets/musics/bambara/
     - assets/musics/songhoy/
@@ -90,11 +93,9 @@ flutter:
     - assets/musics/dogon/
     - assets/musics/soninke/
     - assets/musics/senoufu/
+    
 
 
-
-
-   
   # fonts:
   #   - family: Schyler
   #     fonts:

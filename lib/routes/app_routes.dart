@@ -5,8 +5,14 @@ class AppRoutes {
   static const String connecter = '/connexion';
   //page s'inscrire
   static const String inscrire = '/inscription';
+  //page s'inscrire vendeur
+  static const String inscrire_vendeur = '/inscription_vendeur';
   //page mot de passe oublié ?
   static const String forgotPassword = '/mot_de_passe_oublié';
+  //page nouveau mot de passe
+  static const String newPassword = '/nouveau_mot_de_passe';
+  //page musique
+  static const String musique = '/musiqueScreen';
   //page accueil
   static const String accueil = '/accueil';
   //page profil
@@ -19,5 +25,13 @@ class AppRoutes {
 
   //page authentification google,apple
   static const String authGoogleApple = '/auth_google_apple';
+
+  //page catalogue
+  static const String catalogue = '/catalogue';
+  //page panier
+  static const String panier = '/panier';
+  //page choix mode payement
+  static const String choixmodepayemnt = '/choix_mode_payement';
+
 
 }

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
+import 'package:malibots_challenge_eni/constants/app_images.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
+import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
 // import 'package:malibots_challenge_eni/widgets/custum_button.dart';
 // import 'package:malibots_challenge_eni/widgets/custum_textfileid.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
+import 'package:malibots_challenge_eni/widgets/buttons/bouton_retour.dart';
 
 
 import 'package:malibots_challenge_eni/widgets/text_fields/text_field_decor.dart';
@@ -20,7 +23,14 @@ class MotDePasseOublie extends StatelessWidget {
    final width = taill_sreen.width;
     final height = taill_sreen.height;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        elevation: 0,
+        leading: Navigator.canPop(context)
+            ? fleche_retour(onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.connecter);
+            })
+            : null,
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(
@@ -32,6 +42,7 @@ class MotDePasseOublie extends StatelessWidget {
             SizedBox(height: height * 0.05),            
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
+
               children: [
                 Container(
                  height: height * 0.12,
@@ -40,7 +51,7 @@ class MotDePasseOublie extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Image.asset(  
-                    "assets/images/icone.jpeg",),
+                    AppImages.logo, height: 64,),
                 ),
                   SizedBox(width: width * 0.03),
                   Column(
@@ -81,6 +92,7 @@ class MotDePasseOublie extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
            SizedBox(height: height * 0.04),
+
           
           TextField(
             controller: _emailrecuperationCtrl,

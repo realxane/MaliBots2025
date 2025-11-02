@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:malibots_challenge_eni/constants/app_colors.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
   final List<Map<String, String>> tracks;
@@ -79,10 +80,10 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
     final track = widget.tracks[index];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFD2B48C),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: const Color(0xFFD2B48C), //0xFFF2E9D0
+        backgroundColor: AppColors.background, //const Color(0xFFD2B48C),
         title: Text(
           track['title']!,
           style: const TextStyle(
