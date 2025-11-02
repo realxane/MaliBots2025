@@ -1,22 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
-import 'package:malibots_challenge_eni/screens/paiements/re%C3%A7u_paiemant.dart';
+import 'package:malibots_challenge_eni/screens/paiements/reçu_paiemant.dart';
 
-class PaymentProcessingScreen extends StatelessWidget {
+class PaymentProcessingScreen extends StatefulWidget {
   final double totalAmount;
 
   const PaymentProcessingScreen({super.key, required this.totalAmount});
 
   @override
-  Widget build(BuildContext context) {
+  State<PaymentProcessingScreen> createState() => _PaymentProcessingScreenState();
+}
 
+class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Redirection automatique après 10 secondes
+    Future.delayed(const Duration(seconds: 7), () {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ReceiptPage()),
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.grid_view, size: 30),
           onPressed: () {},
         ),
-        title: const Text('Paiement', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Paiement',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         actions: [
           IconButton(
@@ -59,7 +81,6 @@ class PaymentProcessingScreen extends StatelessWidget {
               style: TextStyle(
                 color: AppColors.primary,
                 fontSize: 18,
-    
               ),
               textAlign: TextAlign.center,
             ),
@@ -67,14 +88,14 @@ class PaymentProcessingScreen extends StatelessWidget {
 
             // Montant
             Text(
-              'Total: ${totalAmount.toStringAsFixed(0)} F',
+              'Total: ${widget.totalAmount.toStringAsFixed(0)} F',
               style: const TextStyle(
                 color: AppColors.primary,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-         SizedBox(height: 30),
+            const SizedBox(height: 30),
 
             // Boutons centrés
             ElevatedButton(
@@ -96,14 +117,10 @@ class PaymentProcessingScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 15),
+
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          ReceiptPage()));
-                // Action Aide
+                
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
@@ -116,7 +133,7 @@ class PaymentProcessingScreen extends StatelessWidget {
               ),
               child: const Text(
                 'Aide',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,color: Colors.white),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
           ],
