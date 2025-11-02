@@ -40,6 +40,12 @@ class ProductDetailPage extends StatefulWidget {
 }
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
+  Widget _buildImage(String path) {
+    final widget = path.startsWith('http')
+        ? Image.network(path, fit: BoxFit.cover, width: double.infinity)
+        : Image.asset(path, fit: BoxFit.cover, width: double.infinity);
+    return widget;
+  }
   int _currentImage = 0;
   Color? _selectedColor;
 
@@ -220,14 +226,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 alignment: Alignment.bottomCenter,
                 children: [
                   CarouselSlider(
-                    items: _images.map((assetPath) {
+                    items: _images.map((imgPath) {
                       return ClipRRect(
                         borderRadius: BorderRadius.circular(6),
-                        child: Image.asset(
-                          assetPath,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                        ),
+                        child: _buildImage(imgPath)
                       );
                     }).toList(),
                     options: CarouselOptions(

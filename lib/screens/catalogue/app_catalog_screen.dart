@@ -3,6 +3,7 @@ import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/data/list_product.dart';
 import 'package:malibots_challenge_eni/models/product.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
+import 'package:malibots_challenge_eni/screens/catalogue/app_panier.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_produit_detail.dart';
 import 'package:malibots_challenge_eni/widgets/product_card.dart';
 import 'package:malibots_challenge_eni/widgets/text_fields/text_field_decor.dart';
@@ -177,25 +178,43 @@ class _CatalogScreenState extends State<CatalogScreen> {
                     mainAxisSpacing: 12,
                     childAspectRatio: 0.75,
                   ),
-                  itemBuilder: (_, i) => ProductCard(
-                    product: filtered[i],
-                    onAdd: () {
-                      // action à définir (ex: ajouter au panier)
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${filtered[i].name} ajouté.')),
-                      );
-                    },
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ProductDetailPage(
-                            product: filtered[i],
+                  itemBuilder: (_, i) {
+                    final p = filtered[i];
+                    return ProductCard(
+                      product: p,
+                      onAdd: () {
+                        // Ajout au panier
+                        CartController.I.addItem(
+                          productId: p.id,
+                          name: p.name,
+                          color: null, // pas de choix couleur ici
+                          price: p.price,
+                          assetImagePath: p.imageUrl, // marche pour asset; si URL, voir note bonus
+                          qty: 1,
+                        );
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${p.name} ajouté au panier'),
+                            action: SnackBarAction(
+                              label: 'Voir',
+                              onPressed: () {
+                                Navigator.pushNamed(context, AppRoutes.panier);
+                              },
+                            ),
                           ),
-                        ),
-                      );
-                        },
-                  ),
+                        );
+                      },
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ProductDetailPage(product: p),
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ],
@@ -204,6 +223,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
       ),
     );
   }
+
+
+  
 
   // Bouton "chip" + Dropdown
   Widget _buildFilter(
