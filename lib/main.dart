@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/data/list_product.dart';
 import 'package:malibots_challenge_eni/providers/favoris_store.dart';
 import 'package:malibots_challenge_eni/providers/product_store.dart';
+import 'package:malibots_challenge_eni/screens/admins/drawerpage.dart';
 
 import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart';
 import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
@@ -65,24 +66,10 @@ class MyApp extends StatelessWidget {
       title: 'Anw ka Dambe',
       initialRoute: AppRoutes.onboarding,
       routes: {
-        // '/onboarding': (context) => const OnboardingScreen(),
-        // '/connexion':(context) => const Login(),
-        // '/accueil': (context) => const HomeScreen(),
-        // '/login': (context) => const Login(),
-        // // '/cree_nouveau_motdepasse': (context) =>  CreeNouveauMotDePasse(),
-        // '/mot_de_passe_oublié': (context) =>  MotDePasseOublie(),
-        // '/choix_profil': (context) => const ChoixProfilPage(),
-        // '/profilVendeur':(context) => const ProfileScrennVendeur(),
-        // '/profilUser': (context) => const ProfileScreenUser(),
-        // // '/app_google_apple': (context) => const AppGoogleApple(),
-        // '/home': (context) => const HomeScreen(),
-        // '/musiqueScreen': (context) => const MusiqueScreen(),
-      
-      // home:ProfileScreenUser(),
-      // home: ProfileScrennVendeur(),
-        AppRoutes.accueil: (context) => const HomeScreen(),
-        //AppRoutes.accueil: (context) => MainScreen(),
-        //AppRoutes.accueil: (context) => const HomeScreen(),
+        
+     
+        AppRoutes.accueil: (context) => MainScreen(),
+        // AppRoutes.accueil: (context) => const HomeScreen(),
         AppRoutes.onboarding: (context) => const OnboardingScreen(),
         AppRoutes.choixprofil: (context) => const ChoixProfilPage(),
         AppRoutes.connecter: (context) => const Login(),
@@ -96,12 +83,12 @@ class MyApp extends StatelessWidget {
         AppRoutes.panier: (context) => const CartPage(),
         AppRoutes.choixmodepayemnt: (context) => const PaymentScreen(),
 
-        // '/onboarding': (context) => const OnboardingScreen(),
-        // '/home': (context) => const HomeScreen(),
+       
       },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
+      // home:MonDrawer() ,
     );
   }
 }
