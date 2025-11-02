@@ -57,6 +57,7 @@ class MyApp extends StatelessWidget {
       title: 'Anw ka Dambe',
       initialRoute: AppRoutes.onboarding,
       // initialRoute: AppRoutes.admin_dash,
+      // initialRoute: AppRoutes.choixmodepayemnt,
       routes: {
         AppRoutes.accueil: (context) => const HomeScreen(),
         //AppRoutes.accueil: (context) => MainScreen(),
