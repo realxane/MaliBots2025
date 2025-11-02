@@ -159,29 +159,24 @@ class _InscriptionPageState extends State<InscriptionPage> {
                    
                  Center(
                       child: Row(
-                        children: [
-                          Wrap(
-                            spacing: 20,
-                            runSpacing: 20,
-                            children: _cultureOptions.map((option) {
-                              final isSelected = _selectedCultures.contains(option);
-                              return _buildCultureChip(
-                                option,
-                                isSelected,
-                                () {
-                                  setState(() {
-                                    if (isSelected) {
-                                      _selectedCultures.remove(option);
-                                    } else {
-                                      _selectedCultures.add(option);
-                                    }
-                                  });
-                                },
-                              AppColors.primary,
-                              );
-                            }).toList(),
-                          ),
-                        ],
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: _cultureOptions.map((option) {
+                          final isSelected = _selectedCultures.contains(option);
+                          return _buildCultureChip(
+                            option,
+                            isSelected,
+                            () {
+                              setState(() {
+                                if (isSelected) {
+                                  _selectedCultures.remove(option);
+                                } else {
+                                  _selectedCultures.add(option);
+                                }
+                              });
+                            },
+                          AppColors.primary,
+                          );
+                        }).toList(),
                       ),
                     ),
 
