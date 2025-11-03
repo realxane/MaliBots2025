@@ -16,8 +16,8 @@ import 'package:malibots_challenge_eni/screens/onboarding/onboarding_screen.dart
 // import 'screens/home_screen.dart';
 
 import 'package:malibots_challenge_eni/screens/auth/app_google_apple.dart';
-import 'package:malibots_challenge_eni/screens/profile/profile_screen_user.dart';
-import 'package:malibots_challenge_eni/screens/profile/profile_screnn_vendeur.dart';
+import 'package:malibots_challenge_eni/screens/profile/modification_page.dart';
+import 'package:malibots_challenge_eni/screens/profile/App_profil.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
@@ -64,7 +64,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Anw ka Dambe',
-      initialRoute: AppRoutes.onboarding,
+      initialRoute: AppRoutes.profil,
       routes: {
         
      
@@ -82,6 +82,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.catalogue: (context) => const CatalogScreen(),
         AppRoutes.panier: (context) => const CartPage(),
         AppRoutes.choixmodepayemnt: (context) => const PaymentScreen(),
+        AppRoutes.profil: (context) => const AppProfil(),
 
        
       },

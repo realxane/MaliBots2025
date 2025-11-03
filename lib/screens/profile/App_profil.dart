@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
 import 'package:malibots_challenge_eni/screens/profile/articles.dart';
+import 'package:malibots_challenge_eni/screens/profile/modification_page.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/text_button.dart';
 
-class ProfileScrennVendeur extends StatefulWidget {
-  const ProfileScrennVendeur({super.key});
+class AppProfil extends StatefulWidget {
+  const AppProfil({super.key});
 
   @override
-  State<ProfileScrennVendeur> createState() => _ProfileScrennVendeurState();
+  State<AppProfil> createState() => _AppProfilState();
 }
- class _ProfileScrennVendeurState extends State<ProfileScrennVendeur> {
+ class _AppProfilState extends State<AppProfil> {
   final List<Articles> articles = [
   Articles(nom: "chemise en bogolan",
    imagepath: "assets/images/chemise.png",
@@ -46,7 +47,26 @@ class ProfileScrennVendeur extends StatefulWidget {
               SizedBox(height: 15,),
               
               Text("Youssouf Guindo",style: AppTextStyles.titre1),
-               Text("@Faso den gnouma",style: AppTextStyles.soustitre),
+               Row(
+                 mainAxisAlignment: MainAxisAlignment.center,
+                 children: [
+                   Text("@Faso den gnouma",style: AppTextStyles.soustitre),
+                   SizedBox(width: 10,),
+                   GestureDetector(
+                     onTap: (
+                      
+                     ){
+              Navigator.push(context, MaterialPageRoute(builder:(context)=> ModificationPage()));
+                      
+
+                     },
+                     child: Icon( 
+                      Icons.edit,
+                      color: AppColors.textfieldcolor,
+                     ),)
+                 ],
+                 
+               ),
                SizedBox(height: 20,),
                Align(
                 alignment: Alignment.centerLeft,
@@ -73,14 +93,6 @@ class ProfileScrennVendeur extends StatefulWidget {
               const Divider(color: AppColors.textfieldcolor,),
               _buildInfoRow("Ville :", "koulikoro"),
               const Divider(color: AppColors.textfieldcolor,),
-             
-                const SizedBox(height: 25),
-                SizedBox(
-                  width: double.infinity,
-                  child: bouton_large(
-                    hint: "Modifier mon profil",
-                    onPressed: (){},
-                  ),),
               const SizedBox(height: 25),
                Align(
                 alignment: Alignment.centerLeft,
