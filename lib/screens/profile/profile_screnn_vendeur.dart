@@ -46,7 +46,18 @@ class ProfileScrennVendeur extends StatefulWidget {
               SizedBox(height: 15,),
               
               Text("Youssouf Guindo",style: AppTextStyles.titre1),
-               Text("@Faso den gnouma",style: AppTextStyles.soustitre),
+               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                 children: [
+                   Text("@Faso den gnouma",style: AppTextStyles.soustitre),
+                   GestureDetector(
+                     onTap: (){},
+                     child: Icon( 
+                      Icons.edit,
+                      color: AppColors.textfieldcolor,
+                     ),)
+                 ],
+               ),
                SizedBox(height: 20,),
                Align(
                 alignment: Alignment.centerLeft,
@@ -73,14 +84,6 @@ class ProfileScrennVendeur extends StatefulWidget {
               const Divider(color: AppColors.textfieldcolor,),
               _buildInfoRow("Ville :", "koulikoro"),
               const Divider(color: AppColors.textfieldcolor,),
-             
-                const SizedBox(height: 25),
-                SizedBox(
-                  width: double.infinity,
-                  child: bouton_large(
-                    hint: "Modifier mon profil",
-                    onPressed: (){},
-                  ),),
               const SizedBox(height: 25),
                Align(
                 alignment: Alignment.centerLeft,

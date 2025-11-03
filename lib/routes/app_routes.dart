@@ -19,8 +19,7 @@ class AppRoutes {
   static const String profil = '/profil';
   //page choix profil
   static const String choixprofil = '/choix_profil';
-  static const String profilUser='/profilUser';
-  static const String profilVendeur='/profilVendeur';
+  
 
 
   //page authentification google,apple
