@@ -144,20 +144,22 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         if(i==2){Navigator.pushNamed(context, AppRoutes.adminListeVendeurs);}
         if(i==3){Navigator.pushNamed(context, AppRoutes.adminListeProduits);}
         if(i==4){Navigator.pushNamed(context, AppRoutes.adminListeCultures);}
+        if(i==5){Navigator.pushNamed(context, AppRoutes.adminprofile);}
 
         },
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
+        // showSelectedLabels: true,
+        // showUnselectedLabels: false,
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         selectedItemColor: _brown,
         unselectedItemColor: _brown.withOpacity(.5),
         items: const [
-          BottomNavigationBarItem(icon: Text('D', style: TextStyle(fontSize: 18)), label: ''),
-          BottomNavigationBarItem(icon: Text('U', style: TextStyle(fontSize: 18)), label: ''),
-          BottomNavigationBarItem(icon: Text('V', style: TextStyle(fontSize: 18)), label: ''),
-          BottomNavigationBarItem(icon: Text('P', style: TextStyle(fontSize: 18)), label: ''),
-          BottomNavigationBarItem(icon: Text('C', style: TextStyle(fontSize: 18)), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Accueil'),
+          BottomNavigationBarItem(icon: Icon(Icons.supervised_user_circle), label: 'Users'),
+          BottomNavigationBarItem(icon: Icon(Icons.sell_rounded), label: 'Vendeurs'),
+          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Produits'),
+          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Contenus'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
         ],
       ),
     );

@@ -19,6 +19,9 @@ class AppRoutes {
   static const String profil = '/profil';
   //page choix profil
   static const String choixprofil = '/choix_profil';
+  static const String profilUser='/profilUser';
+  static const String profilVendeur='/profilVendeur';
+
 
   //page authentification google,apple
   static const String authGoogleApple = '/auth_google_apple';
@@ -39,4 +42,6 @@ class AppRoutes {
   static const String adminListeProduits = '/admin_liste_produits';
   //page admin liste commandes
   static const String adminListeCultures = '/admin_liste_cultures';
+  //page admin profil
+  static const String adminprofile = '/adminprofile';
 }
