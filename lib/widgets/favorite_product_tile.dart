@@ -8,12 +8,16 @@ class FavoriteProductTile extends StatelessWidget {
   final VoidCallback onToggleFavorite;
   final bool isFavorite;
 
+  // NEW: callback de tap sur l’item
+  final VoidCallback? onTap;
+
   const FavoriteProductTile({
     super.key,
     required this.product,
     required this.onRemove,
     required this.onToggleFavorite,
     required this.isFavorite,
+    this.onTap,
   });
 
   Color get brown => AppColors.primary;
@@ -28,46 +32,53 @@ class FavoriteProductTile extends StatelessWidget {
       imageWidget = Image.asset(src, width: 78, height: 78, fit: BoxFit.cover);
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(borderRadius: BorderRadius.circular(6), child: imageWidget),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(product.name,
-                    style: TextStyle(fontWeight: FontWeight.w700, color: brown)),
-                const SizedBox(height: 6),
-                _Stars(rating: product.rating, color: Colors.amber),
-                const SizedBox(height: 6),
-                Text('Prix : ${product.price} F',
-                    style: const TextStyle(color: Colors.black87)),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Column(
+    // Ajout de Material + InkWell pour le tap
+    return Material(
+      color: Colors.white,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(
-                tooltip: 'Supprimer',
-                icon: Icon(Icons.delete_outline, color: brown),
-                onPressed: onRemove,
-              ),
-              IconButton(
-                tooltip: isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris',
-                icon: Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: brown,
+              ClipRRect(borderRadius: BorderRadius.circular(6), child: imageWidget),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(product.name,
+                        style: TextStyle(fontWeight: FontWeight.w700, color: brown)),
+                    const SizedBox(height: 6),
+                    _Stars(rating: product.rating, color: Colors.amber),
+                    const SizedBox(height: 6),
+                    Text('Prix : ${product.price} F',
+                        style: const TextStyle(color: Colors.black87)),
+                  ],
                 ),
-                onPressed: onToggleFavorite,
+              ),
+              const SizedBox(width: 8),
+              Column(
+                children: [
+                  IconButton(
+                    tooltip: 'Supprimer',
+                    icon: Icon(Icons.delete_outline, color: brown),
+                    onPressed: onRemove,
+                  ),
+                  IconButton(
+                    tooltip: isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris',
+                    icon: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: brown,
+                    ),
+                    onPressed: onToggleFavorite,
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

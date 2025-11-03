@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/providers/product_store.dart';
+import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_produit_detail.dart';
 import 'package:provider/provider.dart';
 
@@ -378,6 +379,7 @@ class _CartBottomBar extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Panier validé')),
                     );
+                    Navigator.pushNamed(context, AppRoutes.choixmodepayemnt);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accent,

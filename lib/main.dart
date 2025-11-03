@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-
 import 'package:malibots_challenge_eni/data/list_product.dart';
 import 'package:malibots_challenge_eni/providers/favoris_store.dart';
 import 'package:malibots_challenge_eni/providers/product_store.dart';
+import 'package:malibots_challenge_eni/screens/admins/app_admin_dashboard.dart';
 import 'package:malibots_challenge_eni/screens/admins/drawerpage.dart';
+import 'package:malibots_challenge_eni/screens/admins/app_liste_culture.dart';
+import 'package:malibots_challenge_eni/screens/admins/app_liste_produits.dart';
+import 'package:malibots_challenge_eni/screens/admins/app_liste_users.dart';
+import 'package:malibots_challenge_eni/screens/admins/app_liste_vendeurs.dart';
 
 import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart';
 import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
@@ -14,7 +18,6 @@ import 'package:malibots_challenge_eni/screens/home/home_screen.dart';
 import 'package:malibots_challenge_eni/screens/onboarding/onboarding_screen.dart';
 // import 'screens/onboarding_screen.dart';
 // import 'screens/home_screen.dart';
-
 import 'package:malibots_challenge_eni/screens/auth/app_google_apple.dart';
 import 'package:malibots_challenge_eni/screens/profile/modification_page.dart';
 import 'package:malibots_challenge_eni/screens/profile/App_profil.dart';
@@ -27,12 +30,10 @@ import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_inscription.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_inscription_vendeur.dart';
 import 'package:malibots_challenge_eni/screens/paiements/choix_mode.dart';
-
 import 'package:provider/provider.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_choixprofil.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_login.dart';
-
 import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
 // import 'screens/onboarding_screen.dart';
 // import 'screens/home_screen.dart';
@@ -64,7 +65,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Anw ka Dambe',
+<<<<<<< HEAD
       initialRoute: AppRoutes.profil,
+=======
+      // initialRoute: AppRoutes.onboarding,
+      initialRoute: AppRoutes.admin_dash,
+>>>>>>> alassane
       routes: {
         
      
@@ -81,8 +87,17 @@ class MyApp extends StatelessWidget {
         AppRoutes.musique: (context) => const MusiqueScreen(),
         AppRoutes.catalogue: (context) => const CatalogScreen(),
         AppRoutes.panier: (context) => const CartPage(),
+        AppRoutes.admin_dash: (context) => const AdminDashboardPage(),
         AppRoutes.choixmodepayemnt: (context) => const PaymentScreen(),
+<<<<<<< HEAD
         AppRoutes.profil: (context) => const AppProfil(),
+=======
+        AppRoutes.adminListeUsers: (context) => const UserListPage(),
+        AppRoutes.adminListeVendeurs: (context) => const VendeursListePage(),
+        AppRoutes.adminListeProduits: (context) => const ProduitsListePage(),
+        AppRoutes.adminListeCultures: (context) => const CulturesListePage(),
+        AppRoutes.adminprofile: (context) => const MonDrawer(),
+>>>>>>> alassane
 
        
       },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:malibots_challenge_eni/screens/catalogue/app_produit_detail.dart';
 import 'package:provider/provider.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/providers/favoris_store.dart';
@@ -71,6 +72,20 @@ class _ArticlesTab extends StatelessWidget {
           isFavorite: isFav,
           onRemove: () => context.read<FavoritesStore>().removeProduct(p.id),
           onToggleFavorite: () => context.read<FavoritesStore>().toggleProduct(p),
+
+          // NEW: ouvre la page détail
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ProductDetailPage(
+                  product: p,
+                  // optionnel: passe des images ou couleurs si tu veux
+                  // additionalImages: ['assets/images/xxx.jpg', 'https://...'],
+                  // availableColors: [Colors.black, Colors.brown],
+                ),
+              ),
+            );
+          },
         );
       },
     );
