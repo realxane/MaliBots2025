@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
+import 'package:malibots_challenge_eni/screens/admins/app_users_details.dart'; // Réutilisation de la page UserDetailPage
 
 class VendeursListePage extends StatefulWidget {
   const VendeursListePage({super.key});
@@ -11,69 +12,98 @@ class VendeursListePage extends StatefulWidget {
 class _VendeursListePageState extends State<VendeursListePage> {
   final TextEditingController _searchController = TextEditingController();
 
-  // Exemple de liste de vendeurs
-  List<Map<String, dynamic>> users = [
-    {
-      'name': 'Bassirou Dramé',
-      'email': 'bassirou@example.com',
-      'image': 'assets/img1.jpg',
-    },
-    {
-      'name': 'Alassane Sow',
-      'email': 'alassane@example.com',
-      'image': 'assets/img2.jpg',
-    },
-    {
-      'name': 'Vieux Maiga',
-      'email': 'vieux@example.com',
-      'image': 'assets/img3.jpg',
-    },
-    {
-      'name': 'Youssouf Guindo',
-      'email': 'youssouf@example.com',
-      'image': 'assets/img4.jpg',
-    },
-    {
-      'name': 'Nana S Keita',
-      'email': 'nana@example.com',
-      'image': 'assets/img5.jpg',
-    },
-    {
-      'name': 'Oumou Maliki Tembely',
-      'email': 'oumou@example.com',
-      'image': null,
-    },
-    {
-      'name': 'Fatouma Sow',
-      'email': 'fatouma@example.com',
-      'image': null,
-    },
-    {
-      'name': 'Guedjouma Diabate',
-      'email': 'guedjouma@example.com',
-      'image': 'assets/img7.jpg',
-    },
-    {
-      'name': 'Abdoul Wayab',
-      'email': 'abdoul@example.com',
-      'image': 'assets/img8.jpg',
-    },
-    {
-      'name': 'Oumar Diarra',
-      'email': 'oumar@example.com',
-      'image': 'assets/img9.jpg',
-    },
-  ];
+  List<Map<String, dynamic>> vendeurs = [
+  {
+    'name': 'Bassirou Dramé',
+    'email': 'bassirou@example.com',
+    'password': '123456',
+    'city': 'Bamako',
+    'preferences': ['Tenue traditionnelle', 'Cuisine'],
+    'image': 'assets/img1.jpg',
+  },
+  {
+    'name': 'Alassane Sow',
+    'email': 'alassane@example.com',
+    'password': 'abcdef',
+    'city': 'Kayes',
+    'preferences': ['Accessoires'],
+    'image': 'assets/img2.jpg',
+  },
+  {
+    'name': 'Vieux Maiga',
+    'email': 'vieux@example.com',
+    'password': 'maiga2025',
+    'city': 'Mopti',
+    'preferences': ['Cuisine'],
+    'image': 'assets/img3.jpg',
+  },
+  {
+    'name': 'Youssouf Guindo',
+    'email': 'youssouf@example.com',
+    'password': 'guindo789',
+    'city': 'Sikasso',
+    'preferences': ['Tenue traditionnelle', 'Accessoires'],
+    'image': 'assets/img4.jpg',
+  },
+  {
+    'name': 'Nana S Keita',
+    'email': 'nana@example.com',
+    'password': 'nanaPass',
+    'city': 'Ségou',
+    'preferences': ['Cuisine', 'Accessoires'],
+    'image': 'assets/img5.jpg',
+  },
+  {
+    'name': 'Oumou Maliki Tembely',
+    'email': 'oumou@example.com',
+    'password': 'tembely2025',
+    'city': 'Bamako',
+    'preferences': ['Tenue traditionnelle'],
+    'image': null,
+  },
+  {
+    'name': 'Fatouma Sow',
+    'email': 'fatouma@example.com',
+    'password': 'fatouma123',
+    'city': 'Kayes',
+    'preferences': ['Cuisine'],
+    'image': null,
+  },
+  {
+    'name': 'Guedjouma Diabate',
+    'email': 'guedjouma@example.com',
+    'password': 'diabate456',
+    'city': 'Mopti',
+    'preferences': ['Tenue traditionnelle', 'Accessoires'],
+    'image': 'assets/img7.jpg',
+  },
+  {
+    'name': 'Abdoul Wayab',
+    'email': 'abdoul@example.com',
+    'password': 'abdoulpass',
+    'city': 'Tombouctou',
+    'preferences': ['Cuisine'],
+    'image': 'assets/img8.jpg',
+  },
+  {
+    'name': 'Oumar Diarra',
+    'email': 'oumar@example.com',
+    'password': 'oumar123',
+    'city': 'Gao',
+    'preferences': ['Tenue traditionnelle'],
+    'image': 'assets/img9.jpg',
+  },
+];
+
 
   String query = '';
 
   @override
   Widget build(BuildContext context) {
-    // Filtrage selon la recherche
-    final filteredUsers = users
-        .where((user) =>
-            user['name'].toLowerCase().contains(query.toLowerCase()) ||
-            user['email'].toLowerCase().contains(query.toLowerCase()))
+    final filteredVendeurs = vendeurs
+        .where((v) =>
+            v['name'].toLowerCase().contains(query.toLowerCase()) ||
+            v['email'].toLowerCase().contains(query.toLowerCase()))
         .toList();
 
     return Scaffold(
@@ -114,7 +144,7 @@ class _VendeursListePageState extends State<VendeursListePage> {
               ),
             ),
 
-            // Titre "Vendeurs List"
+            // Titre
             const Padding(
               padding: EdgeInsets.only(top: 16.0, bottom: 8),
               child: Align(
@@ -133,9 +163,9 @@ class _VendeursListePageState extends State<VendeursListePage> {
             // Liste des vendeurs
             Expanded(
               child: ListView.builder(
-                itemCount: filteredUsers.length,
+                itemCount: filteredVendeurs.length,
                 itemBuilder: (context, index) {
-                  final user = filteredUsers[index];
+                  final vendeur = filteredVendeurs[index];
 
                   return Card(
                     color: AppColors.primary,
@@ -146,56 +176,62 @@ class _VendeursListePageState extends State<VendeursListePage> {
                     margin: const EdgeInsets.symmetric(vertical: 6),
                     child: ListTile(
                       onTap: () {
-                        // Effet cliquable simple (comme pour les users)
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Détails de ${user['name']}'),
-                            duration: const Duration(seconds: 1),
+                        // Affiche la vue statique par défaut
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                UserDetailPage(user: vendeur),
                           ),
                         );
                       },
                       leading: CircleAvatar(
                         radius: 25,
                         backgroundColor: Colors.white,
-                        backgroundImage: user['image'] != null
-                            ? AssetImage(user['image']) as ImageProvider
+                        backgroundImage: vendeur['image'] != null
+                            ? AssetImage(vendeur['image']) as ImageProvider
                             : null,
-                        child: user['image'] == null
+                        child: vendeur['image'] == null
                             ? const Icon(Icons.person,
                                 color: AppColors.primary, size: 30)
                             : null,
                       ),
                       title: Text(
-                        user['name'],
+                        vendeur['name'],
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
                       subtitle: Text(
-                        user['email'],
+                        vendeur['email'],
                         style: const TextStyle(color: Colors.white70),
                       ),
                       trailing: PopupMenuButton<String>(
                         icon: const Icon(Icons.menu, color: Colors.white),
                         onSelected: (value) {
                           if (value == 'Voir') {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text('Profil de ${user['name']}')),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    UserDetailPage(user: vendeur),
+                              ),
                             );
                           } else if (value == 'Modifier') {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text('Modifier ${user['name']}')),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    UserDetailPage(user: vendeur, isEditable: true),
+                              ),
                             );
                           } else if (value == 'Supprimer') {
-                            setState(() {
-                              users.remove(user);
-                            });
+                            setState(() => vendeurs.remove(vendeur));
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                  content: Text('${user['name']} supprimé')),
+                                  content:
+                                      Text('${vendeur['name']} supprimé')),
                             );
                           }
                         },

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
+import 'package:malibots_challenge_eni/screens/admins/app_users_details.dart';
 
 class UserListPage extends StatefulWidget {
   const UserListPage({super.key});
@@ -14,25 +15,100 @@ class _UserListPageState extends State<UserListPage> {
 
   // Liste d'utilisateurs
   List<Map<String, dynamic>> users = [
-    {'name': 'Bassirou Dramé', 'email': 'bassirou@example.com', 'image': 'assets/img1.jpg'},
-    {'name': 'Alassane Sow', 'email': 'alassane@example.com', 'image': 'assets/img2.jpg'},
-    {'name': 'Vieux Maiga', 'email': 'vieux@example.com', 'image': 'assets/img3.jpg'},
-    {'name': 'Youssouf Guindo', 'email': 'youssouf@example.com', 'image': 'assets/img4.jpg'},
-    {'name': 'Nana S Keita', 'email': 'nana@example.com', 'image': 'assets/img5.jpg'},
-    {'name': 'Oumou Maliki Tembely', 'email': 'oumou@example.com', 'image': null},
-    {'name': 'Fatouma Sow', 'email': 'fatouma@example.com', 'image': null},
-    {'name': 'Guedjouma Diabate', 'email': 'guedjouma@example.com', 'image': 'assets/img7.jpg'},
-    {'name': 'Abdoul Wayab', 'email': 'abdoul@example.com', 'image': 'assets/img8.jpg'},
-    {'name': 'Oumar Diarra', 'email': 'oumar@example.com', 'image': 'assets/img9.jpg'},
-  ];
+  {
+    'name': 'Bassirou Dramé',
+    'email': 'bassirou@example.com',
+    'password': '123456',
+    'city': 'Bamako',
+    'preferences': ['Tenue traditionnelle', 'Cuisine'],
+    'image': 'assets/img1.jpg',
+  },
+  {
+    'name': 'Alassane Sow',
+    'email': 'alassane@example.com',
+    'password': 'abcdef',
+    'city': 'Kayes',
+    'preferences': ['Accessoires'],
+    'image': 'assets/img2.jpg',
+  },
+  {
+    'name': 'Vieux Maiga',
+    'email': 'vieux@example.com',
+    'password': 'maiga2025',
+    'city': 'Mopti',
+    'preferences': ['Cuisine'],
+    'image': 'assets/img3.jpg',
+  },
+  {
+    'name': 'Youssouf Guindo',
+    'email': 'youssouf@example.com',
+    'password': 'guindo789',
+    'city': 'Sikasso',
+    'preferences': ['Tenue traditionnelle', 'Accessoires'],
+    'image': 'assets/img4.jpg',
+  },
+  {
+    'name': 'Nana S Keita',
+    'email': 'nana@example.com',
+    'password': 'nanaPass',
+    'city': 'Ségou',
+    'preferences': ['Cuisine', 'Accessoires'],
+    'image': 'assets/img5.jpg',
+  },
+  {
+    'name': 'Oumou Maliki Tembely',
+    'email': 'oumou@example.com',
+    'password': 'tembely2025',
+    'city': 'Bamako',
+    'preferences': ['Tenue traditionnelle'],
+    'image': null,
+  },
+  {
+    'name': 'Fatouma Sow',
+    'email': 'fatouma@example.com',
+    'password': 'fatouma123',
+    'city': 'Kayes',
+    'preferences': ['Cuisine'],
+    'image': null,
+  },
+  {
+    'name': 'Guedjouma Diabate',
+    'email': 'guedjouma@example.com',
+    'password': 'diabate456',
+    'city': 'Mopti',
+    'preferences': ['Tenue traditionnelle', 'Accessoires'],
+    'image': 'assets/img7.jpg',
+  },
+  {
+    'name': 'Abdoul Wayab',
+    'email': 'abdoul@example.com',
+    'password': 'abdoulpass',
+    'city': 'Tombouctou',
+    'preferences': ['Cuisine'],
+    'image': 'assets/img8.jpg',
+  },
+  {
+    'name': 'Oumar Diarra',
+    'email': 'oumar@example.com',
+    'password': 'oumar123',
+    'city': 'Gao',
+    'preferences': ['Tenue traditionnelle'],
+    'image': 'assets/img9.jpg',
+  },
+];
+
 
   // Construction de la carte utilisateur (cliquable)
   Widget _buildUserCard(Map<String, dynamic> user) {
     return InkWell(
       onTap: () {
         // Action lors du clic sur la carte
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Profil de ${user['name']}')));
+         Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => UserDetailPage(user: user),
+        ),
+      );
       },
       borderRadius: BorderRadius.circular(12),
       child: Card(
@@ -57,54 +133,62 @@ class _UserListPageState extends State<UserListPage> {
             user['email'],
             style: const TextStyle(color: Colors.white70),
           ),
-          trailing: PopupMenuButton<String>(
-            icon: const Icon(Icons.menu, color: Colors.white),
-            onSelected: (value) {
-              if (value == 'Voir') {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(SnackBar(content: Text('Profil de ${user['name']}')));
-              } else if (value == 'Modifier') {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(SnackBar(content: Text('Modifier ${user['name']}')));
-              } else if (value == 'Supprimer') {
-                setState(() => users.remove(user));
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(SnackBar(content: Text('${user['name']} supprimé')));
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'Voir',
-                child: Row(
-                  children: [
-                    Icon(Icons.visibility, color: AppColors.primary),
-                    SizedBox(width: 10),
-                    Text('Voir profil'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'Modifier',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit, color: AppColors.primary),
-                    SizedBox(width: 10),
-                    Text('Modifier'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'Supprimer',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete, color: Colors.red),
-                    SizedBox(width: 10),
-                    Text('Supprimer'),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          trailing:  PopupMenuButton<String>(
+  icon: const Icon(Icons.menu, color: Colors.white),
+  onSelected: (value) {
+    if (value == 'Voir') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => UserDetailPage(user: user, isEditable: false),
+        ),
+      );
+    } else if (value == 'Modifier') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => UserDetailPage(user: user, isEditable: true),
+        ),
+      );
+    } else if (value == 'Supprimer') {
+      setState(() => users.remove(user));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('${user['name']} supprimé')));
+    }
+  },
+  itemBuilder: (context) => [
+    const PopupMenuItem(
+      value: 'Voir',
+      child: Row(
+        children: [
+          Icon(Icons.visibility, color: AppColors.primary),
+          SizedBox(width: 10),
+          Text('Voir profil'),
+        ],
+      ),
+    ),
+    const PopupMenuItem(
+      value: 'Modifier',
+      child: Row(
+        children: [
+          Icon(Icons.edit, color: AppColors.primary),
+          SizedBox(width: 10),
+          Text('Modifier'),
+        ],
+      ),
+    ),
+    const PopupMenuItem(
+      value: 'Supprimer',
+      child: Row(
+        children: [
+          Icon(Icons.delete, color: Colors.red),
+          SizedBox(width: 10),
+          Text('Supprimer'),
+        ],
+      ),
+    ),
+  ],
+)
         ),
       ),
     );

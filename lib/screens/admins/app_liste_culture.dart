@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
+import 'package:malibots_challenge_eni/screens/musiques/music_player_screen.dart';
 
 class CulturesListePage extends StatefulWidget {
   const CulturesListePage({super.key});
@@ -13,26 +14,29 @@ class _CulturesListePageState extends State<CulturesListePage> with SingleTicker
   final TextEditingController _searchController = TextEditingController();
   String query = '';
 
-  // Contenus culturels
   List<Map<String, dynamic>> musiques = [
-    {'titre': 'Djigui', 'auteur': 'Amadou & Mariam', 'approuve': false},
-    {'titre': 'Yéké Yéké', 'auteur': 'Mory Kanté', 'approuve': true},
-    {'titre': 'Fanta', 'auteur': 'Oumou Sangaré', 'approuve': false},
-    {'titre': 'Kôrô Yamy', 'auteur': 'Ali Farka Touré', 'approuve': false},
+    {
+      'titre': 'Djigui',
+      'auteur': 'Amadou & Mariam',
+      'fichier': 'assets/musics/bambara/Oumou_Sangaré_-_Diaraby_Nene.mp3',
+      'approuve': false
+    },
+    {
+      'titre': 'Yéké Yéké',
+      'auteur': 'Mory Kanté',
+      'fichier': 'assets/musics/bambara/Oumou_Sangare_-_Wayeina.mp3',
+      'approuve': false
+    },
   ];
 
   List<Map<String, dynamic>> images = [
     {'titre': 'Masque traditionnel', 'image': 'assets/img1.jpg', 'approuve': false},
-    {'titre': 'Peinture murale', 'image': 'assets/img2.jpg', 'approuve': true},
-    {'titre': 'Sculpture Dogon', 'image': 'assets/img3.jpg', 'approuve': false},
-    {'titre': 'Art textile', 'image': 'assets/img4.jpg', 'approuve': true},
+    {'titre': 'Peinture murale', 'image': 'assets/img2.jpg', 'approuve': false},
   ];
 
   List<Map<String, dynamic>> proverbes = [
     {'texte': 'Le lion ne se vante pas de sa force.', 'origine': 'Proverbe malien', 'approuve': false},
-    {'texte': 'Patience est mère de réussite.', 'origine': 'Proverbe africain', 'approuve': true},
-    {'texte': 'Qui veut voyager loin ménage sa monture.', 'origine': 'Proverbe africain', 'approuve': false},
-    {'texte': 'L’arbre ne tombe pas au premier coup.', 'origine': 'Proverbe malien', 'approuve': false},
+    {'texte': 'Patience est mère de réussite.', 'origine': 'Proverbe africain', 'approuve': false},
   ];
 
   @override
@@ -41,6 +45,91 @@ class _CulturesListePageState extends State<CulturesListePage> with SingleTicker
     _tabController = TabController(length: 3, vsync: this);
   }
 
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // 🔹 Fonction pour afficher une image
+  void _viewImage(Map<String, dynamic> item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          body: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                 Text(item['titre'], style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: AppColors.primary)),
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Image.asset(
+                    item['image'],
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 🔹 Modifier un proverbe
+  void _editProverbe(Map<String, dynamic> item) {
+    final TextEditingController _editController = TextEditingController(text: item['texte']);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Modifier le proverbe'),
+        content: TextField(
+          controller: _editController,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: 'Texte du proverbe',
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            onPressed: () {
+              setState(() => item['texte'] = _editController.text);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Proverbe modifié')));
+            },
+            child: const Text('Enregistrer', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🔹 Ouvrir le lecteur de musique
+  void _playMusic(Map<String, dynamic> item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MusicPlayerScreen(
+          tracks: [
+            {
+              'path': item['fichier'],
+              'title': item['titre'],
+              'artist': item['auteur'] ?? 'Artiste inconnu',
+              'img': 'assets/img_music_placeholder.jpg',
+            }
+          ],
+          index: 0,
+        ),
+      ),
+    );
+  }
+
+  // 🔹 Construire une carte cliquable
   Widget _buildCard(Map<String, dynamic> item, String type) {
     String title = '';
     String subtitle = '';
@@ -50,7 +139,6 @@ class _CulturesListePageState extends State<CulturesListePage> with SingleTicker
       case 'Musique':
         title = item['titre'];
         subtitle = item['auteur'];
-        // 💡 Remplacer les images par une icône de musique
         leading = const CircleAvatar(
           radius: 25,
           child: Icon(Icons.music_note, color: AppColors.primary),
@@ -69,17 +157,20 @@ class _CulturesListePageState extends State<CulturesListePage> with SingleTicker
         break;
     }
 
-    // 💡 Carte cliquable
-    return InkWell(
-      onTap: () {
-        // Exemple de navigation (à remplacer plus tard par la page de détails)
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ouvrir détails : $title')));
-      },
-      child: Card(
-        color: AppColors.primary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 4,
-        margin: const EdgeInsets.symmetric(vertical: 6),
+    return Card(
+      color: item['approuve'] ? AppColors.primary.withOpacity(0.7) : AppColors.primary,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          if (type == 'Musique') {
+            _playMusic(item);
+          } else if (type == 'Image') {
+            _viewImage(item);
+          }
+        },
         child: ListTile(
           leading: leading,
           title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
@@ -87,55 +178,77 @@ class _CulturesListePageState extends State<CulturesListePage> with SingleTicker
           trailing: PopupMenuButton<String>(
             icon: const Icon(Icons.menu, color: Colors.white),
             onSelected: (value) {
-              if (value == 'Voir') {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Voir : $title')));
-              } else if (value == 'Approuver') {
+              if (value == 'Approuver') {
                 setState(() => item['approuve'] = true);
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$title approuvé')));
-              } else if (value == 'Modifier') {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Modifier : $title')));
+              } else if (value == 'Modifier' && type == 'Proverbe') {
+                _editProverbe(item);
+              } else if (value == 'Lire' && type == 'Musique') {
+                _playMusic(item);
+              } else if (value == 'Voir' && type == 'Image') {
+                _viewImage(item);
               } else if (value == 'Supprimer') {
                 setState(() {
-                  switch (type) {
-                    case 'Musique':
-                      musiques.remove(item);
-                      break;
-                    case 'Image':
-                      images.remove(item);
-                      break;
-                    case 'Proverbe':
-                      proverbes.remove(item);
-                      break;
-                  }
+                  if (type == 'Musique') musiques.remove(item);
+                  if (type == 'Image') images.remove(item);
+                  if (type == 'Proverbe') proverbes.remove(item);
                 });
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$title supprimé')));
               }
             },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'Voir',
-                child: Row(children: [Icon(Icons.visibility, color: AppColors.primary), SizedBox(width: 10), Text('Voir')]),
-              ),
-              if (!item['approuve'])
-                const PopupMenuItem(
+            itemBuilder: (context) {
+              final items = <PopupMenuEntry<String>>[];
+
+              if (!item['approuve']) {
+                items.add(const PopupMenuItem(
                   value: 'Approuver',
-                  child: Row(children: [Icon(Icons.check, color: Colors.green), SizedBox(width: 10), Text('Approuver')]),
-                ),
-              const PopupMenuItem(
-                value: 'Modifier',
-                child: Row(children: [Icon(Icons.edit, color: AppColors.primary), SizedBox(width: 10), Text('Modifier')]),
-              ),
-              const PopupMenuItem(
+                  child: Row(
+                    children: [Icon(Icons.check, color: Colors.green), SizedBox(width: 10), Text('Approuver')],
+                  ),
+                ));
+              }
+
+              if (type == 'Musique') {
+                items.add(const PopupMenuItem(
+                  value: 'Lire',
+                  child: Row(
+                    children: [Icon(Icons.play_arrow, color: AppColors.primary), SizedBox(width: 10), Text('Lire')],
+                  ),
+                ));
+              }
+
+              if (type == 'Image') {
+                items.add(const PopupMenuItem(
+                  value: 'Voir',
+                  child: Row(
+                    children: [Icon(Icons.remove_red_eye, color: AppColors.primary), SizedBox(width: 10), Text('Voir')],
+                  ),
+                ));
+              }
+
+              if (type == 'Proverbe') {
+                items.add(const PopupMenuItem(
+                  value: 'Modifier',
+                  child: Row(
+                    children: [Icon(Icons.edit, color: AppColors.primary), SizedBox(width: 10), Text('Modifier')],
+                  ),
+                ));
+              }
+
+              items.add(const PopupMenuItem(
                 value: 'Supprimer',
-                child: Row(children: [Icon(Icons.delete, color: Colors.red), SizedBox(width: 10), Text('Supprimer')]),
-              ),
-            ],
+                child: Row(
+                  children: [Icon(Icons.delete, color: Colors.red), SizedBox(width: 10), Text('Supprimer')],
+                ),
+              ));
+
+              return items;
+            },
           ),
         ),
       ),
     );
   }
 
+  // 🔹 Filtrer selon la recherche
   List<Map<String, dynamic>> _filterList(List<Map<String, dynamic>> list) {
     return list.where((item) {
       final searchLower = query.toLowerCase();
@@ -197,17 +310,17 @@ class _CulturesListePageState extends State<CulturesListePage> with SingleTicker
                 ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: _filterList(musiques).length,
-                  itemBuilder: (context, index) => _buildCard(_filterList(musiques)[index], 'Musique'),
+                  itemBuilder: (context, i) => _buildCard(_filterList(musiques)[i], 'Musique'),
                 ),
                 ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: _filterList(images).length,
-                  itemBuilder: (context, index) => _buildCard(_filterList(images)[index], 'Image'),
+                  itemBuilder: (context, i) => _buildCard(_filterList(images)[i], 'Image'),
                 ),
                 ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: _filterList(proverbes).length,
-                  itemBuilder: (context, index) => _buildCard(_filterList(proverbes)[index], 'Proverbe'),
+                  itemBuilder: (context, i) => _buildCard(_filterList(proverbes)[i], 'Proverbe'),
                 ),
               ],
             ),
