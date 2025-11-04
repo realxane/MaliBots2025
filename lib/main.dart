@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:malibots_challenge_eni/data/list_product.dart';
 import 'package:malibots_challenge_eni/providers/favoris_store.dart';
 import 'package:malibots_challenge_eni/providers/product_store.dart';
@@ -19,6 +20,14 @@ import 'package:malibots_challenge_eni/screens/onboarding/onboarding_screen.dart
 // import 'screens/home_screen.dart';
 
 import 'package:malibots_challenge_eni/screens/auth/app_google_apple.dart';
+import 'package:malibots_challenge_eni/screens/profile/profile_screen_user.dart';
+import 'package:malibots_challenge_eni/screens/profile/profile_screnn_vendeur.dart';
+import 'screens/onboarding/onboarding_screen.dart';
+import 'screens/home/home_screen.dart';
+import 'package:malibots_challenge_eni/routes/app_routes.dart';
+import 'package:malibots_challenge_eni/screens/auth/app_choixprofil.dart';
+import 'package:malibots_challenge_eni/screens/auth/app_login.dart';
+import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_inscription.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_inscription_vendeur.dart';
 import 'package:malibots_challenge_eni/screens/paiements/choix_mode.dart';
@@ -37,16 +46,13 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => ProductsStore(kProducts), // ta liste initiale de Product
+          create: (_) =>
+              ProductsStore(kProducts), // ta liste initiale de Product
         ),
-        ChangeNotifierProvider(
-          create: (_) => FavoritesStore(),
-        ),
-        
+        ChangeNotifierProvider(create: (_) => FavoritesStore()),
       ],
       child: const MyApp(),
-    )
-    
+    ),
   );
 }
 
@@ -59,12 +65,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Anw ka Dambe',
-      initialRoute: AppRoutes.onboarding,
-      // initialRoute: AppRoutes.admin_dash,
+      //initialRoute: AppRoutes.onboarding,
+      initialRoute: AppRoutes.admin_dash,
       routes: {
-        AppRoutes.accueil: (context) => const HomeScreen(),
-        //AppRoutes.accueil: (context) => MainScreen(),
-        //AppRoutes.accueil: (context) => const HomeScreen(),
+        AppRoutes.accueil: (context) => MainScreen(),
+        // AppRoutes.accueil: (context) => const HomeScreen(),
         AppRoutes.onboarding: (context) => const OnboardingScreen(),
         AppRoutes.choixprofil: (context) => const ChoixProfilPage(),
         AppRoutes.connecter: (context) => const Login(),
@@ -89,6 +94,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
+      // home:MonDrawer() ,
     );
   }
 }

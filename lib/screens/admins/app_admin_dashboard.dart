@@ -53,46 +53,43 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   );
 
   List<Activity> get _activities => [
-        Activity(
-          type: ActivityType.productAdded,
-          title: 'Produit ajouté ${_robeBazin.name}',
-          subtitle: 'En attente aujourd’hui 9h10',
-          icon: Icons.check_circle,
-          product: _robeBazin,
-        ),
-        Activity(
-          type: ActivityType.productAdded,
-          title: 'Produit ajouté Boubou bogolan',
-          subtitle: 'En attente hier 17h20',
-          icon: Icons.new_releases_outlined,
-          product: _robeBazin.copyWith(id: 'p2', name: 'Boubou bogolan'),
-        ),
-        Activity(
-          type: ActivityType.productAdded,
-          title: 'Produit ajouté Sandales cuir',
-          subtitle: 'En attente 30/10 11h02',
-          icon: Icons.shopping_bag_outlined,
-          product: _robeBazin.copyWith(id: 'p3', name: 'Sandales cuir'),
-        ),
-        // Activités non-produit que tu avais
-        Activity(
-          type: ActivityType.postDeleted,
-          title: 'Publication supprimée',
-          subtitle: 'Adama',
-          icon: Icons.delete_outline,
-        ),
-        Activity(
-          type: ActivityType.report,
-          title: 'Signalement',
-          subtitle: 'Ousmane',
-          icon: Icons.report_outlined,
-        ),
-      ];
+    Activity(
+      type: ActivityType.productAdded,
+      title: 'Produit ajouté ${_robeBazin.name}',
+      subtitle: 'En attente aujourd’hui 9h10',
+      icon: Icons.check_circle,
+      product: _robeBazin,
+    ),
+    Activity(
+      type: ActivityType.productAdded,
+      title: 'Produit ajouté Boubou bogolan',
+      subtitle: 'En attente hier 17h20',
+      icon: Icons.new_releases_outlined,
+      product: _robeBazin.copyWith(id: 'p2', name: 'Boubou bogolan'),
+    ),
+    Activity(
+      type: ActivityType.productAdded,
+      title: 'Produit ajouté Sandales cuir',
+      subtitle: 'En attente 30/10 11h02',
+      icon: Icons.shopping_bag_outlined,
+      product: _robeBazin.copyWith(id: 'p3', name: 'Sandales cuir'),
+    ),
+    // Activités non-produit que tu avais
+    Activity(
+      type: ActivityType.postDeleted,
+      title: 'Publication supprimée',
+      subtitle: 'Adama',
+      icon: Icons.delete_outline,
+    ),
+    Activity(
+      type: ActivityType.report,
+      title: 'Signalement',
+      subtitle: 'Ousmane',
+      icon: Icons.report_outlined,
+    ),
+  ];
 
-      final List<Widget> _pages = const [
-        UserListPage(),
-        VendeursListePage(),
-      ];
+  final List<Widget> _pages = const [UserListPage(), VendeursListePage()];
 
   @override
   Widget build(BuildContext context) {
@@ -106,45 +103,58 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, 
-        children: [
-          _chipHeader(),
-          const SizedBox(height: 16),
-          Row(children: [
-            Expanded(child: _statCard('Users', '120', Icons.person)),
-            const SizedBox(width: 12),
-            Expanded(child: _statCard('Vendeurs', '63', Icons.store)),
-          ]),
-          const SizedBox(height: 20),
-          _sectionTitle('Statistiques'),
-          const SizedBox(height: 8),
-          _salesChartByMonth(const {
-            'Jan': 40,
-            'Fév': 85,
-            'Mar': 60,
-            'Avr': 100,
-            'Mai': 55,
-            'Juin': 90,
-          }),
-          const SizedBox(height: 20),
-          _sectionTitle('Activités récentes'),
-          const SizedBox(height: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _chipHeader(),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(child: _statCard('Users', '120', Icons.person)),
+                const SizedBox(width: 12),
+                Expanded(child: _statCard('Vendeurs', '63', Icons.store)),
+              ],
+            ),
+            const SizedBox(height: 20),
+            _sectionTitle('Statistiques'),
+            const SizedBox(height: 8),
+            _salesChartByMonth(const {
+              'Jan': 40,
+              'Fév': 85,
+              'Mar': 60,
+              'Avr': 100,
+              'Mai': 55,
+              'Juin': 90,
+            }),
+            const SizedBox(height: 20),
+            _sectionTitle('Activités récentes'),
+            const SizedBox(height: 8),
 
-          // Liste des activités hétérogènes
-          for (final a in _activities) _activityItem(a),
-        ]),
+            // Liste des activités hétérogènes
+            for (final a in _activities) _activityItem(a),
+          ],
+        ),
       ),
-       
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,
         onTap: (i) {
-        setState(() => _index = i);
-        if(i==0){Navigator.pushNamed(context, AppRoutes.admin_dash);}
-        if(i==1){Navigator.pushNamed(context, AppRoutes.adminListeUsers);}
-        if(i==2){Navigator.pushNamed(context, AppRoutes.adminListeVendeurs);}
-        if(i==3){Navigator.pushNamed(context, AppRoutes.adminListeProduits);}
-        if(i==4){Navigator.pushNamed(context, AppRoutes.adminListeCultures);}
-
+          setState(() => _index = i);
+          if (i == 0) {
+            Navigator.pushNamed(context, AppRoutes.admin_dash);
+          }
+          if (i == 1) {
+            Navigator.pushNamed(context, AppRoutes.adminListeUsers);
+          }
+          if (i == 2) {
+            Navigator.pushNamed(context, AppRoutes.adminListeVendeurs);
+          }
+          if (i == 3) {
+            Navigator.pushNamed(context, AppRoutes.adminListeProduits);
+          }
+          if (i == 4) {
+            Navigator.pushNamed(context, AppRoutes.adminListeCultures);
+          }
         },
         showSelectedLabels: false,
         showUnselectedLabels: false,
@@ -153,51 +163,86 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         selectedItemColor: _brown,
         unselectedItemColor: _brown.withOpacity(.5),
         items: const [
-          BottomNavigationBarItem(icon: Text('D', style: TextStyle(fontSize: 18)), label: ''),
-          BottomNavigationBarItem(icon: Text('U', style: TextStyle(fontSize: 18)), label: ''),
-          BottomNavigationBarItem(icon: Text('V', style: TextStyle(fontSize: 18)), label: ''),
-          BottomNavigationBarItem(icon: Text('P', style: TextStyle(fontSize: 18)), label: ''),
-          BottomNavigationBarItem(icon: Text('C', style: TextStyle(fontSize: 18)), label: ''),
+          BottomNavigationBarItem(
+            icon: Text('D', style: TextStyle(fontSize: 18)),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            icon: Text('U', style: TextStyle(fontSize: 18)),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            icon: Text('V', style: TextStyle(fontSize: 18)),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            icon: Text('P', style: TextStyle(fontSize: 18)),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            icon: Text('C', style: TextStyle(fontSize: 18)),
+            label: '',
+          ),
         ],
       ),
     );
   }
 
   Widget _chipHeader() => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _brown.withOpacity(.15)),
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: _brown.withOpacity(.15)),
+    ),
+    child: Row(
+      children: [
+        Icon(Icons.dashboard, color: _brown, size: 18),
+        const SizedBox(width: 8),
+        Text(
+          'Dashboard administrateur',
+          style: TextStyle(color: _brown, fontWeight: FontWeight.w600),
         ),
-        child: Row(children: [
-          Icon(Icons.dashboard, color: _brown, size: 18),
-          const SizedBox(width: 8),
-          Text(
-            'Dashboard administrateur',
-            style: TextStyle(color: _brown, fontWeight: FontWeight.w600),
-          ),
-        ]),
-      );
+      ],
+    ),
+  );
 
   Widget _statCard(String title, String value, IconData icon) => Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _brown.withOpacity(.15)),
-          boxShadow: [BoxShadow(color: _brown.withOpacity(.06), blurRadius: 8, offset: const Offset(0, 3))],
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: _brown.withOpacity(.15)),
+      boxShadow: [
+        BoxShadow(
+          color: _brown.withOpacity(.06),
+          blurRadius: 8,
+          offset: const Offset(0, 3),
         ),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, color: _brown),
-          const SizedBox(height: 8),
-          Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: _brown)),
-          Text(title, style: TextStyle(color: _brown.withOpacity(.8))),
-        ]),
-      );
+      ],
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: _brown),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: _brown,
+          ),
+        ),
+        Text(title, style: TextStyle(color: _brown.withOpacity(.8))),
+      ],
+    ),
+  );
 
-  Widget _sectionTitle(String t) =>
-      Text(t, style: TextStyle(fontWeight: FontWeight.w700, color: _brown));
+  Widget _sectionTitle(String t) => Text(
+    t,
+    style: TextStyle(fontWeight: FontWeight.w700, color: _brown),
+  );
 
   Widget _salesChartByMonth(Map<String, int> byMonth) {
     final entries = byMonth.entries.toList();
@@ -221,7 +266,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: entries.map((e) {
-                  final h = maxVal == 0 ? 0.0 : (e.value / maxVal) * maxBarHeight;
+                  final h = maxVal == 0
+                      ? 0.0
+                      : (e.value / maxVal) * maxBarHeight;
                   return Container(
                     width: 22,
                     height: h,
@@ -238,14 +285,19 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: entries
-                .map((e) => SizedBox(
-                      width: 22,
-                      child: Text(
-                        e.key,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: _brown.withOpacity(.8), fontSize: 11),
+                .map(
+                  (e) => SizedBox(
+                    width: 22,
+                    child: Text(
+                      e.key,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: _brown.withOpacity(.8),
+                        fontSize: 11,
                       ),
-                    ))
+                    ),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -255,25 +307,25 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
   // Item d'activité générique
   Widget _activityItem(Activity a) => Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        child: Material(
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-            side: BorderSide(color: _brown.withOpacity(.15)),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: () => _openActivity(a),
-            child: ListTile(
-              leading: Icon(a.icon, color: _brown),
-              title: Text(a.title),
-              subtitle: Text(a.subtitle),
-              dense: true,
-            ),
-          ),
+    margin: const EdgeInsets.only(bottom: 10),
+    child: Material(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: _brown.withOpacity(.15)),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => _openActivity(a),
+        child: ListTile(
+          leading: Icon(a.icon, color: _brown),
+          title: Text(a.title),
+          subtitle: Text(a.subtitle),
+          dense: true,
         ),
-      );
+      ),
+    ),
+  );
 
   void _openActivity(Activity a) {
     switch (a.type) {
@@ -282,23 +334,25 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ProductReviewPage(
-              product: product,
-              statusText: a.subtitle,
-            ),
+            builder: (_) =>
+                ProductReviewPage(product: product, statusText: a.subtitle),
           ),
         );
         break;
       case ActivityType.postDeleted:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const _DummyPage(title: 'Publication')),
+          MaterialPageRoute(
+            builder: (_) => const _DummyPage(title: 'Publication'),
+          ),
         );
         break;
       case ActivityType.report:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const _DummyPage(title: 'Signalement')),
+          MaterialPageRoute(
+            builder: (_) => const _DummyPage(title: 'Signalement'),
+          ),
         );
         break;
     }
@@ -306,9 +360,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 }
 
 // Page descriptive du produit avec actions Rejeter / Approuver
-
-
-  
 
 // Page placeholder pour "Publication" et "Signalement"
 class _DummyPage extends StatelessWidget {
