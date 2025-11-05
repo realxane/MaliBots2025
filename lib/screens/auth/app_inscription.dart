@@ -275,12 +275,15 @@ class _InscriptionPageState extends State<InscriptionPage> {
                       child: bouton_large(
                         hint: 'Créer mon compte',
                         onPressed: () {
-                          if (!_accepted) {
+                         if (!_accepted) {
+                            // L’utilisateur n’a pas accepté
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Veuillez accepter les conditions.')),
                             );
-                          Navigator.pushNamed(context, AppRoutes.accueil);
+                            return; // on sort ici pour bloquer la navigation
                           }
+                          // ✅ L’utilisateur a accepté, on peut aller à la page d’accueil
+                          Navigator.pushNamed(context, AppRoutes.accueil);
                           // if (_formKey.currentState?.validate() ?? false) {
                           //   ScaffoldMessenger.of(context).showSnackBar(
                           //     const SnackBar(content: Text('Compte en cours de création...')),
