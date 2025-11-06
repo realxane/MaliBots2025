@@ -1,494 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:malibots_challenge_eni/constants/app_colors.dart';
-// NOUVEAUX IMPORTS pour la gestion des fichiers
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
-
-// --- WIDGETS DE FORMULAIRES D'AJOUT ---
-
-// Fonction utilitaire pour afficher les modales des formulaires
-void _showContentForm(
-  BuildContext context,
-  String type,
-  Function(Map<String, dynamic>) onSave,
-) {
-  Widget form;
-  switch (type) {
-    case 'Musique':
-      form = AddMusicForm(onSave: onSave);
-      break;
-    case 'Image':
-      form = AddImageForm(onSave: onSave);
-      break;
-    case 'Proverbe':
-      form = AddProverbeForm(onSave: onSave);
-      break;
-    case 'Conte':
-      form = AddConteForm(onSave: onSave);
-      break;
-    default:
-      return;
-  }
-
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (context) => Padding(
-      // Important pour éviter que le clavier ne cache les champs
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: form,
-    ),
-  );
-}
-
-// Formulaire d'ajout de Musique
-class AddMusicForm extends StatefulWidget {
-  final Function(Map<String, dynamic>) onSave;
-  const AddMusicForm({super.key, required this.onSave});
-
-  @override
-  State<AddMusicForm> createState() => _AddMusicFormState();
-}
-
-class _AddMusicFormState extends State<AddMusicForm> {
-  final _formKey = GlobalKey<FormState>();
-  String _titre = '';
-  String _artiste = '';
-  String _genre = '';
-
-  // NOUVELLES VARIABLES pour les fichiers
-  File? _selectedImageFile; // Pour la pochette
-  File? _selectedMp3File; // Pour le fichier audio
-  final ImagePicker _picker = ImagePicker();
-
-  // NOUVELLE LOGIQUE: Sélectionner image (pochette)
-  Future<void> _pickImageFromGallery() async {
-    final XFile? pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 50,
-    );
-
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImageFile = File(pickedFile.path);
-      });
-    }
-  }
-
-  // NOUVELLE LOGIQUE: Sélectionner fichier MP3/Audio
-  Future<void> _pickMp3File() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      // Filtre les extensions audio courantes
-      allowedExtensions: ['mp3', 'm4a', 'wav', 'aac'],
-      allowMultiple: false,
-    );
-
-    if (result != null && result.files.single.path != null) {
-      setState(() {
-        _selectedMp3File = File(result.files.single.path!);
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              '🎵 Ajouter une Nouvelle Musique',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Titre'),
-              validator: (v) => v!.isEmpty ? 'Entrez le titre' : null,
-              onSaved: (v) => _titre = v!,
-            ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Nom de l\'Artiste'),
-              validator: (v) => v!.isEmpty ? 'Entrez l\'artiste' : null,
-              onSaved: (v) => _artiste = v!,
-            ),
-            TextFormField(
-              decoration: const InputDecoration(
-                labelText: 'Genre (Bambara, Sonraï, etc.)',
-              ),
-              validator: (v) => v!.isEmpty ? 'Entrez le genre' : null,
-              onSaved: (v) => _genre = v!,
-            ),
-            // --- Logique d'importation Image (Pochette) ---
-            ListTile(
-              title: Text(
-                _selectedImageFile == null
-                    ? 'Sélectionner Image (Pochette)'
-                    : 'Image: ${_selectedImageFile!.path.split('/').last}',
-              ),
-              trailing: const Icon(
-                Icons.photo_library,
-                color: AppColors.primary,
-              ),
-              onTap: _pickImageFromGallery,
-            ),
-            // --- Logique d'importation Audio ---
-            ListTile(
-              title: Text(
-                _selectedMp3File == null
-                    ? 'Importer Fichier Audio (MP3/M4A)'
-                    : 'Audio: ${_selectedMp3File!.path.split('/').last}',
-              ),
-              trailing: const Icon(Icons.audiotrack, color: AppColors.primary),
-              onTap: _pickMp3File,
-            ),
-            // -------------------------------------------------------------------------
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () {
-                if (_formKey.currentState!.validate() &&
-                    _selectedImageFile != null && // Validation du fichier image
-                    _selectedMp3File != null) {
-                  // Validation du fichier audio
-                  _formKey.currentState!.save();
-                  widget.onSave({
-                    'titre': _titre,
-                    'auteur': _artiste,
-                    'genre': _genre,
-                    'image': _selectedImageFile!
-                        .path, // Chemin réel du fichier image
-                    'fichierMp3':
-                        _selectedMp3File!.path, // Chemin réel du fichier audio
-                    'approuve': false,
-                  });
-                  Navigator.pop(context);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Veuillez sélectionner l\'image et le fichier audio.',
-                      ),
-                    ),
-                  );
-                }
-              },
-              child: const Text('Ajouter Musique'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Formulaire d'ajout d'Image/Œuvre
-class AddImageForm extends StatefulWidget {
-  final Function(Map<String, dynamic>) onSave;
-  const AddImageForm({super.key, required this.onSave});
-
-  @override
-  State<AddImageForm> createState() => _AddImageFormState();
-}
-
-class _AddImageFormState extends State<AddImageForm> {
-  final _formKey = GlobalKey<FormState>();
-  String _titre = '';
-  String _description = '';
-  String _ethenie = '';
-  String _region = '';
-
-  // NOUVELLE VARIABLE: Liste de fichiers pour la sélection multiple
-  List<File> _selectedImages = [];
-  final ImagePicker _picker = ImagePicker();
-
-  // NOUVELLE LOGIQUE: Sélectionner une ou plusieurs images depuis la galerie
-  Future<void> _pickImageFromGallery() async {
-    final List<XFile>? pickedFiles = await _picker.pickMultiImage(
-      imageQuality: 70, // Optimisation
-    );
-
-    if (pickedFiles != null && pickedFiles.isNotEmpty) {
-      setState(() {
-        _selectedImages = pickedFiles.map((xFile) => File(xFile.path)).toList();
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              '🖼️ Ajouter une Nouvelle Image/Œuvre',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
-              ),
-            ),
-            const SizedBox(height: 20),
-            // --- Logique d'importation Image MISE À JOUR ---
-            ListTile(
-              title: Text(
-                _selectedImages.isEmpty
-                    ? 'Sélectionner 1 ou plusieurs images (Galerie)'
-                    : '${_selectedImages.length} image(s) sélectionnée(s)',
-              ),
-              trailing: const Icon(Icons.collections, color: AppColors.primary),
-              onTap: _pickImageFromGallery, // Appel de la fonction réelle
-            ),
-            // Affiche les noms de fichiers pour l'utilisateur
-            if (_selectedImages.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Text(
-                  'Fichier(s) : ${_selectedImages.map((f) => f.path.split('/').last).join(', ')}',
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ),
-            // -------------------------------------------------------------------------
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Titre de l\'Œuvre'),
-              validator: (v) => v!.isEmpty ? 'Entrez un titre' : null,
-              onSaved: (v) => _titre = v!,
-            ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Description'),
-              maxLines: 2,
-              validator: (v) => v!.isEmpty ? 'Entrez une description' : null,
-              onSaved: (v) => _description = v!,
-            ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Ethnie'),
-              onSaved: (v) => _ethenie = v!,
-            ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Région'),
-              onSaved: (v) => _region = v!,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () {
-                if (_formKey.currentState!.validate() &&
-                    _selectedImages.isNotEmpty) {
-                  // Validation des images
-                  _formKey.currentState!.save();
-                  widget.onSave({
-                    'titre': _titre,
-                    'description': _description,
-                    'ethenie': _ethenie,
-                    'region': _region,
-                    // Envoie le chemin de la première image (ajuster si vous gérez plusieurs)
-                    'image': _selectedImages.first.path,
-                    'approuve': false,
-                  });
-                  Navigator.pop(context);
-                } else if (_selectedImages.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Veuillez sélectionner au moins une image.',
-                      ),
-                    ),
-                  );
-                }
-              },
-              child: const Text('Ajouter Image/Œuvre'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Formulaire d'ajout de Proverbe (inchangé)
-class AddProverbeForm extends StatefulWidget {
-  final Function(Map<String, dynamic>) onSave;
-  const AddProverbeForm({super.key, required this.onSave});
-
-  @override
-  State<AddProverbeForm> createState() => _AddProverbeFormState();
-}
-
-class _AddProverbeFormState extends State<AddProverbeForm> {
-  final _formKey = GlobalKey<FormState>();
-  String _texte = '';
-  String _signification = '';
-  String _langue = '';
-  String _origine = 'Proverbe malien';
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              '📘 Ajouter un Nouveau Proverbe',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Texte du Proverbe'),
-              maxLines: 3,
-              validator: (v) => v!.isEmpty ? 'Entrez le proverbe' : null,
-              onSaved: (v) => _texte = v!,
-            ),
-            TextFormField(
-              decoration: const InputDecoration(
-                labelText: 'Signification (Optionnel)',
-              ),
-              maxLines: 2,
-              onSaved: (v) => _signification = v!,
-            ),
-            TextFormField(
-              decoration: const InputDecoration(
-                labelText: 'Langue (Bambara, Français, etc.)',
-              ),
-              onSaved: (v) => _langue = v!,
-            ),
-            TextFormField(
-              initialValue: 'Proverbe malien',
-              decoration: const InputDecoration(labelText: 'Origine'),
-              onSaved: (v) => _origine = v!,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  _formKey.currentState!.save();
-                  widget.onSave({
-                    'texte': _texte,
-                    'signification': _signification,
-                    'langue': _langue,
-                    'origine': _origine,
-                    'approuve': false,
-                  });
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Ajouter Proverbe'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Formulaire d'ajout de Conte (inchangé)
-class AddConteForm extends StatefulWidget {
-  final Function(Map<String, dynamic>) onSave;
-  const AddConteForm({super.key, required this.onSave});
-
-  @override
-  State<AddConteForm> createState() => _AddConteFormState();
-}
-
-class _AddConteFormState extends State<AddConteForm> {
-  final _formKey = GlobalKey<FormState>();
-  String _titre = '';
-  String _contenu = '';
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              '📜 Ajouter un Nouveau Conte',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Titre du Conte'),
-              validator: (v) => v!.isEmpty ? 'Entrez le titre du conte' : null,
-              onSaved: (v) => _titre = v!,
-            ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Contenu du Conte'),
-              maxLines: 5,
-              validator: (v) =>
-                  v!.isEmpty ? 'Entrez le contenu du conte' : null,
-              onSaved: (v) => _contenu = v!,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  _formKey.currentState!.save();
-                  widget.onSave({
-                    'titre': _titre,
-                    'contenu': _contenu,
-                    'approuve': false,
-                  });
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Ajouter Conte'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// --- CLASSE PRINCIPALE (CulturesListePage) MISE À JOUR ---
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:malibots_challenge_eni/constants/app_colors.dart';
+import 'package:malibots_challenge_eni/screens/musiques/music_player_screen.dart';
 
 class CulturesListePage extends StatefulWidget {
   const CulturesListePage({super.key});
@@ -503,31 +18,22 @@ class _CulturesListePageState extends State<CulturesListePage>
   final TextEditingController _searchController = TextEditingController();
   String query = '';
 
-  // Contenus culturels (Données initiales)
   List<Map<String, dynamic>> musiques = [
     {
       'titre': 'Djigui',
       'auteur': 'Amadou & Mariam',
-      'approuve': false,
+      'genre': 'Traditionnelle',
       'image': 'assets/img1.jpg',
-    }, // Simulation d'image
+      'fichier': 'assets/musics/bambara/Oumou_Sangaré_-_Diaraby_Nene.mp3',
+      'approuve': false,
+    },
     {
       'titre': 'Yéké Yéké',
       'auteur': 'Mory Kanté',
-      'approuve': true,
+      'genre': 'Moderne',
       'image': 'assets/img2.jpg',
-    },
-    {
-      'titre': 'Fanta',
-      'auteur': 'Oumou Sangaré',
+      'fichier': 'assets/musics/bambara/Oumou_Sangare_-_Wayeina.mp3',
       'approuve': false,
-      'image': 'assets/img3.jpg',
-    },
-    {
-      'titre': 'Kôrô Yamy',
-      'auteur': 'Ali Farka Touré',
-      'approuve': false,
-      'image': 'assets/img4.jpg',
     },
   ];
 
@@ -537,9 +43,7 @@ class _CulturesListePageState extends State<CulturesListePage>
       'image': 'assets/img1.jpg',
       'approuve': false,
     },
-    {'titre': 'Peinture murale', 'image': 'assets/img2.jpg', 'approuve': true},
-    {'titre': 'Sculpture Dogon', 'image': 'assets/img3.jpg', 'approuve': false},
-    {'titre': 'Art textile', 'image': 'assets/img4.jpg', 'approuve': true},
+    {'titre': 'Peinture murale', 'image': 'assets/img2.jpg', 'approuve': false},
   ];
 
   List<Map<String, dynamic>> proverbes = [
@@ -551,34 +55,23 @@ class _CulturesListePageState extends State<CulturesListePage>
     {
       'texte': 'Patience est mère de réussite.',
       'origine': 'Proverbe africain',
-      'approuve': true,
-    },
-    {
-      'texte': 'Qui veut voyager loin ménage sa monture.',
-      'origine': 'Proverbe africain',
       'approuve': false,
     },
   ];
 
-  // Contenu Contes
   List<Map<String, dynamic>> contes = [
     {
-      'titre': 'Le lièvre et l\'hyène',
-      'contenu': 'Un conte populaire sur la ruse du lièvre.',
+      'titre': 'Le lièvre et la tortue',
+      'texte':
+          'Un jour, la tortue défia le lièvre à la course. Le lièvre se moqua, sûr de sa victoire. Mais confiant, il s’endormit sur le chemin, tandis que la tortue avança lentement mais sûrement... et arriva la première.',
+      'origine': 'Conte africain',
       'approuve': false,
-    },
-    {
-      'titre': 'La légende de Soundiata Keïta',
-      'contenu':
-          'L\'histoire fondatrice de l\'empire du Mali est un long récit épique.',
-      'approuve': true,
     },
   ];
 
   @override
   void initState() {
     super.initState();
-    // Le nombre d'onglets est maintenant 4
     _tabController = TabController(length: 4, vsync: this);
   }
 
@@ -589,95 +82,261 @@ class _CulturesListePageState extends State<CulturesListePage>
     super.dispose();
   }
 
-  // Fonction pour ajouter un nouvel élément
-  void _addItem(String type, Map<String, dynamic> item) {
-    setState(() {
-      switch (type) {
-        case 'Musique':
-          musiques.insert(0, item);
-          break;
-        case 'Image':
-          images.insert(0, item);
-          break;
-        case 'Proverbe':
-          proverbes.insert(0, item);
-          break;
-        case 'Conte':
-          contes.insert(0, item);
-          break;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$type "${item['titre'] ?? item['texte']}" ajouté!'),
+  // 🔹 Afficher une image (Asset ou Fichier local)
+  void _viewImage(Map<String, dynamic> item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          appBar: AppBar(
+            backgroundColor: AppColors.textPrimary,
+            title: Text(
+              item['titre'],
+              style: const TextStyle(color: AppColors.primary),
+            ),
+          ),
+          body: Center(
+            child: item['image'].toString().startsWith('assets/')
+                ? Image.asset(item['image'], fit: BoxFit.contain)
+                : Image.file(File(item['image']), fit: BoxFit.contain),
+          ),
         ),
-      );
-    });
+      ),
+    );
   }
 
+  // 🔹 Afficher un conte complet
+  void _viewConte(Map<String, dynamic> item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          appBar: AppBar(
+            backgroundColor: AppColors.primary,
+            title: Text(
+              item['titre'],
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if ((item['origine'] ?? '').isNotEmpty)
+                    Text(
+                      item['origine'] ?? '',
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  const SizedBox(height: 10),
+                  Text(
+                    item['texte'] ?? '',
+                    style: const TextStyle(fontSize: 16, height: 1.5),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 🔹 Modifier un proverbe
+  void _editProverbe(Map<String, dynamic> item) {
+    final TextEditingController _editController = TextEditingController(
+      text: item['texte'],
+    );
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Modifier le proverbe'),
+        content: TextField(
+          controller: _editController,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: 'Texte du proverbe',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            onPressed: () {
+              setState(() => item['texte'] = _editController.text);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Proverbe modifié')));
+            },
+            child: const Text(
+              'Enregistrer',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🔹 Modifier un conte
+  void _editConte(Map<String, dynamic> item) {
+    final TextEditingController _titreCtrl = TextEditingController(
+      text: item['titre'],
+    );
+    final TextEditingController _origCtrl = TextEditingController(
+      text: item['origine'],
+    );
+    final TextEditingController _texteCtrl = TextEditingController(
+      text: item['texte'],
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          "Modifier le conte",
+          style: TextStyle(color: AppColors.primary),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _titreCtrl,
+                decoration: const InputDecoration(
+                  labelText: "Titre du conte",
+                  fillColor: AppColors.primary,
+                ),
+              ),
+              TextField(
+                controller: _origCtrl,
+                decoration: const InputDecoration(
+                  labelText: "Origine",
+                  fillColor: AppColors.primary,
+                ),
+              ),
+              TextField(
+                controller: _texteCtrl,
+                maxLines: 6,
+                decoration: const InputDecoration(
+                  labelText: "Texte complet du conte",
+                  fillColor: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Annuler"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            onPressed: () {
+              setState(() {
+                item['titre'] = _titreCtrl.text;
+                item['origine'] = _origCtrl.text;
+                item['texte'] = _texteCtrl.text;
+              });
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Conte modifié avec succès')),
+              );
+            },
+            child: const Text(
+              "Enregistrer",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🔹 Jouer une musique
+  void _playMusic(Map<String, dynamic> item) {
+    final path = item['fichier'];
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MusicPlayerScreen(
+          tracks: [
+            {
+              'path': path,
+              'title': item['titre'],
+              'artist': item['auteur'] ?? 'Artiste inconnu',
+              'img': item['image'],
+              'isLocal': !path.toString().startsWith('assets/'),
+            },
+          ],
+          index: 0,
+        ),
+      ),
+    );
+  }
+
+  // 🔹 Construire une carte
   Widget _buildCard(Map<String, dynamic> item, String type) {
     String title = '';
     String subtitle = '';
-    Widget? leading;
+    Widget leading = const CircleAvatar(
+      radius: 25,
+      child: Icon(Icons.image, color: AppColors.primary),
+    );
 
     switch (type) {
       case 'Musique':
-        title = item['titre'];
-        subtitle = item['auteur'] ?? '';
-
-        // Gère l'affichage des images (Asset ou File)
-        final imagePath = item['image'] as String?;
-        if (imagePath != null) {
-          if (imagePath.startsWith('assets/')) {
-            leading = CircleAvatar(
-              radius: 25,
-              backgroundImage: AssetImage(imagePath),
-            );
-          } else {
-            // Suppose que c'est un chemin de fichier local après importation
-            leading = CircleAvatar(
-              radius: 25,
-              backgroundImage: FileImage(File(imagePath)),
-              onBackgroundImageError: (exception, stackTrace) =>
-                  const Icon(Icons.music_note, color: Colors.white),
-            );
-          }
+        title = item['titre'] ?? 'Sans titre';
+        final auteur = (item['auteur'] ?? '').toString();
+        final genre = (item['genre'] ?? '').toString();
+        subtitle =
+            (auteur.isNotEmpty ? auteur : 'Inconnu') +
+            (genre.isNotEmpty ? ' • $genre' : '');
+        if (item['image'] != null) {
+          final img = item['image'].toString();
+          leading = CircleAvatar(
+            radius: 25,
+            backgroundImage: img.startsWith('assets/')
+                ? AssetImage(img) as ImageProvider
+                : FileImage(File(img)) as ImageProvider,
+          );
         } else {
           leading = const CircleAvatar(
             radius: 25,
-            child: Icon(Icons.music_note, color: Colors.white),
-            backgroundColor: Color(0xFF007A5A),
+            child: Icon(Icons.music_note, color: AppColors.primary),
           );
         }
         break;
       case 'Image':
-        title = item['titre'];
-
-        final imagePath = item['image'] as String?;
-        if (imagePath != null) {
-          if (imagePath.startsWith('assets/')) {
-            leading = CircleAvatar(
-              radius: 25,
-              backgroundImage: AssetImage(imagePath),
-            );
-          } else {
-            // Suppose que c'est un chemin de fichier local après importation
-            leading = CircleAvatar(
-              radius: 25,
-              backgroundImage: FileImage(File(imagePath)),
-              onBackgroundImageError: (exception, stackTrace) =>
-                  const Icon(Icons.image, color: Colors.white),
-            );
-          }
+        title = item['titre'] ?? 'Sans titre';
+        if (item['image'] != null) {
+          final img = item['image'].toString();
+          leading = CircleAvatar(
+            radius: 25,
+            backgroundImage: img.startsWith('assets/')
+                ? AssetImage(img) as ImageProvider
+                : FileImage(File(img)) as ImageProvider,
+          );
         } else {
           leading = const CircleAvatar(
             radius: 25,
-            child: Icon(Icons.image, color: Colors.white),
-            backgroundColor: Color(0xFF007A5A),
+            child: Icon(Icons.image, color: AppColors.primary),
           );
         }
         break;
       case 'Proverbe':
-        title = item['texte'];
+        title = item['texte'] ?? '';
         subtitle = item['origine'] ?? '';
         leading = const CircleAvatar(
           radius: 25,
@@ -702,20 +361,30 @@ class _CulturesListePageState extends State<CulturesListePage>
           backgroundColor: Color(0xFF007A5A),
         );
         break;
+      case 'Conte':
+        title = item['titre'] ?? 'Sans titre';
+        subtitle = item['origine'] ?? '';
+        leading = const CircleAvatar(
+          radius: 25,
+          child: Icon(Icons.menu_book, color: AppColors.primary),
+        );
+        break;
     }
 
-    // 💡 Carte cliquable
-    return InkWell(
-      onTap: () {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Ouvrir détails : $title')));
-      },
-      child: Card(
-        color: AppColors.primary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 4,
-        margin: const EdgeInsets.symmetric(vertical: 6),
+    return Card(
+      color: item['approuve'] == true
+          ? AppColors.primary.withOpacity(0.7)
+          : AppColors.primary,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          if (type == 'Musique') _playMusic(item);
+          if (type == 'Image') _viewImage(item);
+          if (type == 'Conte') _viewConte(item);
+        },
         child: ListTile(
           leading: leading,
           title: Text(
@@ -731,126 +400,424 @@ class _CulturesListePageState extends State<CulturesListePage>
           trailing: PopupMenuButton<String>(
             icon: const Icon(Icons.menu, color: Colors.white),
             onSelected: (value) {
-              if (value == 'Approuver') {
+              if (value == 'Approuver')
                 setState(() => item['approuve'] = true);
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text('$title approuvé')));
-              } else if (value == 'Supprimer') {
-                setState(() {
-                  switch (type) {
-                    case 'Musique':
-                      musiques.remove(item);
-                      break;
-                    case 'Image':
-                      images.remove(item);
-                      break;
-                    case 'Proverbe':
-                      proverbes.remove(item);
-                      break;
-                    case 'Conte':
-                      contes.remove(item);
-                      break;
-                  }
-                });
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text('$title supprimé')));
+              else if (value == 'Modifier' && type == 'Proverbe')
+                _editProverbe(item);
+              else if (value == 'Lire' && type == 'Musique')
+                _playMusic(item);
+              else if (value == 'Voir' && type == 'Image')
+                _viewImage(item);
+              else if (value == 'LireConte' && type == 'Conte')
+                _viewConte(item);
+              else if (value == 'Modifier' && type == 'Conte')
+                _editConte(item);
+              else if (value == 'Supprimer') {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: const Text('Confirmation'),
+                    content: const Text(
+                      'Voulez-vous vraiment supprimer cet élément ?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Annuler'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            if (type == 'Musique') musiques.remove(item);
+                            if (type == 'Image') images.remove(item);
+                            if (type == 'Proverbe') proverbes.remove(item);
+                            if (type == 'Conte') contes.remove(item);
+                          });
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          'Supprimer',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               }
-              // Les autres actions (Voir, Modifier) peuvent être implémentées plus tard
             },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'Voir',
-                child: Row(
-                  children: [
-                    Icon(Icons.visibility, color: AppColors.primary),
-                    SizedBox(width: 10),
-                    Text('Voir'),
-                  ],
-                ),
-              ),
-              if (!item['approuve'])
+            itemBuilder: (context) {
+              final items = <PopupMenuEntry<String>>[];
+              if (item['approuve'] != true) {
+                items.add(
+                  const PopupMenuItem(
+                    value: 'Approuver',
+                    child: Row(
+                      children: [
+                        Icon(Icons.check, color: Colors.green),
+                        SizedBox(width: 10),
+                        Text('Approuver'),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              if (type == 'Musique') {
+                items.add(
+                  const PopupMenuItem(
+                    value: 'Lire',
+                    child: Row(
+                      children: [
+                        Icon(Icons.play_arrow, color: AppColors.primary),
+                        SizedBox(width: 10),
+                        Text('Lire'),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              if (type == 'Image') {
+                items.add(
+                  const PopupMenuItem(
+                    value: 'Voir',
+                    child: Row(
+                      children: [
+                        Icon(Icons.remove_red_eye, color: AppColors.primary),
+                        SizedBox(width: 10),
+                        Text('Voir'),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              if (type == 'Conte') {
+                items.add(
+                  const PopupMenuItem(
+                    value: 'LireConte',
+                    child: Row(
+                      children: [
+                        Icon(Icons.menu_book, color: AppColors.primary),
+                        SizedBox(width: 10),
+                        Text('Lire'),
+                      ],
+                    ),
+                  ),
+                );
+                items.add(
+                  const PopupMenuItem(
+                    value: 'Modifier',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit, color: AppColors.primary),
+                        SizedBox(width: 10),
+                        Text('Modifier'),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              if (type == 'Proverbe') {
+                items.add(
+                  const PopupMenuItem(
+                    value: 'Modifier',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit, color: AppColors.primary),
+                        SizedBox(width: 10),
+                        Text('Modifier'),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              items.add(
                 const PopupMenuItem(
-                  value: 'Approuver',
+                  value: 'Supprimer',
                   child: Row(
                     children: [
-                      Icon(Icons.check, color: Colors.green),
+                      Icon(Icons.delete, color: Colors.red),
                       SizedBox(width: 10),
-                      Text('Approuver'),
+                      Text('Supprimer'),
                     ],
                   ),
                 ),
-              const PopupMenuItem(
-                value: 'Modifier',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit, color: AppColors.primary),
-                    SizedBox(width: 10),
-                    Text('Modifier'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'Supprimer',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete, color: Colors.red),
-                    SizedBox(width: 10),
-                    Text('Supprimer'),
-                  ],
-                ),
-              ),
-            ],
+              );
+              return items;
+            },
           ),
         ),
       ),
     );
   }
 
-  // Fonction de filtrage
+  // 🔹 Filtrage
   List<Map<String, dynamic>> _filterList(List<Map<String, dynamic>> list) {
-    if (query.isEmpty) return list;
-    final searchLower = query.toLowerCase();
-
+    final s = query.toLowerCase();
+    if (s.isEmpty) return list;
     return list.where((item) {
-      // Recherche dans tous les champs pertinents
-      return (item['titre']?.toLowerCase() ?? '').contains(searchLower) ||
-          (item['auteur']?.toLowerCase() ?? '').contains(searchLower) ||
-          (item['texte']?.toLowerCase() ?? '').contains(searchLower) ||
-          (item['origine']?.toLowerCase() ?? '').contains(searchLower) ||
-          (item['contenu']?.toLowerCase() ?? '').contains(
-            searchLower,
-          ); // Pour Contes
+      return (item['titre']?.toString().toLowerCase() ?? '').contains(s) ||
+          (item['auteur']?.toString().toLowerCase() ?? '').contains(s) ||
+          (item['genre']?.toString().toLowerCase() ?? '').contains(s) ||
+          (item['texte']?.toString().toLowerCase() ?? '').contains(s) ||
+          (item['origine']?.toString().toLowerCase() ?? '').contains(s);
     }).toList();
   }
 
-  // Widget qui combine le ListView et le FloatingActionButton (pour chaque onglet)
-  Widget _buildTabContent(List<Map<String, dynamic>> list, String type) {
-    return Stack(
-      children: [
-        ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: _filterList(list).length,
-          itemBuilder: (context, index) =>
-              _buildCard(_filterList(list)[index], type),
+  // 🔹 Boîte d’ajout musique (avec image via ImagePicker)
+  void _addMusic() async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.audio);
+    if (result == null || result.files.single.path == null) return;
+
+    final fichierPath = result.files.single.path!;
+    final titre = result.files.single.name;
+
+    final TextEditingController _auteurCtrl = TextEditingController();
+    final TextEditingController _genreCtrl = TextEditingController();
+    XFile? pickedImage;
+
+    await showDialog(
+      context: context,
+      builder: (_) => StatefulBuilder(
+        builder: (context, setStateDialog) => AlertDialog(
+          title: const Text("Nouvelle musique"),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                Text("Fichier : $titre"),
+                TextField(
+                  controller: _auteurCtrl,
+                  decoration: const InputDecoration(labelText: "Auteur"),
+                ),
+                TextField(
+                  controller: _genreCtrl,
+                  decoration: const InputDecoration(labelText: "Genre"),
+                ),
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () async {
+                    final picker = ImagePicker();
+                    final img = await picker.pickImage(
+                      source: ImageSource.gallery,
+                    );
+                    if (img != null) {
+                      setStateDialog(() => pickedImage = img);
+                    }
+                  },
+                  child: pickedImage == null
+                      ? Container(
+                          height: 120,
+                          width: double.infinity,
+                          color: Colors.grey[200],
+                          child: const Center(child: Text("Choisir une image")),
+                        )
+                      : Image.file(
+                          File(pickedImage!.path),
+                          height: 120,
+                          fit: BoxFit.cover,
+                        ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Annuler"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+              ),
+              onPressed: () {
+                setState(() {
+                  musiques.add({
+                    'titre': titre,
+                    'auteur': _auteurCtrl.text.isEmpty
+                        ? 'Inconnu'
+                        : _auteurCtrl.text,
+                    'genre': _genreCtrl.text.isEmpty
+                        ? 'Inconnu'
+                        : _genreCtrl.text,
+                    'image': pickedImage?.path ?? 'assets/img1.jpg',
+                    'fichier': fichierPath,
+                    'approuve': false,
+                  });
+                });
+                Navigator.pop(context);
+              },
+              child: const Text(
+                "Ajouter",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
         ),
-        Positioned(
-          bottom: 16,
-          right: 16,
-          child: FloatingActionButton(
-            // Le heroTag est nécessaire pour différencier les FAB
-            heroTag: 'fab$type',
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            onPressed: () => _showContentForm(context, type, (newItem) {
-              _addItem(type, newItem);
-            }),
-            child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  // 🔹 Ajouter une image (choix fichier image + titre)
+  void _addImage() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+    );
+    if (result == null || result.files.single.path == null) return;
+
+    final path = result.files.single.path!;
+    final name = result.files.single.name;
+    final TextEditingController _titleCtrl = TextEditingController(text: name);
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Titre de l'image"),
+        content: TextField(
+          controller: _titleCtrl,
+          decoration: const InputDecoration(
+            labelText: "Entrez le titre de l'image",
           ),
         ),
-      ],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Annuler"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            onPressed: () {
+              setState(() {
+                images.add({
+                  'titre': _titleCtrl.text.isEmpty ? name : _titleCtrl.text,
+                  'image': path,
+                  'approuve': false,
+                });
+              });
+              Navigator.pop(context);
+            },
+            child: const Text("Ajouter", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
+  }
+
+  // 🔹 Ajouter un proverbe
+  void _addProverbe() {
+    final TextEditingController _textCtrl = TextEditingController();
+    final TextEditingController _origCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Ajouter un proverbe"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _textCtrl,
+              decoration: const InputDecoration(labelText: "Texte du proverbe"),
+            ),
+            TextField(
+              controller: _origCtrl,
+              decoration: const InputDecoration(labelText: "Origine"),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Annuler"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            onPressed: () {
+              setState(() {
+                proverbes.add({
+                  'texte': _textCtrl.text,
+                  'origine': _origCtrl.text,
+                  'approuve': false,
+                });
+              });
+              Navigator.pop(context);
+            },
+            child: const Text("Ajouter", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🔹 Ajouter un conte
+  void _addConte() {
+    final TextEditingController _titreCtrl = TextEditingController();
+    final TextEditingController _texteCtrl = TextEditingController();
+    final TextEditingController _origCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Ajouter un conte"),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _titreCtrl,
+                decoration: const InputDecoration(labelText: "Titre du conte"),
+              ),
+              TextField(
+                controller: _origCtrl,
+                decoration: const InputDecoration(labelText: "Origine"),
+              ),
+              TextField(
+                controller: _texteCtrl,
+                maxLines: 6,
+                decoration: const InputDecoration(
+                  labelText: "Texte complet du conte",
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Annuler"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            onPressed: () {
+              setState(() {
+                contes.add({
+                  'titre': _titreCtrl.text,
+                  'texte': _texteCtrl.text,
+                  'origine': _origCtrl.text,
+                  'approuve': false,
+                });
+              });
+              Navigator.pop(context);
+            },
+            child: const Text("Ajouter", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🔹 Boîte d’ajout principal (route vers le bon add)
+  void _showAddDialog() {
+    switch (_tabController.index) {
+      case 0:
+        _addMusic();
+        break;
+      case 1:
+        _addImage();
+        break;
+      case 2:
+        _addProverbe();
+        break;
+      case 3:
+        _addConte();
+        break;
+    }
   }
 
   @override
@@ -865,6 +832,11 @@ class _CulturesListePageState extends State<CulturesListePage>
         ),
         centerTitle: true,
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.primary,
+        onPressed: _showAddDialog,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
       body: Column(
         children: [
           Padding(
@@ -877,10 +849,6 @@ class _CulturesListePageState extends State<CulturesListePage>
                 prefixIcon: const Icon(Icons.search, color: AppColors.primary),
                 filled: true,
                 fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 16,
-                ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(
@@ -907,17 +875,33 @@ class _CulturesListePageState extends State<CulturesListePage>
               Tab(text: "Musiques"),
               Tab(text: "Images"),
               Tab(text: "Proverbes"),
-              Tab(text: "Contes"), // NOUVEAU
+              Tab(text: "Contes"),
             ],
           ),
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildTabContent(musiques, 'Musique'),
-                _buildTabContent(images, 'Image'),
-                _buildTabContent(proverbes, 'Proverbe'),
-                _buildTabContent(contes, 'Conte'), // NOUVEAU
+                ListView(
+                  children: _filterList(
+                    musiques,
+                  ).map((e) => _buildCard(e, 'Musique')).toList(),
+                ),
+                ListView(
+                  children: _filterList(
+                    images,
+                  ).map((e) => _buildCard(e, 'Image')).toList(),
+                ),
+                ListView(
+                  children: _filterList(
+                    proverbes,
+                  ).map((e) => _buildCard(e, 'Proverbe')).toList(),
+                ),
+                ListView(
+                  children: _filterList(
+                    contes,
+                  ).map((e) => _buildCard(e, 'Conte')).toList(),
+                ),
               ],
             ),
           ),

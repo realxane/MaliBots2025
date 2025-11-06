@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
+import 'package:malibots_challenge_eni/screens/catalogue/app_panier.dart';
+import 'package:malibots_challenge_eni/screens/home/culture/culture_page.dart';
+import 'package:malibots_challenge_eni/screens/home/galerie/galerie_page.dart';
 import 'package:malibots_challenge_eni/screens/home/vendeurpages/vendeur_dashboard.dart';
 import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
+import 'package:malibots_challenge_eni/screens/profile/profile_screnn_vendeur.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class MainScreen extends StatefulWidget {
@@ -18,8 +22,8 @@ class _MainScreenState extends State<MainScreen> {
     HomeScreen(),
     HomeScreen(),
     HomeScreen(),
-    HomeScreen(),
-    HomeScreen(),
+    CartPage(),
+    ProfileScrennVendeur(),
     SellerDashboardScreen(),
   ];
 
@@ -32,9 +36,6 @@ class _MainScreenState extends State<MainScreen> {
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() => _currentIndex = index);
-          if(index == 3) {
-            Navigator.pushNamed(context, AppRoutes.panier);
-          }
         },
         selectedItemColor: bogolan, // ta couleur
         unselectedItemColor: Colors.brown[300],
@@ -229,16 +230,31 @@ class _HomeScreenState extends State<HomeScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) =>
-                            const MusiqueScreen(), // 👈 navigation vers Musique
+                            const MusiqueScreen(), //  navigation vers Musique
                       ),
                     );
                   }),
-                  _buildCategory(Iconsax.story, "Contes", () {}),
+                  _buildCategory(Iconsax.story, "Culture", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const CulturePage(), //
+                      ),
+                    );
+                  }),
                   _buildCategory(Iconsax.shopping_bag, "Accessoires", () {
                     Navigator.pushNamed(
                       context,
                       AppRoutes.catalogue,
                       arguments: 'Accessoires',
+                    );
+                  }),
+                  _buildCategory(Icons.photo_library, "Galerie", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const GaleriePage(), //
+                      ),
                     );
                   }),
                 ],
@@ -428,8 +444,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
 
       //Barre de navigation inférieure
-
-      
     );
   }
 

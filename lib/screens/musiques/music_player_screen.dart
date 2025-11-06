@@ -1,9 +1,11 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
-  final List<Map<String, String>> tracks;
+  final List<Map<String, dynamic>> tracks;
   final int index;
 
   const MusicPlayerScreen({
@@ -50,9 +52,40 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
     return "$minutes:$seconds";
   }
 
+  /// ✅ Lecture automatique selon la source (Asset ou Fichier local)
   Future<void> play() async {
-    final path = widget.tracks[index]['path']!.replaceFirst("assets/", "");
-    await player.play(AssetSource(path));
+    await player.stop();
+    final track = widget.tracks[index];
+    final path = track['path'];
+
+    try {
+      if (kIsWeb) {
+        // 🌐 Sur Web → seuls les assets peuvent être lus
+        if (path.toString().startsWith('assets/')) {
+          await player.play(AssetSource(path.replaceFirst('assets/', '')));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Lecture de fichiers locaux non supportée sur le Web.',
+              ),
+            ),
+          );
+        }
+      } else {
+        // 📱 Sur Android/iOS/Desktop
+        if (path.toString().startsWith('assets/')) {
+          await player.play(AssetSource(path.replaceFirst('assets/', '')));
+        } else {
+          await player.play(DeviceFileSource(path));
+        }
+      }
+    } catch (e) {
+      debugPrint('Erreur de lecture audio: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur de lecture : $e')),
+      );
+    }
   }
 
   Future<void> next() async {
@@ -83,9 +116,9 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: AppColors.background, //const Color(0xFFD2B48C),
+        backgroundColor: AppColors.background,
         title: Text(
-          track['title']!,
+          track['title'] ?? 'Musique',
           style: const TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.bold,
@@ -96,12 +129,20 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircleAvatar(radius: 120, backgroundImage: AssetImage(track['img']!)),
+          // ✅ Gestion image locale ou asset
+          CircleAvatar(
+            radius: 120,
+            backgroundImage: (track['img'] != null)
+                ? (track['img'].toString().startsWith('assets/')
+                    ? AssetImage(track['img'])
+                    : FileImage(File(track['img'])) as ImageProvider)
+                : const AssetImage('assets/img_music_placeholder.jpg'),
+          ),
 
           const SizedBox(height: 25),
 
           Text(
-            track['title']!,
+            track['title'] ?? 'Titre inconnu',
             style: const TextStyle(
               color: Colors.black,
               fontSize: 22,
@@ -148,7 +189,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
 
           const SizedBox(height: 20),
 
-          // ✅ Boutons
+          // ✅ Boutons de contrôle
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
