@@ -159,6 +159,64 @@ class _CulturesListePageState extends State<CulturesListePage>
     );
   }
 
+  // 🔹 Modifier un conte
+void _editConte(Map<String, dynamic> item) {
+  final TextEditingController _titreCtrl =
+      TextEditingController(text: item['titre']);
+  final TextEditingController _origCtrl =
+      TextEditingController(text: item['origine']);
+  final TextEditingController _texteCtrl =
+      TextEditingController(text: item['texte']);
+
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text("Modifier le conte", style: TextStyle(color: AppColors.primary)),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+                controller: _titreCtrl,
+                decoration: const InputDecoration(labelText: "Titre du conte",fillColor: AppColors.primary)),
+            TextField(
+                controller: _origCtrl,
+                decoration: const InputDecoration(labelText: "Origine",fillColor: AppColors.primary)),
+            TextField(
+              controller: _texteCtrl,
+              maxLines: 6,
+              decoration:
+                  const InputDecoration(labelText: "Texte complet du conte",fillColor: AppColors.primary),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Annuler")),
+        ElevatedButton(
+          style:
+              ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+          onPressed: () {
+            setState(() {
+              item['titre'] = _titreCtrl.text;
+              item['origine'] = _origCtrl.text;
+              item['texte'] = _texteCtrl.text;
+            });
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('Conte modifié avec succès')));
+          },
+          child: const Text("Enregistrer",
+              style: TextStyle(color: Colors.white)),
+        ),
+      ],
+    ),
+  );
+}
+
+
   // 🔹 Jouer une musique
   void _playMusic(Map<String, dynamic> item) {
     final path = item['fichier'];
@@ -255,6 +313,7 @@ class _CulturesListePageState extends State<CulturesListePage>
               else if (value == 'Lire' && type == 'Musique') _playMusic(item);
               else if (value == 'Voir' && type == 'Image') _viewImage(item);
               else if (value == 'LireConte' && type == 'Conte') _viewConte(item);
+              else if (value == 'Modifier' && type == 'Conte') _editConte(item);
               else if (value == 'Supprimer') {
                 showDialog(
                   context: context,
@@ -312,6 +371,12 @@ class _CulturesListePageState extends State<CulturesListePage>
                   value: 'LireConte',
                   child: Row(
                     children: [Icon(Icons.menu_book, color: AppColors.primary), SizedBox(width: 10), Text('Lire')],
+                  ),
+                ));
+                items.add(const PopupMenuItem(
+                  value: 'Modifier',
+                  child: Row(
+                    children: [Icon(Icons.edit, color: AppColors.primary), SizedBox(width: 10), Text('Modifier')],
                   ),
                 ));
               }
