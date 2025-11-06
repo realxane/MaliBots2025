@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_produit_detail.dart';
+import 'package:malibots_challenge_eni/screens/home/culture/conte_detail_page.dart';
+import 'package:malibots_challenge_eni/screens/home/galerie/photo_detail_page.dart';
 import 'package:provider/provider.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/providers/favoris_store.dart';
@@ -13,7 +15,7 @@ class FavoritesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.white,
@@ -32,6 +34,7 @@ class FavoritesPage extends StatelessWidget {
               Tab(text: 'Musiques'),
               Tab(text: 'Proverbes'),
               Tab(text: 'Contes'),
+              Tab(text: 'Galerie'),
             ],
           ),
         ),
@@ -39,8 +42,9 @@ class FavoritesPage extends StatelessWidget {
           children: [
             const _ArticlesTab(),
             _EmptyTab(label: 'Musiques'),
-            _EmptyTab(label: 'Proverbes'),
-            _EmptyTab(label: 'Contes'),
+            _ProverbesTab(),
+            _ContesTab(),
+            _GalerieTab(),
           ],
         ),
       ),
@@ -117,6 +121,146 @@ class _EmptyTab extends StatelessWidget {
         'Aucun favori dans $label.',
         style: TextStyle(color: Colors.brown.shade300),
       ),
+    );
+  }
+}
+
+class _ProverbesTab extends StatelessWidget {
+  const _ProverbesTab();
+
+  @override
+  Widget build(BuildContext context) {
+    final store = context.watch<FavoritesStore>();
+    final items = store.proverbeFavorites;
+    if (items.isEmpty) return const _EmptyState();
+
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFEDEDED)),
+      itemCount: items.length,
+      itemBuilder: (context, i) {
+        final p = items[i];
+        final id = p['id'] ?? store.proverbeIdFrom(p);
+        return ListTile(
+          title: Text(p['texte'] ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
+          subtitle: Text(p['origine'] ?? '', style: TextStyle(color: Colors.brown.shade300)),
+          trailing: IconButton(
+            icon: const Icon(Icons.delete_outline),
+            color: AppColors.primary,
+            onPressed: () => context.read<FavoritesStore>().removeProverbe(id),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ContesTab extends StatelessWidget {
+  const _ContesTab();
+
+  @override
+  Widget build(BuildContext context) {
+    final store = context.watch<FavoritesStore>();
+    final items = store.conteFavorites;
+    if (items.isEmpty) return const _EmptyState();
+
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFEDEDED)),
+      itemCount: items.length,
+      itemBuilder: (context, i) {
+        final c = items[i];
+        final id = c['id'] ?? store.conteIdFrom(c);
+        return ListTile(
+          title: Text(c['titre'] ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
+          subtitle: Text(c['resume'] ?? '', maxLines: 2, overflow: TextOverflow.ellipsis),
+          trailing: IconButton(
+            icon: const Icon(Icons.delete_outline),
+            color: AppColors.primary,
+            onPressed: () => context.read<FavoritesStore>().removeConte(id),
+          ),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => ConteDetailPage(conte: c)),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _GalerieTab extends StatelessWidget {
+  const _GalerieTab();
+
+  @override
+  Widget build(BuildContext context) {
+    final store = context.watch<FavoritesStore>();
+    final items = store.photoFavorites;
+
+    if (items.isEmpty) return const _EmptyState();
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: items.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 0.85,
+      ),
+      itemBuilder: (context, i) {
+        final p = items[i];
+        final id = store.photoIdFrom(p);
+        return Stack(
+          children: [
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => PhotoDetailPage(photo: p)),
+                );
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  p['images'][0],
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 6,
+              right: 6,
+              child: Material(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(20),
+                child: IconButton(
+                  icon: const Icon(Icons.delete_outline, color: Colors.white),
+                  onPressed: () => context.read<FavoritesStore>().removePhoto(id),
+                  tooltip: 'Retirer',
+                ),
+              ),
+            ),
+            Positioned(
+              left: 8,
+              bottom: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  p['titre'] ?? '',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

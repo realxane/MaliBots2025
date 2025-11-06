@@ -42,16 +42,13 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => ProductsStore(kProducts), // ta liste initiale de Product
+          create: (_) =>
+              ProductsStore(kProducts), // ta liste initiale de Product
         ),
-        ChangeNotifierProvider(
-          create: (_) => FavoritesStore(),
-        ),
-        
+        ChangeNotifierProvider(create: (_) => FavoritesStore()),
       ],
       child: const MyApp(),
-    )
-    
+    ),
   );
 }
 
@@ -64,11 +61,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Anw ka Dambe',
-      // initialRoute: AppRoutes.onboarding,
-      initialRoute: AppRoutes.admin_dash,
+      initialRoute: AppRoutes.onboarding,
+      // initialRoute: AppRoutes.admin_dash,
       routes: {
-        
-     
         AppRoutes.accueil: (context) => MainScreen(),
         // AppRoutes.accueil: (context) => const HomeScreen(),
         AppRoutes.onboarding: (context) => const OnboardingScreen(),
@@ -90,8 +85,6 @@ class MyApp extends StatelessWidget {
         AppRoutes.adminListeProduits: (context) => const ProduitsListePage(),
         AppRoutes.adminListeCultures: (context) => const CulturesListePage(),
         AppRoutes.adminprofile: (context) => const MonDrawer(),
-
-       
       },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
