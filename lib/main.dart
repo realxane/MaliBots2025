@@ -21,7 +21,7 @@ import 'package:malibots_challenge_eni/screens/onboarding/onboarding_screen.dart
 import 'package:malibots_challenge_eni/screens/auth/app_google_apple.dart';
 
 // import 'screens/onboarding/onboarding_screen.dart';
-import 'screens/home/home_screen.dart';
+// import 'screens/home/home_screen.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_choixprofil.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_login.dart';
@@ -64,8 +64,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Anw ka Dambe',
-initialRoute: AppRoutes.onboarding,
-      // initialRoute: AppRoutes.admin_dash,
+      // initialRoute: AppRoutes.onboarding,
+      initialRoute: AppRoutes.admin_dash,
       routes: {
         
      
