@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
+import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
 
 class MonDrawer extends StatelessWidget {
@@ -57,12 +58,18 @@ class MonDrawer extends StatelessWidget {
               const SizedBox(height: 30),
               SizedBox(
                 width: double.infinity,
-                child: bouton_large(hint: "Acceuil", onPressed: (){})
+                child: bouton_large(hint: "Acceuil", onPressed: (){
+                  Navigator.pushNamed(context, AppRoutes.accueil);
+
+                }
+                )
                 ),
               const SizedBox(height: 15),
               SizedBox(
                 width: double.infinity,
-                child: bouton_large(hint: "Profil", onPressed: (){})
+                child: bouton_large(hint: "Profil", onPressed: (){
+                  Navigator.pushNamed(context, AppRoutes.profil);
+                })
                 ),
               const SizedBox(height: 15),
               SizedBox(width: double.infinity,

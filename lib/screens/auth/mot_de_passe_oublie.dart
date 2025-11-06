@@ -105,7 +105,7 @@ class MotDePasseOublie extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: bouton_large( hint:"Envoyer le code",onPressed: (){
-              Navigator.push(context, MaterialPageRoute(builder:(context)=> CreeNouveauMotdepasse()));
+              Navigator.pushNamed(context, AppRoutes.newPassword);
             },),
           ),
             
