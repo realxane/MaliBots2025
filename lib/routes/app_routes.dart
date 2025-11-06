@@ -42,4 +42,6 @@ class AppRoutes {
   static const String adminListeProduits = '/admin_liste_produits';
   //page admin liste commandes
   static const String adminListeCultures = '/admin_liste_cultures';
+  //page admin profil
+  static const String adminprofile = '/adminprofile';
 }

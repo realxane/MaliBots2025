@@ -155,34 +155,35 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           if (i == 4) {
             Navigator.pushNamed(context, AppRoutes.adminListeCultures);
           }
+          if (i == 5) {
+            Navigator.pushNamed(context, AppRoutes.adminprofile);
+          }
         },
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
+        // showSelectedLabels: true,
+        // showUnselectedLabels: false,
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         selectedItemColor: _brown,
         unselectedItemColor: _brown.withOpacity(.5),
         items: const [
           BottomNavigationBarItem(
-            icon: Text('D', style: TextStyle(fontSize: 18)),
-            label: '',
+            icon: Icon(Icons.dashboard),
+            label: 'Accueil',
           ),
           BottomNavigationBarItem(
-            icon: Text('U', style: TextStyle(fontSize: 18)),
-            label: '',
+            icon: Icon(Icons.supervised_user_circle),
+            label: 'Users',
           ),
           BottomNavigationBarItem(
-            icon: Text('V', style: TextStyle(fontSize: 18)),
-            label: '',
+            icon: Icon(Icons.sell_rounded),
+            label: 'Vendeurs',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Produits'),
           BottomNavigationBarItem(
-            icon: Text('P', style: TextStyle(fontSize: 18)),
-            label: '',
+            icon: Icon(Icons.menu_book),
+            label: 'Contenus',
           ),
-          BottomNavigationBarItem(
-            icon: Text('C', style: TextStyle(fontSize: 18)),
-            label: '',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
         ],
       ),
     );
