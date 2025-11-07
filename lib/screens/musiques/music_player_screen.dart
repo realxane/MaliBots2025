@@ -24,6 +24,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   Duration position = Duration.zero;
   Duration duration = Duration.zero;
   bool isPlaying = false;
+  bool isFavorite = false;
 
   @override
   void initState() {
@@ -82,9 +83,9 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
       }
     } catch (e) {
       debugPrint('Erreur de lecture audio: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur de lecture : $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erreur de lecture : $e')));
     }
   }
 
@@ -134,8 +135,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
             radius: 120,
             backgroundImage: (track['img'] != null)
                 ? (track['img'].toString().startsWith('assets/')
-                    ? AssetImage(track['img'])
-                    : FileImage(File(track['img'])) as ImageProvider)
+                      ? AssetImage(track['img'])
+                      : FileImage(File(track['img'])) as ImageProvider)
                 : const AssetImage('assets/img_music_placeholder.jpg'),
           ),
 
@@ -153,6 +154,19 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
           Text(
             track["artist"] ?? "Artiste inconnu",
             style: const TextStyle(color: Colors.black54, fontSize: 16),
+          ),
+          //  Bouton "favori"
+          IconButton(
+            icon: Icon(
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: isFavorite ? Colors.red : Colors.black54,
+              size: 35,
+            ),
+            onPressed: () {
+              setState(() {
+                isFavorite = !isFavorite;
+              });
+            },
           ),
 
           const SizedBox(height: 20),

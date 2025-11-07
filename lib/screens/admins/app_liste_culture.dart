@@ -40,10 +40,18 @@ class _CulturesListePageState extends State<CulturesListePage>
   List<Map<String, dynamic>> images = [
     {
       'titre': 'Masque traditionnel',
-      'image': 'assets/img1.jpg',
+      'description': 'Masque Bambara utilisé lors des cérémonies.',
+      'ethnie': 'Bambara',
+      'images': ['assets/img1.jpg'],
       'approuve': false,
     },
-    {'titre': 'Peinture murale', 'image': 'assets/img2.jpg', 'approuve': false},
+    {
+      'titre': 'Peinture murale',
+      'description': 'Peinture murale de la ville de Ouagadougou.',
+      'ethnie': 'Bambara',
+      'images': ['assets/img2.jpg'],
+      'approuve': false,
+    },
   ];
 
   List<Map<String, dynamic>> proverbes = [
@@ -84,22 +92,36 @@ class _CulturesListePageState extends State<CulturesListePage>
 
   // 🔹 Afficher une image (Asset ou Fichier local)
   void _viewImage(Map<String, dynamic> item) {
+    final List<dynamic>? imageList = item['images'];
+    final titre = item['titre'] ?? '';
+    final desc = item['description'] ?? '';
+    final ethnie = item['ethnie'] ?? '';
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => Scaffold(
+          backgroundColor: Colors.white,
           appBar: AppBar(
-            backgroundColor: AppColors.textPrimary,
+            backgroundColor: AppColors.primary,
             title: Text(
-              item['titre'],
-              style: const TextStyle(color: AppColors.primary),
+              titre.isNotEmpty ? titre : 'Détails de l\'image',
+              style: const TextStyle(color: Colors.white),
             ),
           ),
-          body: Center(
-            child: item['image'].toString().startsWith('assets/')
-                ? Image.asset(item['image'], fit: BoxFit.contain)
-                : Image.file(File(item['image']), fit: BoxFit.contain),
-          ),
+          body: imageList != null && imageList.isNotEmpty
+              ? _ImageDetailView(
+                  images: imageList.map((e) => e.toString()).toList(),
+                  titre: titre,
+                  description: desc,
+                  ethnie: ethnie,
+                )
+              : const Center(
+                  child: Text(
+                    "Aucune image disponible",
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                ),
         ),
       ),
     );
@@ -320,7 +342,26 @@ class _CulturesListePageState extends State<CulturesListePage>
         break;
       case 'Image':
         title = item['titre'] ?? 'Sans titre';
-        if (item['image'] != null) {
+        final List<dynamic>? imageList = item['images'];
+
+        // ✅ Utiliser la première image si disponible
+        if (imageList != null && imageList.isNotEmpty) {
+          final firstImg = imageList.first?.toString();
+          if (firstImg != null && firstImg.isNotEmpty) {
+            leading = CircleAvatar(
+              radius: 25,
+              backgroundImage: firstImg.startsWith('assets/')
+                  ? AssetImage(firstImg) as ImageProvider
+                  : FileImage(File(firstImg)) as ImageProvider,
+            );
+          } else {
+            leading = const CircleAvatar(
+              radius: 25,
+              child: Icon(Icons.image, color: AppColors.primary),
+            );
+          }
+        } else if (item['image'] != null) {
+          // ✅ Pour compatibilité avec anciens éléments ayant 'image' au lieu de 'images'
           final img = item['image'].toString();
           leading = CircleAvatar(
             radius: 25,
@@ -565,15 +606,11 @@ class _CulturesListePageState extends State<CulturesListePage>
 
   // 🔹 Boîte d’ajout musique (avec image via ImagePicker)
   void _addMusic() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.audio);
-    if (result == null || result.files.single.path == null) return;
-
-    final fichierPath = result.files.single.path!;
-    final titre = result.files.single.name;
-
+    final TextEditingController _titreCtrl = TextEditingController();
     final TextEditingController _auteurCtrl = TextEditingController();
     final TextEditingController _genreCtrl = TextEditingController();
     XFile? pickedImage;
+    String? fichierPath;
 
     await showDialog(
       context: context,
@@ -583,14 +620,35 @@ class _CulturesListePageState extends State<CulturesListePage>
           content: SingleChildScrollView(
             child: Column(
               children: [
-                Text("Fichier : $titre"),
+                TextField(
+                  controller: _titreCtrl,
+                  decoration: const InputDecoration(labelText: "Titre"),
+                ),
                 TextField(
                   controller: _auteurCtrl,
-                  decoration: const InputDecoration(labelText: "Auteur"),
+                  decoration: const InputDecoration(labelText: "Artiste"),
                 ),
                 TextField(
                   controller: _genreCtrl,
                   decoration: const InputDecoration(labelText: "Genre"),
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () async {
+                    final result = await FilePicker.platform.pickFiles(
+                      type: FileType.audio,
+                    );
+                    if (result != null && result.files.single.path != null) {
+                      setStateDialog(
+                        () => fichierPath = result.files.single.path!,
+                      );
+                    }
+                  },
+                  child: Text(
+                    fichierPath == null
+                        ? "Choisir le fichier audio"
+                        : "Fichier sélectionné",
+                  ),
                 ),
                 const SizedBox(height: 10),
                 GestureDetector(
@@ -599,9 +657,7 @@ class _CulturesListePageState extends State<CulturesListePage>
                     final img = await picker.pickImage(
                       source: ImageSource.gallery,
                     );
-                    if (img != null) {
-                      setStateDialog(() => pickedImage = img);
-                    }
+                    if (img != null) setStateDialog(() => pickedImage = img);
                   },
                   child: pickedImage == null
                       ? Container(
@@ -629,21 +685,25 @@ class _CulturesListePageState extends State<CulturesListePage>
                 backgroundColor: AppColors.primary,
               ),
               onPressed: () {
-                setState(() {
-                  musiques.add({
-                    'titre': titre,
-                    'auteur': _auteurCtrl.text.isEmpty
-                        ? 'Inconnu'
-                        : _auteurCtrl.text,
-                    'genre': _genreCtrl.text.isEmpty
-                        ? 'Inconnu'
-                        : _genreCtrl.text,
-                    'image': pickedImage?.path ?? 'assets/img1.jpg',
-                    'fichier': fichierPath,
-                    'approuve': false,
+                if (fichierPath != null) {
+                  setState(() {
+                    musiques.add({
+                      'titre': _titreCtrl.text,
+                      'auteur': _auteurCtrl.text,
+                      'genre': _genreCtrl.text,
+                      'image': pickedImage?.path ?? 'assets/img1.jpg',
+                      'fichier': fichierPath,
+                      'approuve': false,
+                    });
                   });
-                });
-                Navigator.pop(context);
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Veuillez choisir un fichier audio"),
+                    ),
+                  );
+                }
               },
               child: const Text(
                 "Ajouter",
@@ -657,46 +717,88 @@ class _CulturesListePageState extends State<CulturesListePage>
   }
 
   // 🔹 Ajouter une image (choix fichier image + titre)
+
   void _addImage() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-    );
-    if (result == null || result.files.single.path == null) return;
+    final TextEditingController _titleCtrl = TextEditingController();
+    final TextEditingController _descCtrl = TextEditingController();
+    final TextEditingController _ethnieCtrl = TextEditingController();
+    List<XFile> pickedImages = [];
 
-    final path = result.files.single.path!;
-    final name = result.files.single.name;
-    final TextEditingController _titleCtrl = TextEditingController(text: name);
-
-    showDialog(
+    await showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Titre de l'image"),
-        content: TextField(
-          controller: _titleCtrl,
-          decoration: const InputDecoration(
-            labelText: "Entrez le titre de l'image",
+      builder: (_) => StatefulBuilder(
+        builder: (context, setStateDialog) => AlertDialog(
+          title: const Text("Nouvelle image"),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: _titleCtrl,
+                  decoration: const InputDecoration(labelText: "Titre"),
+                ),
+                TextField(
+                  controller: _descCtrl,
+                  decoration: const InputDecoration(labelText: "Description"),
+                ),
+                TextField(
+                  controller: _ethnieCtrl,
+                  decoration: const InputDecoration(labelText: "Ethnie"),
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () async {
+                    final results = await ImagePicker().pickMultiImage();
+                    if (results.isNotEmpty)
+                      setStateDialog(() => pickedImages = results);
+                  },
+                  child: const Text("Choisir plusieurs images"),
+                ),
+                const SizedBox(height: 10),
+                if (pickedImages.isNotEmpty)
+                  Image.file(
+                    File(pickedImages[0].path),
+                    height: 120,
+                    fit: BoxFit.cover,
+                  ),
+              ],
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Annuler"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+              ),
+              onPressed: () {
+                if (pickedImages.isNotEmpty) {
+                  setState(() {
+                    images.add({
+                      'titre': _titleCtrl.text,
+                      'description': _descCtrl.text,
+                      'ethnie': _ethnieCtrl.text,
+                      'images': pickedImages.map((e) => e.path).toList(),
+                      'approuve': false,
+                    });
+                  });
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Veuillez choisir au moins une image."),
+                    ),
+                  );
+                }
+              },
+              child: const Text(
+                "Ajouter",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Annuler"),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            onPressed: () {
-              setState(() {
-                images.add({
-                  'titre': _titleCtrl.text.isEmpty ? name : _titleCtrl.text,
-                  'image': path,
-                  'approuve': false,
-                });
-              });
-              Navigator.pop(context);
-            },
-            child: const Text("Ajouter", style: TextStyle(color: Colors.white)),
-          ),
-        ],
       ),
     );
   }
@@ -705,6 +807,7 @@ class _CulturesListePageState extends State<CulturesListePage>
   void _addProverbe() {
     final TextEditingController _textCtrl = TextEditingController();
     final TextEditingController _origCtrl = TextEditingController();
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -730,14 +833,22 @@ class _CulturesListePageState extends State<CulturesListePage>
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             onPressed: () {
-              setState(() {
-                proverbes.add({
-                  'texte': _textCtrl.text,
-                  'origine': _origCtrl.text,
-                  'approuve': false,
+              if (_textCtrl.text.isNotEmpty) {
+                setState(() {
+                  proverbes.add({
+                    'texte': _textCtrl.text,
+                    'origine': _origCtrl.text,
+                    'approuve': false,
+                  });
                 });
-              });
-              Navigator.pop(context);
+                Navigator.pop(context);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Le texte du proverbe est requis"),
+                  ),
+                );
+              }
             },
             child: const Text("Ajouter", style: TextStyle(color: Colors.white)),
           ),
@@ -907,6 +1018,100 @@ class _CulturesListePageState extends State<CulturesListePage>
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ImageDetailView extends StatefulWidget {
+  final List<String> images;
+  final String titre;
+  final String description;
+  final String ethnie;
+
+  const _ImageDetailView({
+    required this.images,
+    required this.titre,
+    required this.description,
+    required this.ethnie,
+  });
+
+  @override
+  State<_ImageDetailView> createState() => _ImageDetailViewState();
+}
+
+class _ImageDetailViewState extends State<_ImageDetailView> {
+  int _currentPage = 0;
+  final PageController _controller = PageController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: PageView.builder(
+            controller: _controller,
+            itemCount: widget.images.length,
+            onPageChanged: (index) => setState(() => _currentPage = index),
+            itemBuilder: (context, index) {
+              final img = widget.images[index];
+              return img.startsWith('assets/')
+                  ? Image.asset(img, fit: BoxFit.contain)
+                  : Image.file(File(img), fit: BoxFit.contain);
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(widget.images.length, (index) {
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: _currentPage == index ? 10 : 6,
+              height: _currentPage == index ? 10 : 6,
+              decoration: BoxDecoration(
+                color: _currentPage == index
+                    ? AppColors.primary
+                    : Colors.white54,
+                shape: BoxShape.circle,
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.titre.isNotEmpty)
+                Text(
+                  widget.titre,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              if (widget.description.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    widget.description,
+                    style: const TextStyle(color: AppColors.primary),
+                  ),
+                ),
+              if (widget.ethnie.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, bottom: 12),
+                  child: Text(
+                    "Ethnie : ${widget.ethnie}",
+                    style: const TextStyle(color: AppColors.primary),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

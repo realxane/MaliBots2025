@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'music_player_screen.dart';
 
