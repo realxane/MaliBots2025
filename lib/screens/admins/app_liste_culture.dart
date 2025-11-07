@@ -81,7 +81,7 @@ class _CulturesListePageState extends State<CulturesListePage>
     context,
     MaterialPageRoute(
       builder: (_) => Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: AppColors.primary,
           title: Text(
@@ -99,7 +99,7 @@ class _CulturesListePageState extends State<CulturesListePage>
             : const Center(
                 child: Text(
                   "Aucune image disponible",
-                  style: TextStyle(color: Colors.white70),
+                  style: TextStyle(color: AppColors.primary),
                 ),
               ),
       ),
@@ -531,6 +531,7 @@ void _editConte(Map<String, dynamic> item) {
 
 
   // 🔹 Ajouter une image (choix fichier image + titre)
+
 void _addImage() async {
   final TextEditingController _titleCtrl = TextEditingController();
   final TextEditingController _descCtrl = TextEditingController();
@@ -590,6 +591,7 @@ void _addImage() async {
     ),
   );
 }
+
 
 // 🔹 Ajouter un proverbe
 void _addProverbe() {
@@ -838,20 +840,20 @@ class _ImageDetailViewState extends State<_ImageDetailView> {
               if (widget.titre.isNotEmpty)
                 Text(widget.titre,
                     style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.primary,
                         fontSize: 18,
                         fontWeight: FontWeight.bold)),
               if (widget.description.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(widget.description,
-                      style: const TextStyle(color: Colors.white70)),
+                      style: const TextStyle(color:AppColors.primary)),
                 ),
               if (widget.ethnie.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 4, bottom: 12),
                   child: Text("Ethnie : ${widget.ethnie}",
-                      style: const TextStyle(color: Colors.white60)),
+                      style: const TextStyle(color:AppColors.primary)),
                 ),
             ],
           ),

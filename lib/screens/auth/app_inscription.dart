@@ -157,28 +157,33 @@ class _InscriptionPageState extends State<InscriptionPage> {
                     const SizedBox(height: 10),
 
                    
-                 Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: _cultureOptions.map((option) {
-                          final isSelected = _selectedCultures.contains(option);
-                          return _buildCultureChip(
-                            option,
-                            isSelected,
-                            () {
-                              setState(() {
-                                if (isSelected) {
-                                  _selectedCultures.remove(option);
-                                } else {
-                                  _selectedCultures.add(option);
-                                }
-                              });
-                            },
-                          AppColors.primary,
-                          );
-                        }).toList(),
-                      ),
-                    ),
+                                          Center(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: _cultureOptions.map((option) {
+                                  final isSelected = _selectedCultures.contains(option);
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                    child: _buildCultureChip(
+                                      option,
+                                      isSelected,
+                                      () {
+                                        setState(() {
+                                          if (isSelected) {
+                                            _selectedCultures.remove(option);
+                                          } else {
+                                            _selectedCultures.add(option);
+                                          }
+                                        });
+                                      },
+                                      AppColors.primary,
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
 
 
                     const SizedBox(height: 12),
