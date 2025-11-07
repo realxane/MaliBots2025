@@ -6,10 +6,12 @@ import 'package:malibots_challenge_eni/widgets/buttons/text_button.dart';
 
 class ProfileScreenUser extends StatelessWidget {
   const ProfileScreenUser({super.key});
-    //  final Color primaryColor = const Color(0xFF904321);
 
   @override
+  
   Widget build(BuildContext context) {
+bool isSignaled = true; // pour savoir si le vendeur a été signalé
+String reason = "Produit non conforme aux règles du marché"; // raison du signalement
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -79,7 +81,47 @@ class ProfileScreenUser extends StatelessWidget {
                   child: bouton_large(
                     hint: "Modifier mon profil",
                     onPressed: (){},
-                  ),)
+                  ),),
+                  const SizedBox(height: 25),
+          Padding(padding: EdgeInsets.all(10),
+          child: ElevatedButton.icon(onPressed: (){
+            if(isSignaled){
+              showDialog(context: context, builder: (context)=>AlertDialog(
+                title: Text("vous avez été signaler"),
+                content: Text(reason),
+                actions: [
+                  TextButton( onPressed: () => Navigator.pop(context),
+              child: const Text("Fermer"),)
+                ],
+
+              )
+              
+              );
+            } else{
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Aucun signalement !"))
+              );
+            }
+          },
+          icon: Stack(
+            children: [
+              const Icon(Icons.flag),
+               Positioned(
+                right: 0,
+                top: 0,
+                child: Icon(Icons.circle_notifications,
+                color: isSignaled ? Colors.red : Colors.transparent,
+                size: 8,),
+              ),
+            ],
+          ),
+          label:Text("Signalement") ,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
+           ),
+          ),
+          ),
                 
 
 
