@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_produit_detail.dart';
 import 'package:malibots_challenge_eni/screens/home/culture/conte_detail_page.dart';
 import 'package:malibots_challenge_eni/screens/home/galerie/photo_detail_page.dart';
+import 'package:malibots_challenge_eni/screens/musiques/music_player_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/providers/favoris_store.dart';
@@ -41,7 +44,7 @@ class FavoritesPage extends StatelessWidget {
         body: TabBarView(
           children: [
             const _ArticlesTab(),
-            _EmptyTab(label: 'Musiques'),
+            _MusiquesTab(),
             _ProverbesTab(),
             _ContesTab(),
             _GalerieTab(),
@@ -110,20 +113,20 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-class _EmptyTab extends StatelessWidget {
-  final String label;
-  const _EmptyTab({required this.label});
+// class _EmptyTab extends StatelessWidget {
+//   final String label;
+//   const _EmptyTab({required this.label});
 
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Aucun favori dans $label.',
-        style: TextStyle(color: Colors.brown.shade300),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Center(
+//       child: Text(
+//         'Aucun favori dans $label.',
+//         style: TextStyle(color: Colors.brown.shade300),
+//       ),
+//     );
+//   }
+// }
 
 class _ProverbesTab extends StatelessWidget {
   const _ProverbesTab();
@@ -259,6 +262,58 @@ class _GalerieTab extends StatelessWidget {
               ),
             ),
           ],
+        );
+      },
+    );
+  }
+}
+
+class _MusiquesTab extends StatelessWidget {
+  const _MusiquesTab();
+
+  @override
+  Widget build(BuildContext context) {
+    final store = context.watch<FavoritesStore>();
+    final items = store.musicFavorites;
+    if (items.isEmpty) return const _EmptyState();
+
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFEDEDED)),
+      itemCount: items.length,
+      itemBuilder: (context, i) {
+        final t = items[i];
+        final id = store.musicIdFrom(t);
+        final isFav = store.isMusicFavorite(id);
+
+        ImageProvider imgProvider;
+        final img = t['img'];
+        if (img == null) {
+          imgProvider = const AssetImage('assets/img_music_placeholder.jpg');
+        } else if (img.toString().startsWith('assets/')) {
+          imgProvider = AssetImage(img);
+        } else {
+          imgProvider = FileImage(File(img));
+        }
+
+        return ListTile(
+          leading: CircleAvatar(backgroundImage: imgProvider, radius: 24),
+          title: Text(t['title'] ?? 'Titre inconnu', maxLines: 1, overflow: TextOverflow.ellipsis),
+          subtitle: Text(t['artist'] ?? 'Artiste inconnu',
+              maxLines: 1, overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: Colors.brown.shade300)),
+          trailing: IconButton(
+            icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: AppColors.primary),
+            onPressed: () => context.read<FavoritesStore>().toggleMusic(t),
+            tooltip: isFav ? 'Retirer des favoris' : 'Ajouter aux favoris',
+          ),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MusicPlayerScreen(tracks: items, index: i),
+              ),
+            );
+          },
         );
       },
     );

@@ -125,4 +125,44 @@ class FavoritesStore extends ChangeNotifier {
     _photoFavorites.clear();
     notifyListeners();
   }
+
+  // ------- Favoris Musiques -------
+  final List<Map<String, dynamic>> _musicFavorites = [];
+
+  List<Map<String, dynamic>> get musicFavorites =>
+      List.unmodifiable(_musicFavorites);
+
+  // Si tu as un vrai id côté data, utilise-le. Sinon, on fabrique un id stable.
+  String musicIdFrom(Map<String, dynamic> track) {
+    final path = (track['path'] ?? '').toString();
+    final title = (track['title'] ?? '').toString().trim().toLowerCase();
+    final artist = (track['artist'] ?? '').toString().trim().toLowerCase();
+    return '${path}__${title}__${artist}';
+  }
+
+  bool isMusicFavorite(String musicId) =>
+      _musicFavorites.any((m) => musicIdFrom(m) == musicId);
+
+  bool isMusicFavoriteBy(Map<String, dynamic> track) =>
+      isMusicFavorite(musicIdFrom(track));
+
+  void toggleMusic(Map<String, dynamic> track) {
+    final id = musicIdFrom(track);
+    if (isMusicFavorite(id)) {
+      removeMusic(id);
+    } else {
+      _musicFavorites.add(track);
+      notifyListeners();
+    }
+  }
+
+  void removeMusic(String musicId) {
+    _musicFavorites.removeWhere((m) => musicIdFrom(m) == musicId);
+    notifyListeners();
+  }
+
+  void clearMusicFavorites() {
+    _musicFavorites.clear();
+    notifyListeners();
+  }
 }

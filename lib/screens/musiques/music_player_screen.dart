@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
+import 'package:malibots_challenge_eni/providers/favoris_store.dart';
+import 'package:provider/provider.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
   final List<Map<String, dynamic>> tracks;
@@ -24,7 +26,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   Duration position = Duration.zero;
   Duration duration = Duration.zero;
   bool isPlaying = false;
-  bool isFavorite = false;
+  // bool isFavorite = false;
 
   @override
   void initState() {
@@ -33,7 +35,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
     player = AudioPlayer();
     play();
 
-    player.onPositionChanged.listen((p) {
+    player.onPositionChanged.listen((p) { 
       setState(() => position = p);
     });
 
@@ -112,6 +114,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   @override
   Widget build(BuildContext context) {
     final track = widget.tracks[index];
+    final store = context.watch<FavoritesStore>(); // +++
+    final isFav = store.isMusicFavoriteBy(track);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -158,14 +162,21 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
           //  Bouton "favori"
           IconButton(
             icon: Icon(
-              isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: isFavorite ? Colors.red : Colors.black54,
+              isFav ? Icons.favorite : Icons.favorite_border,
+              color: isFav ? Colors.red : Colors.black54,
               size: 35,
             ),
             onPressed: () {
-              setState(() {
-                isFavorite = !isFavorite;
-              });
+              context.read<FavoritesStore>().toggleMusic(track);
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(isFav
+                      ? 'Musique retirée des favoris'
+                      : 'Musique ajoutée aux favoris'),
+                  duration: const Duration(milliseconds: 900),
+                ),
+              );
             },
           ),
 
