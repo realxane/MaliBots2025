@@ -8,20 +8,13 @@ import 'package:malibots_challenge_eni/screens/admins/app_liste_culture.dart';
 import 'package:malibots_challenge_eni/screens/admins/app_liste_produits.dart';
 import 'package:malibots_challenge_eni/screens/admins/app_liste_users.dart';
 import 'package:malibots_challenge_eni/screens/admins/app_liste_vendeurs.dart';
-
 import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart';
 import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_catalog_screen.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_panier.dart';
-//import 'package:malibots_challenge_eni/screens/catalogue/app_produit_detail.dart';
 import 'package:malibots_challenge_eni/screens/home/home_screen.dart';
 import 'package:malibots_challenge_eni/screens/onboarding/onboarding_screen.dart';
-// import 'screens/onboarding_screen.dart';
-// import 'screens/home_screen.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_google_apple.dart';
-
-// import 'screens/onboarding/onboarding_screen.dart';
-// import 'screens/home/home_screen.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_choixprofil.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_login.dart';
@@ -30,8 +23,7 @@ import 'package:malibots_challenge_eni/screens/auth/app_inscription.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_inscription_vendeur.dart';
 import 'package:malibots_challenge_eni/screens/paiements/choix_mode.dart';
 import 'package:provider/provider.dart';
-// import 'screens/onboarding_screen.dart';
-// import 'screens/home_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(
@@ -84,6 +76,7 @@ class MyApp extends StatelessWidget {
       },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        textTheme: GoogleFonts.poppinsTextTheme(),
       ),
       // home:MonDrawer() ,
     );
