@@ -173,7 +173,6 @@ class ConteCard extends StatefulWidget {
 }
 
 class _ConteCardState extends State<ConteCard> {
-
   @override
   Widget build(BuildContext context) {
     final store = context.watch<FavoritesStore>();
@@ -317,6 +316,7 @@ class _ProverbeCardState extends State<ProverbeCard> {
                       ScaffoldMessenger.of(context)
                         ..hideCurrentSnackBar()
                         ..showSnackBar(SnackBar(content: Text(text)));
+                      
                     },
                   ),
                 ],

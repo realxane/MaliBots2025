@@ -97,7 +97,6 @@ class _CreeNouveauMotdepasseState extends State<CreeNouveauMotdepasse> {
               ),
             ),
            SizedBox(height: height * 0.04),
-          //  const CustumTextfileid(label:"mot de passe",hint:"Entrez votre nouveau mot de passe",),
           TextField(
             controller: _newmotdepass,
             obscureText: _obscure1,
@@ -133,10 +132,10 @@ class _CreeNouveauMotdepasseState extends State<CreeNouveauMotdepasse> {
           
           ),
             SizedBox(height: height * 0.03,),
-          //  CustomButton(text:"Confirmer",onPressed: (){},)
           SizedBox(
             width: double.infinity,
-            child: bouton_large(hint:"Confirmer",onPressed: (){},)),
+            child: bouton_large(hint:"Confirmer",onPressed: (){
+              Navigator.pushNamed(context, AppRoutes.accueil);},)),
             
           ]),
         ),

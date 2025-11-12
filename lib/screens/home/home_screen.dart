@@ -8,6 +8,7 @@ import 'package:malibots_challenge_eni/screens/home/culture/culture_page.dart';
 import 'package:malibots_challenge_eni/screens/home/galerie/galerie_page.dart';
 import 'package:malibots_challenge_eni/screens/home/vendeurpages/vendeur_dashboard.dart';
 import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
+import 'package:malibots_challenge_eni/screens/profile/profile_screen_user.dart';
 import 'package:malibots_challenge_eni/screens/profile/profile_screnn_vendeur.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
@@ -25,6 +26,9 @@ class _MainScreenState extends State<MainScreen> {
     HomeScreen(),
     CartPage(),
     ProfileScrennVendeur(),
+    HomeScreen(),
+    CartPage(),
+    ProfileScreenUser(),
     SellerDashboardScreen(),
   ];
 
