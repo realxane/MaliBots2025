@@ -61,8 +61,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Anw ka Dambe',
-      // initialRoute: AppRoutes.onboarding,
-      initialRoute: AppRoutes.admin_dash,
+      initialRoute: AppRoutes.onboarding,
+      //initialRoute: AppRoutes.admin_dash,
       routes: {
         AppRoutes.accueil: (context) => MainScreen(),
         // AppRoutes.accueil: (context) => const HomeScreen(),
