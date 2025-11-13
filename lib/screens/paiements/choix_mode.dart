@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
+import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/paiements/orange.dart';
 import 'package:malibots_challenge_eni/screens/paiements/wave.dart';
 
@@ -88,16 +89,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.grid_view, size: 30, color: AppColors.primary),
-          onPressed: () {},
-        ),
-        title: const Text('Payement', style: TextStyle(fontWeight: FontWeight.bold,color: AppColors.primary)),
+        title: const Text('Paiement', style: TextStyle(fontWeight: FontWeight.bold,color: AppColors.primary)),
         centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart, size: 30, color: AppColors.primary),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushNamed(context,AppRoutes.panier);
+            },
           ),
         ],
       ),
@@ -108,7 +107,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           children: <Widget>[
             // Titre principal
             Text(
-              'Choix du mode de payement',
+              'Choix du mode de paiement',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -133,7 +132,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
             // Sous-titre de sélection
             Text(
-              'Selectionner le mode de payement',
+              'Selectionner le mode de paiement',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,

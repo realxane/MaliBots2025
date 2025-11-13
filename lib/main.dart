@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Anw ka Dambe',
       // initialRoute: AppRoutes.onboarding,
-      initialRoute: AppRoutes.admin_dash,
+      initialRoute: AppRoutes.onboarding,
       routes: {
         AppRoutes.accueil: (context) => MainScreen(),
         // AppRoutes.accueil: (context) => const HomeScreen(),
