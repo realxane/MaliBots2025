@@ -156,7 +156,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
             Navigator.pushNamed(context, AppRoutes.adminListeCultures);
           }
           if (i == 5) {
-            Navigator.pushNamed(context, AppRoutes.adminprofile);
+            Navigator.pushNamed(context, AppRoutes.profil_user);
           }
         },
         // showSelectedLabels: true,

@@ -25,10 +25,8 @@ class _MainScreenState extends State<MainScreen> {
     FavoritesPage(),
     HomeScreen(),
     CartPage(),
-    ProfileScrennVendeur(),
-    HomeScreen(),
-    CartPage(),
     ProfileScreenUser(),
+    CartPage(),
     SellerDashboardScreen(),
   ];
 

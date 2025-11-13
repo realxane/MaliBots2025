@@ -56,8 +56,8 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Anw ka Dambe',
-          // initialRoute: AppRoutes.onboarding,
-          initialRoute: AppRoutes.admin_dash,
+          initialRoute: AppRoutes.onboarding,
+          // initialRoute: AppRoutes.admin_dash,
           routes: {
             AppRoutes.accueil: (context) => MainScreen(),
             AppRoutes.onboarding: (context) => const OnboardingScreen(),
@@ -73,7 +73,7 @@ class MyApp extends StatelessWidget {
             AppRoutes.panier: (context) => const CartPage(),
             AppRoutes.admin_dash: (context) => const AdminDashboardPage(),
             AppRoutes.choixmodepayemnt: (context) => const PaymentScreen(),
-            AppRoutes.profil_vendeur:(context)  => ProfileScrennVendeur(),
+            AppRoutes.profil_vendeur:(context)  => ProfileScreenUser(),
             AppRoutes.profil_user:(context)  => ProfileScreenUser(),
 
             AppRoutes.adminListeUsers: (context) => const UserListPage(),
