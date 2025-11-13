@@ -87,33 +87,18 @@ class _GaleriePageState extends State<GaleriePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: true,
         title: const Text(
-          'Galarie Photos',
+          'Galerie Photos',
           style: TextStyle(
             color: AppColors.textSecondary,
             fontWeight: FontWeight.bold,
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.grid_view_rounded,
-            color: AppColors.textSecondary,
-          ),
-          onPressed: () {
-            Navigator.pushNamed(context, AppRoutes.accueil);
-          },
-        ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Icon(Icons.notifications, color: Colors.brown),
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -224,7 +209,7 @@ class _PhotoCardState extends State<PhotoCard> {
   @override
   Widget build(BuildContext context) {
     final store = context.watch<FavoritesStore>();
-    final id = store.photoIdFrom(widget.photo); 
+    final id = store.photoIdFrom(widget.photo);
     final isFav = store.isPhotoFavorite(id);
     return GestureDetector(
       onTap: () {
@@ -279,7 +264,9 @@ class _PhotoCardState extends State<PhotoCard> {
                             ),
                             onPressed: () {
                               final wasFav = isFav;
-                              context.read<FavoritesStore>().togglePhoto(widget.photo);
+                              context.read<FavoritesStore>().togglePhoto(
+                                widget.photo,
+                              );
 
                               final text = wasFav
                                   ? 'Photo retiré des favoris'
