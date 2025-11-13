@@ -64,7 +64,7 @@ class AuthGoogleApple extends StatelessWidget {
 
               
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
 
               // Bouton Apple
               BoutonSocial2(
@@ -77,7 +77,20 @@ class AuthGoogleApple extends StatelessWidget {
                 },
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 10),
+
+              // Bouton facebook
+              BoutonSocial2(
+                color: const Color(0xFF8B3A1C),
+                icon: Image.asset(AppImages.facebookLogo, width: 40, height: 40),
+                title: "Continuer avec facebook",
+                subtitle: "Utiliser votre compte facebook",
+                onPressed: () {
+                  // TODO: Ajoute la logique Apple Sign-In
+                },
+              ),
+
+              const SizedBox(height: 16),
 
               // Ligne "ou"
               Row(
