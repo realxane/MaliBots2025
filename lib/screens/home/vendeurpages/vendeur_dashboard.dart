@@ -1,5 +1,6 @@
 // lib/screens/seller_dashboard.dart
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
 import 'produit.dart';
@@ -35,6 +36,8 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
   int favoris = 80;
   int notes = 95;
   int avis = 30;
+
+  final Random _random = Random();
 
   Future<void> _openAdd() async {
     final res = await Navigator.push<Product?>(
@@ -89,12 +92,24 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
     });
   }
 
+  void _refreshStats() {
+    setState(() {
+      ventes = 80 + _random.nextInt(100);
+      favoris = 40 + _random.nextInt(80);
+      notes = 60 + _random.nextInt(50);
+      avis = 10 + _random.nextInt(60);
+    });
+  }
+
   Widget _statBar(String label, int value, Color color, double ratio) {
+    // ratio entre 0 et 1 basé sur la valeur
+    double dynamicRatio = (value / 150).clamp(0.1, 1.0);
     return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
           width: 48,
-          height: 160 * ratio,
+          height: 160 * dynamicRatio,
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(8),
@@ -135,7 +150,6 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
             ),
             const SizedBox(width: 10),
 
-            // ✅ Expanded to avoid overflow
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,8 +161,6 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                     maxLines: 1,
                   ),
                   const SizedBox(height: 8),
-
-                  // ✅ Colors dropdown inside Row with wrap protection
                   Wrap(
                     children: [
                       Container(
@@ -165,13 +177,8 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                           underline: const SizedBox.shrink(),
                           items: ['Bogolan', 'Rouge', 'Bleu', 'Vert', 'Marron']
                               .map(
-                                (c) => DropdownMenuItem(
-                                  value: c,
-                                  child: Text(
-                                    c,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
+                                (c) =>
+                                    DropdownMenuItem(value: c, child: Text(c)),
                               )
                               .toList(),
                           onChanged: (val) {
@@ -190,7 +197,6 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-
                   Row(
                     children: [
                       const Text('Stock: '),
@@ -284,7 +290,7 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Stats
+            // ✅ Zone Statistiques
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -304,14 +310,16 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                     children: [
                       Text('Statistiques', style: titleStyle),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: _refreshStats,
                         icon: Icon(Icons.refresh, color: bogolan),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
+                  // ✅ Les barres alignées horizontalement
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       _statBar('Ventes', ventes, const Color(0xFF7B2B00), 0.86),
                       _statBar('Favoris', favoris, accent, 0.62),
@@ -327,34 +335,21 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
             Text('Produits récents', style: titleStyle),
             const SizedBox(height: 8),
 
-            // ✅ Scroll flexible
             Expanded(
               child: ListView.builder(
                 itemCount: products.length,
                 itemBuilder: (_, i) => _productCard(products[i]),
               ),
             ),
-
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _openAdd,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: bogolan,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Ajouter un produit',
-                  style: AppTextStyles.button,
-                ),
-              ),
-            ),
           ],
         ),
+      ),
+
+      // ✅ Nouveau bouton flottant
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openAdd,
+        backgroundColor: bogolan,
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
     );
   }

@@ -23,7 +23,6 @@ class _MainScreenState extends State<MainScreen> {
   final pages = [
     HomeScreen(),
     FavoritesPage(),
-    HomeScreen(),
     CartPage(),
     ProfileScrennVendeur(),
     HomeScreen(),
@@ -48,7 +47,6 @@ class _MainScreenState extends State<MainScreen> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoris"),
-          BottomNavigationBarItem(icon: Icon(Icons.add_box), label: "Ajouter"),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
             label: "Panier",
@@ -121,22 +119,24 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      drawer: Drawer(
-        backgroundColor: bogolan,
-        child: const Center(
-          child: Text(
-            "Menu latéral",
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
-        ),
-      ),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false, // Supprime la flèche de retour
         iconTheme: IconThemeData(color: bogolan, size: 30),
-        title: Text(
-          "Accueil",
-          style: TextStyle(color: bogolan, fontWeight: FontWeight.w600),
+
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "Accueil",
+              style: TextStyle(
+                color: bogolan,
+                fontWeight: FontWeight.w600,
+                fontSize: 20,
+              ),
+            ),
+          ],
         ),
         centerTitle: true,
         actions: [
@@ -145,7 +145,12 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {},
           ),
         ],
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Image.asset('assets/images/logo_appli.png', height: 30),
+        ),
       ),
+
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,7 +433,12 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Padding(
                 padding: const EdgeInsets.only(right: 20.0),
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CulturePage()),
+                    );
+                  },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
