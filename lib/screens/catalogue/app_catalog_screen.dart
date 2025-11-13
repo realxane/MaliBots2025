@@ -5,6 +5,7 @@ import 'package:malibots_challenge_eni/models/product.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_panier.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_produit_detail.dart';
+import 'package:malibots_challenge_eni/widgets/buttons/bouton_retour.dart';
 import 'package:malibots_challenge_eni/widgets/product_card.dart';
 import 'package:malibots_challenge_eni/widgets/text_fields/text_field_decor.dart';
 
@@ -111,31 +112,38 @@ class _CatalogScreenState extends State<CatalogScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.apps, color: AppColors.textSecondary),
-          onPressed: () {
-            Navigator.pushNamed(context, AppRoutes.accueil);
-          },
-        ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.apps, color: AppColors.textSecondary),
+        //   onPressed: () {
+        //     Navigator.pushNamed(context, AppRoutes.accueil);
+        //   },
+        // ),
+        leading: Navigator.canPop(context)
+            ? fleche_retour(
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.accueil);
+                },
+              )
+            : null,
         title: const Text('Catalogue',
             style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold)),
-        actions: [
-          Stack(
-            alignment: Alignment.topRight,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications_none, color: AppColors.textSecondary, size: 26),
-                onPressed: () {},
-              ),
-              Container(
-                margin: const EdgeInsets.only(top: 14, right: 14),
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-              ),
-            ],
-          ),
-        ],
+        // actions: [
+        //   Stack(
+        //     alignment: Alignment.topRight,
+        //     children: [
+        //       IconButton(
+        //         icon: const Icon(Icons.notifications_none, color: AppColors.textSecondary, size: 26),
+        //         onPressed: () {},
+        //       ),
+        //       Container(
+        //         margin: const EdgeInsets.only(top: 14, right: 14),
+        //         width: 8,
+        //         height: 8,
+        //         decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+        //       ),
+        //     ],
+        //   ),
+        // ],
       ),
       body: SafeArea(
         child: Padding(

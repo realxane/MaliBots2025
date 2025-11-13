@@ -28,7 +28,7 @@ class _MainScreenState extends State<MainScreen> {
     ProfileScrennVendeur(),
     HomeScreen(),
     CartPage(),
-    ProfileScreenUser(),
+    // ProfileScreenUser(),
     SellerDashboardScreen(),
   ];
 

@@ -19,7 +19,6 @@ import 'package:malibots_challenge_eni/screens/profile/profile_screen_user.dart'
 import 'package:malibots_challenge_eni/screens/profile/profile_screnn_vendeur.dart';
 import 'package:malibots_challenge_eni/widgets/themes.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'providers/theme_store.dart'; 
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_choixprofil.dart';
@@ -56,8 +55,8 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Anw ka Dambe',
-          // initialRoute: AppRoutes.onboarding,
-          initialRoute: AppRoutes.admin_dash,
+          initialRoute: AppRoutes.onboarding, 
+          // initialRoute: AppRoutes.admin_dash,
           routes: {
             AppRoutes.accueil: (context) => MainScreen(),
             AppRoutes.onboarding: (context) => const OnboardingScreen(),
@@ -75,13 +74,11 @@ class MyApp extends StatelessWidget {
             AppRoutes.choixmodepayemnt: (context) => const PaymentScreen(),
             AppRoutes.profil_vendeur:(context)  => ProfileScrennVendeur(),
             AppRoutes.profil_user:(context)  => ProfileScreenUser(),
-
             AppRoutes.adminListeUsers: (context) => const UserListPage(),
             AppRoutes.adminListeVendeurs: (context) => const VendeursListePage(),
             AppRoutes.adminListeProduits: (context) => const ProduitsListePage(),
             AppRoutes.adminListeCultures: (context) => const CulturesListePage(),
             AppRoutes.adminprofile: (context) => const adminprofile(),
-
           },
           theme: buildLightTheme(),
           darkTheme: buildDarkTheme(),
