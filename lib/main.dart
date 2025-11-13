@@ -8,6 +8,8 @@ import 'package:malibots_challenge_eni/screens/admins/app_liste_culture.dart';
 import 'package:malibots_challenge_eni/screens/admins/app_liste_produits.dart';
 import 'package:malibots_challenge_eni/screens/admins/app_liste_users.dart';
 import 'package:malibots_challenge_eni/screens/admins/app_liste_vendeurs.dart';
+import 'package:malibots_challenge_eni/screens/auth/app_bienvenue_acheteur.dart';
+import 'package:malibots_challenge_eni/screens/auth/app_bienvenue_vendeur.dart';
 import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart';
 import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_catalog_screen.dart';
@@ -78,6 +80,8 @@ class MyApp extends StatelessWidget {
             AppRoutes.adminListeProduits: (context) => const ProduitsListePage(),
             AppRoutes.adminListeCultures: (context) => const CulturesListePage(),
             AppRoutes.adminprofile: (context) => const adminprofile(),
+            AppRoutes.bienvenue_acheteur: (context) => const BienvenueAcheteur(),
+            AppRoutes.bienvenue_vendeur: (context) => const BienvenueVendeur(),
           },
           theme: buildLightTheme(),
           darkTheme: buildDarkTheme(),
