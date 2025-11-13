@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:malibots_challenge_eni/constants/app_colors.dart';
+import 'package:malibots_challenge_eni/widgets/text_fields/text_field_decor.dart';
 import 'playlist_screen.dart';
 
 const Color bogolan = Color(0xFF7B3F00);
-// const Color background = Color(0xFFD2B48C);
 const Color background = Colors.white;
 
 class MusiqueScreen extends StatefulWidget {
@@ -76,50 +77,32 @@ class _MusiqueScreenState extends State<MusiqueScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Filtrer les genres
     final filteredGenres = genres
         .where((g) => g['title']!.toLowerCase().contains(query.toLowerCase()))
         .toList();
 
-    // Filtrer les artistes
     final filteredArtists = artistes
         .where((a) => a['name']!.toLowerCase().contains(query.toLowerCase()))
         .toList();
 
     return Scaffold(
-      backgroundColor: background,
+      backgroundColor: AppColors.background,
+
       appBar: AppBar(
         backgroundColor: background,
         elevation: 0,
+        automaticallyImplyLeading: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Container(
-          height: 44,
-          decoration: BoxDecoration(
+        centerTitle: true,
+        title: Text(
+          "Musique",
+          style: TextStyle(
             color: bogolan,
-            borderRadius: BorderRadius.circular(30),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
-            children: [
-              const Icon(Icons.search, color: Colors.white),
-              const SizedBox(width: 8),
-              Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (value) {
-                    setState(() => query = value);
-                  },
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'genre musical, artiste...',
-                    hintStyle: TextStyle(color: Colors.white70),
-                  ),
-                ),
-              ),
-            ],
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
           ),
         ),
       ),
@@ -129,15 +112,52 @@ class _MusiqueScreenState extends State<MusiqueScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            TextField(
+              onChanged: (val) => setState(() => query = val),
+              decoration: decor('genre musical, artiste...').copyWith(
+                prefixIcon: const Icon(Icons.search, color: Colors.brown),
+              ),
+            ),
+
+            // Container(
+            //   height: 50,
+            //   decoration: BoxDecoration(
+            //     color: AppColors.textfieldcolor,
+            //     borderRadius: BorderRadius.circular(14),
+            //   ),
+            //   padding: const EdgeInsets.symmetric(horizontal: 12),
+            //   child: Row(
+            //     children: [
+            //       const Icon(Icons.search, color: Colors.white),
+            //       const SizedBox(width: 8),
+            //       Expanded(
+            //         child: TextField(
+            //           controller: _searchController,
+            //           onChanged: (value) {
+            //             setState(() => query = value);
+            //           },
+            //           decoration: const InputDecoration(
+            //             border: InputBorder.none,
+            //             hintText: 'genre musical, artiste...',
+            //             hintStyle: TextStyle(color: Colors.white70),
+            //           ),
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            const SizedBox(height: 20),
+
             const Text(
               "Musique du Mali",
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text("Découvrez les rythmes qui font vibrer le Mali..."),
+            const Text(
+              "Découvrez les rythmes qui font vibrer le Malindu Balafon au Djimbé en passant par la Kora et le Takamba",
+            ),
             const SizedBox(height: 18),
 
-            // Genres filtrés
             Row(
               children: const [
                 Icon(Icons.music_note),
@@ -244,23 +264,6 @@ class _MusiqueScreenState extends State<MusiqueScreen> {
           ],
         ),
       ),
-
-      // bottomNavigationBar: BottomNavigationBar(
-      //   selectedItemColor: bogolan,
-      //   unselectedItemColor: Colors.black54,
-      //   items: const [
-      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Accueil'),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.library_music),
-      //       label: 'Catalogue',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.trending_up),
-      //       label: 'Tendance',
-      //     ),
-      //     BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
-      //   ],
-      // ),
     );
   }
 }
