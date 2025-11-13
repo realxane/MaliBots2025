@@ -1,35 +1,152 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
+import 'package:malibots_challenge_eni/screens/profile/about_page.dart';
+import 'package:malibots_challenge_eni/screens/profile/modifierprofile.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/text_button.dart';
 import 'package:malibots_challenge_eni/providers/theme_store.dart';
 import 'package:provider/provider.dart';
+import 'modifierprofile.dart';
 
-class ProfileScreenUser extends StatelessWidget {
+class ProfileScreenUser extends StatefulWidget {
   const ProfileScreenUser({super.key});
 
+  @override
+  State<ProfileScreenUser> createState() => _ProfileScreenUserState();
+}
+
+class _ProfileScreenUserState extends State<ProfileScreenUser> {
+  String userName = "Youssouf Guindo";
+  String userTag = "@Faso den gnouma";
+  String imagePath = "assets/images/profil.jpeg";
+  void _showProfileOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+      ),
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.person, color: AppColors.primary),
+              title: const Text("Voir le profil"),
+              onTap: () {
+                Navigator.pop(context);
+                _showImagePreview();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.edit, color: AppColors.primary),
+              title: const Text("Modifier le profil"),
+              onTap: () async {
+                Navigator.pop(context);
+                // Aller à la page d'édition du profil
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const Modifierprofile()),
+                );
+
+                //  Si l’utilisateur a modifié le profil
+                if (result != null && result is Map) {
+                  setState(() {
+                    userName = result['name'] ?? userName;
+                    if (result['image'] != null) {
+                      imagePath = result['image'].path;
+                    }
+                  });
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+ void _showImagePreview() {
+  showDialog(
+    context: context,
+    builder: (_) => Dialog(
+      backgroundColor: Colors.black.withOpacity(0.9), // fond sombre semi-transparent
+      insetPadding: EdgeInsets.zero, // supprime les marges autour du Dialog
+      child: GestureDetector(
+        onTap: () => Navigator.pop(context),
+        child: Hero(
+          tag: 'profileImage',
+          child: SizedBox.expand(
+            child: InteractiveViewer( // permet de zoomer/dézoomer
+              child: Image.asset(
+                imagePath,
+                fit: BoxFit.contain, // garde les proportions
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
   @override
   
   Widget build(BuildContext context) {
 bool isSignaled = true; // pour savoir si le vendeur a été signalé
 String reason = "Produit non conforme aux règles du marché"; // raison du signalement
+
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: AppColors.primary,
+        title: const Text("Profil",textAlign: TextAlign.center,),
+      ),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 20,vertical: 20),
           child: Column(
             children: [
-              Center(
-                child: ClipOval(
+              // Center(
+              //   child: ClipOval(
                   
-                  child: Image.asset("assets/images/profil.jpeg",
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover,)
+              //     child: Image.asset("assets/images/profil.jpeg",
+              //     width: 100,
+              //     height: 100,
+              //     fit: BoxFit.cover,)
                   
-                  ),
+              //     ),
+              // ),
+               // 👇 Image cliquable
+              GestureDetector(
+                onTap: _showProfileOptions,
+                child: Stack(
+                  children: [
+                    ClipOval(
+                      child: Image.asset(
+                        imagePath,
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(5),
+                        child: const Icon(
+                          Icons.more_vert,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               SizedBox(height: 15,),
               Text("Youssouf Guindo",style: AppTextStyles.titre1),
@@ -46,20 +163,6 @@ String reason = "Produit non conforme aux règles du marché"; // raison du sign
                Divider(color: Theme.of(context).dividerColor,),
               _buildInfoRow("Ville :", "koulikoro"),
                Divider(color: Theme.of(context).dividerColor,),
-              const SizedBox(height: 25),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text("Mes activités",style: AppTextStyles.soustitre,)),
-                const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _ActivityButton("Achats", (){}),
-                  _ActivityButton("Favoris", (){}),
-                  _ActivityButton("Avis", (){})
-                            
-                ],
-              ),
               const SizedBox(height: 25),
                Align(
                 alignment: Alignment.centerLeft,
@@ -82,8 +185,29 @@ String reason = "Produit non conforme aux règles du marché"; // raison du sign
                   width: double.infinity,
                   child: bouton_large(
                     hint: "Modifier mon profil",
-                    onPressed: (){},
+                    onPressed: (){
+
+                       Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const Modifierprofile(),
+                      ),
+                    );
+                    },
                   ),),
+                  const SizedBox(height: 25),
+                  SizedBox(
+                    width: double.infinity,
+                    child: bouton_large(hint: "A props", onPressed: (){
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>  AboutAppPage(),
+                        ),
+                      );
+                    }),
+                    
+                  ),
                   const SizedBox(height: 25),
           Padding(padding: EdgeInsets.all(10),
           child: ElevatedButton.icon(onPressed: (){
@@ -165,28 +289,7 @@ String reason = "Produit non conforme aux règles du marché"; // raison du sign
   }
 
   // Widget pour afficher un bouton d'activité
-  Widget _ActivityButton(String text, VoidCallback onpress) {
-    return ElevatedButton(
-      onPressed: onpress,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-         fixedSize: const Size(100, 45),
-        shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(5),
-      ),
-      textStyle: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.2,
-                      ),
-      
-     
-      ),
-      child: Text(
-        text),
-    );
-  }
-
+  
 class _PreferencesThemeRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

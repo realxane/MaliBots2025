@@ -34,10 +34,13 @@ class _LoginPageState extends State<Login> {
                 Image.asset(AppImages.logo, height: 64),
                 const SizedBox(height: 16),
 
-                Text(
+                Text( 
                   'Bienvenue sur Anw ka Dambe !',
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.titre2,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 18),
 
