@@ -16,7 +16,8 @@ class AppRoutes {
   //page accueil
   static const String accueil = '/accueil';
   //page profil
-  static const String profil = '/profil';
+  static const String profil_vendeur = '/profil_vendeur';
+  static const String profil_user = '/profil_user';
   //page choix profil
   static const String choixprofil = '/choix_profil';
   

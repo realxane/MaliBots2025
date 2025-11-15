@@ -23,6 +23,8 @@ class ProfileScrennVendeur extends StatefulWidget {
     rating: 4.5),
    
  ];
+ bool isSignaled = true; // pour savoir si le vendeur a été signalé
+String reason = "Produit non conforme aux règles du marché"; // raison du signalement
 
   @override
   Widget build(BuildContext context) {
@@ -85,12 +87,53 @@ class ProfileScrennVendeur extends StatefulWidget {
               _buildInfoRow("Ville :", "koulikoro"),
               const Divider(color: AppColors.textfieldcolor,),
               const SizedBox(height: 25),
+          Padding(padding: EdgeInsets.all(8),
+          child: ElevatedButton.icon(onPressed: (){
+            if(isSignaled){
+              showDialog(context: context, builder: (context)=>AlertDialog(
+                title: Text("vous avez été signaler"),
+                content: Text(reason),
+                actions: [
+                  TextButton( onPressed: () => Navigator.pop(context),
+              child: const Text("Fermer"),)
+                ],
+
+              )
+              
+              );
+            } else{
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Aucun signalement !"))
+              );
+            }
+          },
+          icon: Stack(
+            children: [
+              const Icon(Icons.flag),
+               Positioned(
+                right: 0,
+                top: 0,
+                child: Icon(Icons.circle_notifications,
+                color: isSignaled ? Colors.red : Colors.transparent,
+                size: 8,),
+              ),
+            ],
+          ),
+          label:Text("Signalement") ,
+          style: ElevatedButton.styleFrom(
+            backgroundColor:Colors.white,
+            foregroundColor: Colors.black,
+           ),
+          ),
+          ),
+              const SizedBox(height: 25),
                Align(
                 alignment: Alignment.centerLeft,
-                child: Text("Mes Articles",style: AppTextStyles.soustitre,)),
+                child: Text("Mes Articles",style: AppTextStyles.soustitre,)
+                ),
                 const SizedBox(height: 10),
                GridView.builder(
-  shrinkWrap: true,
+               shrinkWrap: true,
   physics: const NeverScrollableScrollPhysics(),
   itemCount: articles.length,
   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -155,7 +198,7 @@ class ProfileScrennVendeur extends StatefulWidget {
           ),
           const SizedBox(height: 4),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: List.generate(5, (starIndex) {
                 return Icon(
@@ -168,6 +211,7 @@ class ProfileScrennVendeur extends StatefulWidget {
               }),
             ),
           ),
+          
         ],
       ),
     );
