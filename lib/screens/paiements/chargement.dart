@@ -31,21 +31,11 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.grid_view, size: 30),
-          onPressed: () {},
-        ),
         title: const Text(
           'Paiement',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_cart, size: 30),
-            onPressed: () {},
-          ),
-        ],
         backgroundColor: Colors.white,
         foregroundColor: AppColors.primary,
         elevation: 0,
