@@ -16,7 +16,7 @@ class AppTextStyles {
   );
 
   // Sous-titres
-  static const TextStyle soustitre = TextStyle(
+  static const TextStyle soustitre = TextStyle( 
     fontSize: 18,
     fontWeight: FontWeight.w500,
     color: AppColors.textSecondary,

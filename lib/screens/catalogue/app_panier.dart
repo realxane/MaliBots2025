@@ -3,6 +3,7 @@ import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/providers/product_store.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_produit_detail.dart';
+import 'package:malibots_challenge_eni/widgets/buttons/bouton_retour.dart';
 import 'package:provider/provider.dart';
 
 /// ----------------------
@@ -112,12 +113,19 @@ class CartPage extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: brown,
         elevation: 0.5,
-        leading: IconButton(
-          icon: const Icon(Icons.grid_view_rounded),
-          onPressed: () {
-            Navigator.of(context).maybePop();
-          },
-        ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.grid_view_rounded),
+        //   onPressed: () {
+        //     Navigator.of(context).maybePop();
+        //   },
+        // ),
+        leading: Navigator.canPop(context)
+            ? fleche_retour(
+                onPressed: () {
+                  Navigator.of(context).maybePop();
+                },
+              )
+            : null,
         title: const Text('Mon panier'),
         centerTitle: true,
         actions: [

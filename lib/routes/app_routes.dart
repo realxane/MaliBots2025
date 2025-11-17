@@ -44,4 +44,8 @@ class AppRoutes {
   static const String adminListeCultures = '/admin_liste_cultures';
   //page admin profil
   static const String adminprofile = '/adminprofile';
+  //page bienvenue acheteur
+  static const String bienvenue_acheteur = '/bienvenue_acheteur';
+  //page bienvenue vendeur
+  static const String bienvenue_vendeur = '/bienvenue_vendeur';
 }

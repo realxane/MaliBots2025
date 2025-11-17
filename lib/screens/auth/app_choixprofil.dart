@@ -30,7 +30,7 @@ class ChoixProfilPage extends StatelessWidget {
             children: [
               // Logo
               Image.asset(
-                AppImages.logo, // <- fourni par vous
+                AppImages.logo, 
                 height: 64,
               ),
               const SizedBox(height: 20),
@@ -38,7 +38,10 @@ class ChoixProfilPage extends StatelessWidget {
               Text(
                 'Bienvenue sur Anw ka Dambe !',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.titre2,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 24),
               // Sous-titre

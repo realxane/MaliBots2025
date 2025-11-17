@@ -264,6 +264,7 @@ class _InscriptionVendeurPageState extends State<InscriptionVendeurPage> {
                             );
                             return;
                           }
+                          Navigator.pushNamed(context, AppRoutes.bienvenue_vendeur);
                           // if (_formKey.currentState?.validate() ?? false) {
                           //   ScaffoldMessenger.of(context).showSnackBar(
                           //     const SnackBar(content: Text('Compte en cours de création...')),
