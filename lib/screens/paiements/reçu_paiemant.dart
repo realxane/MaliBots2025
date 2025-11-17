@@ -14,7 +14,7 @@ class ReceiptPage extends StatelessWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
                 // Logo
                     Center(
@@ -26,7 +26,7 @@ class ReceiptPage extends StatelessWidget {
                     const SizedBox(height: 16),
             // Titre de confirmation
             const Text(
-              'Payement valider',
+              'Paiement validé',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.primary,
@@ -44,7 +44,7 @@ class ReceiptPage extends StatelessWidget {
             _buildDivider(),
             _buildReceiptDetail('Montant Total', '40100f', isTotal: true),
             _buildDivider(),
-            _buildReceiptDetail('Beneficiaire', 'Faso den gnouma', isDataBold: true),
+            _buildReceiptDetail('Béneficiaire', 'Faso den gnouma', isDataBold: true),
             _buildDivider(),
             _buildReceiptDetail('Date', '10/10/2025', isDataBold: true),
             _buildDivider(),
@@ -53,7 +53,7 @@ class ReceiptPage extends StatelessWidget {
 
             // Note de bas de page
             const Text(
-              'Reçu générer par anw ka Dambe',
+              'Reçu géneré par anw ka Dambe',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.primary,
@@ -73,7 +73,7 @@ class ReceiptPage extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 15),
+                padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 50.0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),

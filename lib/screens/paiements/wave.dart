@@ -44,18 +44,8 @@ class _WaveMoneyPaymentState extends State<WaveMoneyPayment> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.grid_view, size: 30, color: AppColors.primary),
-          onPressed: () {},
-        ),
         title: const Text('Paiement Wave Money', style: TextStyle(fontWeight: FontWeight.bold,color: AppColors.primary)),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_cart, size: 30, color: AppColors.primary),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Center(
         child: SingleChildScrollView(
