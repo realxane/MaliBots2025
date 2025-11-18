@@ -9,6 +9,12 @@ import 'package:malibots_challenge_eni/screens/catalogue/app_produit_detail.dart
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_retour.dart';
 import 'package:malibots_challenge_eni/widgets/product_card.dart';
 import 'package:malibots_challenge_eni/widgets/text_fields/text_field_decor.dart';
+import 'package:provider/provider.dart';
+import '../../repositories/produit_repository.dart';
+import '../../api/produit_api.dart';
+import '../../api/api_client.dart';
+import '../../screens/catalogue/catalog_controller.dart';
+import '../../models/product.dart';
 
 class CatalogScreen extends StatefulWidget {
   const CatalogScreen({super.key});
@@ -24,11 +30,25 @@ class _CatalogScreenState extends State<CatalogScreen> {
     super.didChangeDependencies();
     if (_argsApplied) return;
     _argsApplied = true;
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is String && typeOptions.contains(args)) {
-      selectedType = args;
-      setState(() {});
-    }
+
+    // Démarre le chargement
+    // IMPORTANT (Option A) : on décale au frame suivant pour éviter
+    // "setState()/markNeedsBuild called during build"
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      // lire le controller sans écouter (read) pour lancer le fetch
+      final ctrl = context.read<CatalogController>();
+      ctrl.fetchFirstPage();
+
+      // si des arguments de route existent, on les applique
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is String && typeOptions.contains(args)) {
+        setState(() {
+          selectedType = args;
+        });
+      }
+    });
   }
 
   final List<String> regionOptions = const [
@@ -52,8 +72,58 @@ class _CatalogScreenState extends State<CatalogScreen> {
     return names.toList();
   }
 
-  List<Produit> get filtered {
-    List<Produit> out = List.from(kProducts);
+  // List<Produit> get filtered {
+  //   List<Produit> out = List.from(kProducts);
+
+  //   if (search.trim().isNotEmpty) {
+  //     final q = search.toLowerCase();
+  //     out = out.where((p) =>
+  //       p.nom.toLowerCase().contains(q) ||
+  //       (p.artisan ?? '').toLowerCase().contains(q) ||
+  //       (p.categorie ?? '').toLowerCase().contains(q) ||
+  //       p.regionLabel.toLowerCase().contains(q)
+  //     ).toList();
+  //   }
+
+  //   if (selectedRegion != 'Région') {
+  //     out = out.where((p) => p.regionLabel == selectedRegion).toList();
+  //   }
+  //   if (selectedType != 'Types') {
+  //     out = out.where((p) => p.typeUi == selectedType).toList();
+  //   }
+  //   if (selectedArtisan != 'Artisan') {
+  //     out = out.where((p) => (p.artisan ?? '-') == selectedArtisan).toList();
+  //   }
+  //   if (selectedPriceSort == 'Croissant') {
+  //     out.sort((a, b) => a.prixInt.compareTo(b.prixInt));
+  //   } else if (selectedPriceSort == 'Décroissant') {
+  //     out.sort((a, b) => b.prixInt.compareTo(a.prixInt));
+  //   }
+
+  //   return out;
+  // }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   final ctrl = context.watch<CatalogController>();
+  //   final theme = Theme.of(context);
+  //   final cs = theme.colorScheme;
+  //   final isDark = theme.brightness == Brightness.dark;
+
+  //   final surface = isDark ? cs.surface : Colors.white;
+  //   final onSurface = isDark ? cs.onSurface : AppColors.textSecondary;
+
+  //   if (ctrl.loading) {
+  //     return const Scaffold(body: Center(child: CircularProgressIndicator()));
+  //   }
+  //   if (ctrl.error != null) {
+  //     return Scaffold(body: Center(child: Text('Erreur: ${ctrl.error}')));
+  //   }
+
+  //   final items = filtered;
+
+  List<Produit> _applyFilters(List<Produit> source) {
+    var out = List<Produit>.from(source);
 
     if (search.trim().isNotEmpty) {
       final q = search.toLowerCase();
@@ -79,18 +149,36 @@ class _CatalogScreenState extends State<CatalogScreen> {
     } else if (selectedPriceSort == 'Décroissant') {
       out.sort((a, b) => b.prixInt.compareTo(a.prixInt));
     }
-
     return out;
   }
 
   @override
   Widget build(BuildContext context) {
+    final ctrl = context.watch<CatalogController>();
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
 
     final surface = isDark ? cs.surface : Colors.white;
     final onSurface = isDark ? cs.onSurface : AppColors.textSecondary;
+
+    if (ctrl.loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (ctrl.error != null) {
+      return Scaffold(body: Center(child: Text('Erreur: ${ctrl.error}')));
+    }
+
+    // 1) options Artisans construites depuis les données chargées
+    final artisanOptions = <String>{
+      'Artisan',
+      ...ctrl.items
+          .map((p) => (p.artisan ?? '').trim())
+          .where((a) => a.isNotEmpty)
+    }.toList();
+
+    // 2) éléments filtrés
+    final items = _applyFilters(ctrl.items);
 
     return Scaffold(
       appBar: AppBar(
@@ -130,12 +218,12 @@ class _CatalogScreenState extends State<CatalogScreen> {
             const SizedBox(height: 16),
             Expanded(
               child: GridView.builder(
-                itemCount: filtered.length,
+                itemCount: items.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.75,
                 ),
                 itemBuilder: (_, i) {
-                  final p = filtered[i];
+                  final p = items[i];
                   return ProductCard(
                     product: p,
                     onAdd: () {
