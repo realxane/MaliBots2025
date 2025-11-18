@@ -16,7 +16,6 @@ import 'package:malibots_challenge_eni/screens/home/home_screen.dart';
 import 'package:malibots_challenge_eni/screens/onboarding/onboarding_screen.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_google_apple.dart';
 import 'package:malibots_challenge_eni/screens/profile/profile_screen_user.dart';
-import 'package:malibots_challenge_eni/screens/profile/profile_screnn_vendeur.dart';
 import 'package:malibots_challenge_eni/widgets/themes.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';

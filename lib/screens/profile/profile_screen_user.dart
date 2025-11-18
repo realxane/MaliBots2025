@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
+import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/profile/about_page.dart';
 import 'package:malibots_challenge_eni/screens/profile/modifierprofile.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
+import 'package:malibots_challenge_eni/widgets/buttons/bouton_retour.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/text_button.dart';
 import 'package:malibots_challenge_eni/providers/theme_store.dart';
 import 'package:provider/provider.dart';
@@ -96,9 +98,14 @@ bool isSignaled = true; // pour savoir si le vendeur a été signalé
 String reason = "Produit non conforme aux règles du marché"; // raison du signalement
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        title: const Text("Profil",textAlign: TextAlign.center,),
+      appBar:AppBar(
+        title: const Text("Mon profil"),
+        elevation: 0,
+        leading: Navigator.canPop(context)
+            ? fleche_retour(onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.accueil);
+            })
+            : null,
       ),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
