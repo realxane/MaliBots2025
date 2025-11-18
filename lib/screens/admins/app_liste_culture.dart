@@ -103,7 +103,7 @@ class _CulturesListePageState extends State<CulturesListePage>
         builder: (_) => Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
-            backgroundColor: AppColors.primary,
+            backgroundColor: AppColors.textSecondary,
             title: Text(
               titre.isNotEmpty ? titre : 'Détails de l\'image',
               style: const TextStyle(color: Colors.white),
@@ -119,7 +119,7 @@ class _CulturesListePageState extends State<CulturesListePage>
               : const Center(
                   child: Text(
                     "Aucune image disponible",
-                    style: TextStyle(color: AppColors.primary),
+                    style: TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
         ),
@@ -134,7 +134,7 @@ class _CulturesListePageState extends State<CulturesListePage>
       MaterialPageRoute(
         builder: (_) => Scaffold(
           appBar: AppBar(
-            backgroundColor: AppColors.primary,
+            backgroundColor: AppColors.textSecondary,
             title: Text(
               item['titre'],
               style: const TextStyle(color: Colors.white),
@@ -150,7 +150,7 @@ class _CulturesListePageState extends State<CulturesListePage>
                     Text(
                       item['origine'] ?? '',
                       style: const TextStyle(
-                        color: AppColors.primary,
+                        color: AppColors.textSecondary,
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
                       ),
@@ -192,7 +192,7 @@ class _CulturesListePageState extends State<CulturesListePage>
             child: const Text('Annuler'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
             onPressed: () {
               setState(() => item['texte'] = _editController.text);
               Navigator.pop(context);
@@ -227,7 +227,7 @@ class _CulturesListePageState extends State<CulturesListePage>
       builder: (context) => AlertDialog(
         title: const Text(
           "Modifier le conte",
-          style: TextStyle(color: AppColors.primary),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
         content: SingleChildScrollView(
           child: Column(
@@ -237,14 +237,14 @@ class _CulturesListePageState extends State<CulturesListePage>
                 controller: _titreCtrl,
                 decoration: const InputDecoration(
                   labelText: "Titre du conte",
-                  fillColor: AppColors.primary,
+                  fillColor: AppColors.textSecondary,
                 ),
               ),
               TextField(
                 controller: _origCtrl,
                 decoration: const InputDecoration(
                   labelText: "Origine",
-                  fillColor: AppColors.primary,
+                  fillColor: AppColors.textSecondary,
                 ),
               ),
               TextField(
@@ -252,7 +252,7 @@ class _CulturesListePageState extends State<CulturesListePage>
                 maxLines: 6,
                 decoration: const InputDecoration(
                   labelText: "Texte complet du conte",
-                  fillColor: AppColors.primary,
+                  fillColor: AppColors.textSecondary,
                 ),
               ),
             ],
@@ -264,7 +264,7 @@ class _CulturesListePageState extends State<CulturesListePage>
             child: const Text("Annuler"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
             onPressed: () {
               setState(() {
                 item['titre'] = _titreCtrl.text;
@@ -314,7 +314,7 @@ class _CulturesListePageState extends State<CulturesListePage>
     String subtitle = '';
     Widget leading = const CircleAvatar(
       radius: 25,
-      child: Icon(Icons.image, color: AppColors.primary),
+      child: Icon(Icons.image, color: AppColors.textSecondary),
     );
 
     switch (type) {
@@ -336,7 +336,7 @@ class _CulturesListePageState extends State<CulturesListePage>
         } else {
           leading = const CircleAvatar(
             radius: 25,
-            child: Icon(Icons.music_note, color: AppColors.primary),
+            child: Icon(Icons.music_note, color: AppColors.textSecondary),
           );
         }
         break;
@@ -357,7 +357,7 @@ class _CulturesListePageState extends State<CulturesListePage>
           } else {
             leading = const CircleAvatar(
               radius: 25,
-              child: Icon(Icons.image, color: AppColors.primary),
+              child: Icon(Icons.image, color: AppColors.textSecondary),
             );
           }
         } else if (item['image'] != null) {
@@ -372,7 +372,7 @@ class _CulturesListePageState extends State<CulturesListePage>
         } else {
           leading = const CircleAvatar(
             radius: 25,
-            child: Icon(Icons.image, color: AppColors.primary),
+            child: Icon(Icons.image, color: AppColors.textSecondary),
           );
         }
         break;
@@ -407,15 +407,15 @@ class _CulturesListePageState extends State<CulturesListePage>
         subtitle = item['origine'] ?? '';
         leading = const CircleAvatar(
           radius: 25,
-          child: Icon(Icons.menu_book, color: AppColors.primary),
+          child: Icon(Icons.menu_book, color: AppColors.textSecondary),
         );
         break;
     }
 
     return Card(
       color: item['approuve'] == true
-          ? AppColors.primary.withOpacity(0.7)
-          : AppColors.primary,
+          ? AppColors.textSecondary.withOpacity(0.7)
+          : AppColors.textSecondary,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
@@ -509,7 +509,7 @@ class _CulturesListePageState extends State<CulturesListePage>
                     value: 'Lire',
                     child: Row(
                       children: [
-                        Icon(Icons.play_arrow, color: AppColors.primary),
+                        Icon(Icons.play_arrow, color: AppColors.textSecondary),
                         SizedBox(width: 10),
                         Text('Lire'),
                       ],
@@ -523,7 +523,7 @@ class _CulturesListePageState extends State<CulturesListePage>
                     value: 'Voir',
                     child: Row(
                       children: [
-                        Icon(Icons.remove_red_eye, color: AppColors.primary),
+                        Icon(Icons.remove_red_eye, color: AppColors.textSecondary),
                         SizedBox(width: 10),
                         Text('Voir'),
                       ],
@@ -537,7 +537,7 @@ class _CulturesListePageState extends State<CulturesListePage>
                     value: 'LireConte',
                     child: Row(
                       children: [
-                        Icon(Icons.menu_book, color: AppColors.primary),
+                        Icon(Icons.menu_book, color: AppColors.textSecondary),
                         SizedBox(width: 10),
                         Text('Lire'),
                       ],
@@ -549,7 +549,7 @@ class _CulturesListePageState extends State<CulturesListePage>
                     value: 'Modifier',
                     child: Row(
                       children: [
-                        Icon(Icons.edit, color: AppColors.primary),
+                        Icon(Icons.edit, color: AppColors.textSecondary),
                         SizedBox(width: 10),
                         Text('Modifier'),
                       ],
@@ -563,7 +563,7 @@ class _CulturesListePageState extends State<CulturesListePage>
                     value: 'Modifier',
                     child: Row(
                       children: [
-                        Icon(Icons.edit, color: AppColors.primary),
+                        Icon(Icons.edit, color: AppColors.textSecondary),
                         SizedBox(width: 10),
                         Text('Modifier'),
                       ],
@@ -682,7 +682,7 @@ class _CulturesListePageState extends State<CulturesListePage>
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: AppColors.textSecondary,
               ),
               onPressed: () {
                 if (fichierPath != null) {
@@ -770,7 +770,7 @@ class _CulturesListePageState extends State<CulturesListePage>
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: AppColors.textSecondary,
               ),
               onPressed: () {
                 if (pickedImages.isNotEmpty) {
@@ -831,7 +831,7 @@ class _CulturesListePageState extends State<CulturesListePage>
             child: const Text("Annuler"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
             onPressed: () {
               if (_textCtrl.text.isNotEmpty) {
                 setState(() {
@@ -894,7 +894,7 @@ class _CulturesListePageState extends State<CulturesListePage>
             child: const Text("Annuler"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
             onPressed: () {
               setState(() {
                 contes.add({
@@ -936,7 +936,7 @@ class _CulturesListePageState extends State<CulturesListePage>
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.textSecondary,
         title: const Text(
           'Gestion Contenu Culturel',
           style: TextStyle(color: Colors.white),
@@ -944,7 +944,7 @@ class _CulturesListePageState extends State<CulturesListePage>
         centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.textSecondary,
         onPressed: _showAddDialog,
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -957,20 +957,20 @@ class _CulturesListePageState extends State<CulturesListePage>
               onChanged: (value) => setState(() => query = value),
               decoration: InputDecoration(
                 hintText: 'Rechercher un contenu...',
-                prefixIcon: const Icon(Icons.search, color: AppColors.primary),
+                prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
                 filled: true,
                 fillColor: Colors.white,
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(
-                    color: AppColors.primary,
+                    color: AppColors.textSecondary,
                     width: 1.5,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(
-                    color: AppColors.primary,
+                    color: AppColors.textSecondary,
                     width: 2,
                   ),
                 ),
@@ -979,9 +979,9 @@ class _CulturesListePageState extends State<CulturesListePage>
           ),
           TabBar(
             controller: _tabController,
-            labelColor: AppColors.primary,
+            labelColor: AppColors.textSecondary,
             unselectedLabelColor: Colors.grey,
-            indicatorColor: AppColors.primary,
+            indicatorColor: AppColors.textSecondary,
             tabs: const [
               Tab(text: "Musiques"),
               Tab(text: "Images"),
@@ -1070,7 +1070,7 @@ class _ImageDetailViewState extends State<_ImageDetailView> {
               height: _currentPage == index ? 10 : 6,
               decoration: BoxDecoration(
                 color: _currentPage == index
-                    ? AppColors.primary
+                    ? AppColors.textSecondary
                     : Colors.white54,
                 shape: BoxShape.circle,
               ),
@@ -1087,7 +1087,7 @@ class _ImageDetailViewState extends State<_ImageDetailView> {
                 Text(
                   widget.titre,
                   style: const TextStyle(
-                    color: AppColors.primary,
+                    color: AppColors.textSecondary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1097,7 +1097,7 @@ class _ImageDetailViewState extends State<_ImageDetailView> {
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
                     widget.description,
-                    style: const TextStyle(color: AppColors.primary),
+                    style: const TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
               if (widget.ethnie.isNotEmpty)
@@ -1105,7 +1105,7 @@ class _ImageDetailViewState extends State<_ImageDetailView> {
                   padding: const EdgeInsets.only(top: 4, bottom: 12),
                   child: Text(
                     "Ethnie : ${widget.ethnie}",
-                    style: const TextStyle(color: AppColors.primary),
+                    style: const TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
             ],

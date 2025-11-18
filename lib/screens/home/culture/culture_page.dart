@@ -77,12 +77,7 @@ class _CulturePageState extends State<CulturePage>
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16.0),
-            child: Icon(Icons.notifications, color: Colors.brown),
-          ),
-        ],
+
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.brown,
@@ -113,19 +108,6 @@ class _CulturePageState extends State<CulturePage>
             },
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            onPressed: () {},
-            child: const Text('Ajouter un conte', style: AppTextStyles.button),
-          ),
-        ),
       ],
     );
   }
@@ -140,22 +122,6 @@ class _CulturePageState extends State<CulturePage>
             itemBuilder: (context, index) {
               return ProverbeCard(proverbe: proverbes[index]);
             },
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            onPressed: () {},
-            child: const Text(
-              'Ajouter un proverbe',
-              style: AppTextStyles.button,
-            ),
           ),
         ),
       ],
@@ -176,7 +142,7 @@ class _ConteCardState extends State<ConteCard> {
   @override
   Widget build(BuildContext context) {
     final store = context.watch<FavoritesStore>();
-    final id = store.conteIdFrom(widget.conte);          
+    final id = store.conteIdFrom(widget.conte);
     final isFav = store.isConteFavorite(id);
     return GestureDetector(
       onTap: () {
@@ -256,11 +222,10 @@ class ProverbeCard extends StatefulWidget {
 }
 
 class _ProverbeCardState extends State<ProverbeCard> {
-
   @override
   Widget build(BuildContext context) {
     final store = context.watch<FavoritesStore>();
-    final id = store.proverbeIdFrom(widget.proverbe);     
+    final id = store.proverbeIdFrom(widget.proverbe);
     final isFav = store.isProverbeFavorite(id);
     return GestureDetector(
       onTap: () {
@@ -308,7 +273,9 @@ class _ProverbeCardState extends State<ProverbeCard> {
                     ),
                     onPressed: () {
                       final wasFav = isFav;
-                      context.read<FavoritesStore>().toggleProverbe(widget.proverbe);
+                      context.read<FavoritesStore>().toggleProverbe(
+                        widget.proverbe,
+                      );
 
                       final text = wasFav
                           ? 'Proverbe retiré des favoris'
