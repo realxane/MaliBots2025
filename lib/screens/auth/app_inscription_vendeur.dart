@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_images.dart';
+import 'package:malibots_challenge_eni/controllers/userscontrollervendeur.dart';
+import 'package:malibots_challenge_eni/models/uservendeur.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_retour.dart';
@@ -257,14 +259,38 @@ class _InscriptionVendeurPageState extends State<InscriptionVendeurPage> {
                       height: 48,
                       child: bouton_large(
                         hint: 'Créer mon compte',
-                        onPressed: () {
+                        onPressed: () async {
                           if (!_accepted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Veuillez accepter les conditions.')),
                             );
                             return;
                           }
+                          final controller=Userscontrollervendeur();
+                          try{Uservendeur vendeur= await controller.registervendeur(
+                            nom: _nameCtrl.text,
+                            emailOrPhone: _emailOrPhoneCtrl.text,
+                            motdepasse: _passwordCtrl.text,
+                            region: _cityRegionCtrl.text,
+                            telephone: _emailOrPhoneCtrl.text,
+                            telephonePro: _proPhoneCtrl.text,
+                            savoirFaire: _savoirFaireCtrl.text,
+                            );
                           Navigator.pushNamed(context, AppRoutes.bienvenue_vendeur);
+                            }catch (e) {
+    // Affiche le message exact du backend
+             ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+              content: Text(
+          e.toString().replaceAll('Exception: ', ''),
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 4),
+      ),
+    );
+                          }
+                            
                           // if (_formKey.currentState?.validate() ?? false) {
                           //   ScaffoldMessenger.of(context).showSnackBar(
                           //     const SnackBar(content: Text('Compte en cours de création...')),
