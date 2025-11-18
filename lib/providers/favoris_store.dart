@@ -3,14 +3,14 @@ import 'package:malibots_challenge_eni/models/product.dart';
 
 class FavoritesStore extends ChangeNotifier {
   // Favoris pour les produits (Articles = Habits, Plats, Accessoires)
-  final List<Product> _productFavorites = [];
+  final List<Produit> _productFavorites = [];
 
-  List<Product> get productFavorites => List.unmodifiable(_productFavorites);
+  List<Produit> get productFavorites => List.unmodifiable(_productFavorites);
 
   bool isProductFavorite(String productId) =>
       _productFavorites.any((p) => p.id == productId);
 
-  void toggleProduct(Product p) {
+  void toggleProduct(Produit p) {
     final i = _productFavorites.indexWhere((e) => e.id == p.id);
     if (i >= 0) {
       _productFavorites.removeAt(i);

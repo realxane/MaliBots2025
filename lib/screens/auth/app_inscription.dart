@@ -288,7 +288,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
                             return; // on sort ici pour bloquer la navigation
                           }
                           // ✅ L’utilisateur a accepté, on peut aller à la page d’accueil
-                          Navigator.pushNamed(context, AppRoutes.bienvenue_acheteur);
+                          Navigator.pushNamed(context, AppRoutes.accueil);
                           // if (_formKey.currentState?.validate() ?? false) {
                           //   ScaffoldMessenger.of(context).showSnackBar(
                           //     const SnackBar(content: Text('Compte en cours de création...')),

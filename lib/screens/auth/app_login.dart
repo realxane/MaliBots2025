@@ -119,7 +119,7 @@ class _LoginPageState extends State<Login> {
                       onPressed: () {
                         Navigator.pushNamed(context, AppRoutes.choixprofil);
                       },
-                    ),
+                    ), 
                   ],
                 ),
 

@@ -198,7 +198,7 @@ String reason = "Produit non conforme aux règles du marché"; // raison du sign
                   const SizedBox(height: 25),
                   SizedBox(
                     width: double.infinity,
-                    child: bouton_large(hint: "A props", onPressed: (){
+                    child: bouton_large(hint: "A propOs", onPressed: (){
                       Navigator.push(
                         context,
                         MaterialPageRoute(

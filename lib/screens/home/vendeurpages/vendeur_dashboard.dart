@@ -1,4 +1,3 @@
-// lib/screens/seller_dashboard.dart
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -101,8 +100,8 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
     });
   }
 
+  // NE PAS TOUCHER (comme demandé)
   Widget _statBar(String label, int value, Color color, double ratio) {
-    // ratio entre 0 et 1 basé sur la valeur
     double dynamicRatio = (value / 150).clamp(0.1, 1.0);
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -267,19 +266,30 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Seules lignes ajoutées: on lit le thème courant
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     final titleStyle = TextStyle(
-      color: bogolan,
+      color: bogolan, // en clair: identique à avant
       fontWeight: FontWeight.bold,
       fontSize: 18,
     );
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      // en clair: blanc, en sombre: background du thème
+      backgroundColor: isDark ? cs.background : Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        // en clair: blanc, en sombre: surface du thème
+        backgroundColor: isDark ? cs.surface : Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          // en clair: noir87 (strictement identique), en sombre: onSurface
+          icon: Icon(
+            Icons.arrow_back,
+            color: isDark ? cs.onSurface : Colors.black87,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text('Tableau de bord', style: AppTextStyles.titre1),
@@ -290,18 +300,22 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✅ Zone Statistiques
+            // Zone Statistiques
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                // en clair: blanc identique, en sombre: surface
+                color: isDark ? cs.surface : Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.08),
-                    blurRadius: 10,
-                  ),
-                ],
+                // en clair: même shadow qu’avant, en sombre: pas d’ombre claire
+                boxShadow: isDark
+                    ? []
+                    : [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.08),
+                          blurRadius: 10,
+                        ),
+                      ],
               ),
               child: Column(
                 children: [
@@ -316,7 +330,7 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  // ✅ Les barres alignées horizontalement
+                  // NE PAS TOUCHER aux barres
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -345,7 +359,7 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
         ),
       ),
 
-      // ✅ Nouveau bouton flottant
+      // FAB: on garde ta couleur (identique en clair)
       floatingActionButton: FloatingActionButton(
         onPressed: _openAdd,
         backgroundColor: bogolan,

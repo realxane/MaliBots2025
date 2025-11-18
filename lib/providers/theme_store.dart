@@ -9,4 +9,4 @@ class ThemeStore extends ChangeNotifier {
     _mode = value ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
   }
-}
+} 
