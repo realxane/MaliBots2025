@@ -21,10 +21,8 @@ class _LoginPageState extends State<Login> {
   final _passwordCtrl = TextEditingController();
   bool _obscure = true;
 
-
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -33,16 +31,16 @@ class _LoginPageState extends State<Login> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Image.asset(
-                  AppImages.logo, 
-                  height: 64,
-                ),
+                Image.asset(AppImages.logo, height: 64),
                 const SizedBox(height: 16),
 
-                Text(
+                Text( 
                   'Bienvenue sur Anw ka Dambe !',
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.titre2,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 18),
 
@@ -54,7 +52,8 @@ class _LoginPageState extends State<Login> {
                   ),
                 ),
                 const SizedBox(height: 18),
-                //champ E-mail
+
+                // Champ E-mail
                 TextField(
                   controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
@@ -63,7 +62,8 @@ class _LoginPageState extends State<Login> {
                   decoration: decor('E-mail'),
                 ),
                 const SizedBox(height: 12),
-                //champ Mot de passe
+
+                // Champ Mot de passe
                 TextField(
                   controller: _passwordCtrl,
                   obscureText: _obscure,
@@ -83,24 +83,25 @@ class _LoginPageState extends State<Login> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: text_bouton(
-                    hint : "Mot de passe oublié ?",
-                    onPressed: (){
-                      
-                    }
-                    )
+                    hint: "Mot de passe oublié ?",
+                    onPressed: () {
+                      Navigator.pushNamed(context, AppRoutes.forgotPassword);
+                    },
+                  ),
                 ),
 
-                const SizedBox(height: 4),
+                const SizedBox(height: 12),
 
                 // Bouton Connexion
                 SizedBox(
                   width: double.infinity,
                   child: bouton_large(
-                    hint : "se connecter",
-                    onPressed : (){
+
+                    hint: "se connecter",
+                    onPressed: () {
                       Navigator.pushNamed(context, AppRoutes.choixprofil);
-                    }
-                    )
+                    },
+                  ),
                 ),
 
                 const SizedBox(height: 8),
@@ -109,13 +110,16 @@ class _LoginPageState extends State<Login> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Vous n'avez pas de compte ?"),
+                    const Text(
+                      "Vous n'avez pas de compte ?",
+                      style: AppTextStyles.body,
+                    ),
                     text_bouton(
                       hint: "S'inscrire",
                       onPressed: () {
-
-                      }
-                      )
+                        Navigator.pushNamed(context, AppRoutes.choixprofil);
+                      },
+                    ), 
                   ],
                 ),
 
@@ -127,8 +131,8 @@ class _LoginPageState extends State<Login> {
                     Expanded(
                       child: Divider(color: Colors.grey.shade300, thickness: 1),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
                       child: Text('ou'),
                     ),
                     Expanded(
@@ -138,7 +142,7 @@ class _LoginPageState extends State<Login> {
                 ),
 
                 const SizedBox(height: 12),
-                Text('Se connecter avec'),
+                Text('Se connecter avec', style: AppTextStyles.body),
                 const SizedBox(height: 12),
 
                 // Boutons sociaux
@@ -148,16 +152,29 @@ class _LoginPageState extends State<Login> {
                     SocialIconButton(
                       icon: FontAwesomeIcons.google,
                       color: Colors.red,
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.authGoogleApple);
+                      },
                     ),
                     const SizedBox(width: 16),
                     SocialIconButton(
                       icon: FontAwesomeIcons.apple,
                       color: Colors.black,
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.authGoogleApple);
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                    SocialIconButton(
+                      icon: FontAwesomeIcons.facebook,
+                      color: Colors.blue,
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.authGoogleApple);
+                      },
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 24),
               ],
             ),

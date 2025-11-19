@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.malibots_challenge_eni"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "29.0.14033849"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

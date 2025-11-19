@@ -9,6 +9,7 @@ class SocialIconButton extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.onPressed,
+
   });
 
   @override
