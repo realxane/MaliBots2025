@@ -1,89 +1,210 @@
-import '../api/produit_api.dart';
-import '../api/image_uploader.dart';
-import '../models/product.dart';
-import '../mappers/ui_backend_maps.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:malibots_challenge_eni/services/auth_storage.dart';
 
 class ProduitService {
-  final ProduitApi api;
-  final ImageUploader uploader;
+  final String baseUrl = "http://192.168.1.103:8000/api";
+  final _storage = AuthStorage();
 
-  ProduitService({required this.api, required this.uploader});
+  Future<String?> currentToken() => _storage.readToken();
+  Future<String?> currentRole() => _storage.readRole();
 
-  // Créer depuis ton écran UI (product “local”)
-  Future<Produit> createFromUi({
-    required String nom,
-    String? description,
-    required double prix,
-    required String uiCategorie,
-    required String regionLabel,
-    required int stock,
-    required List<String> imageLocalPathsOrUrls,
-  }) async {
-    // 1) Upload des fichiers “locaux”; on garde les URLs déjà http(s)
-    final toUpload = <String>[];
-    final passThrough = <String>[];
-    for (final p in imageLocalPathsOrUrls) {
-      if (p.startsWith('http://') || p.startsWith('https://')) {
-        passThrough.add(p);
-      } else {
-        toUpload.add(p);
-      }
-    }
-    final uploaded = toUpload.isEmpty ? <String>[] : await uploader.uploadAll(toUpload);
-    final images = [...passThrough, ...uploaded];
-
-    // 2) Mappage catégories & régions
-    final categorie = uiToBackendCategorie(uiCategorie);
-    final regionId = uiRegionLabelToId(regionLabel);
-
-    final body = {
-      'nom': nom,
-      if (description != null && description.isNotEmpty) 'description': description,
-      'prix': double.parse(prix.toStringAsFixed(2)),
-      'categorie': categorie,
-      if (regionId != null) 'regionId': regionId, // évite 422 si ID inconnu
-      'stock': stock,
-      'images': images, // le controller Laravel les gère
+  Map<String, String> _authJsonHeaders(String token) {
+    final t = token.trim();
+    final auth = t.toLowerCase().startsWith('bearer ') ? t : 'Bearer $t';
+    return {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': auth,
     };
-
-    return api.create(body);
   }
 
-  Future<Produit> updateFromUi({
-    required String id,
+  bool _isRemote(String p) => p.startsWith('http://') || p.startsWith('https://');
+
+  Future<List<String>> _uploadImagesReturningUrls({
+    required List<String> localPaths,
+    required String token,
+  }) async {
+    if (localPaths.isEmpty) return const [];
+    final isMany = localPaths.length > 1;
+    final uri = Uri.parse("$baseUrl/uploads${isMany ? '/many' : ''}");
+    final req = http.MultipartRequest('POST', uri)
+      ..headers['Authorization'] = _authJsonHeaders(token)['Authorization']!
+      ..headers['Accept'] = 'application/json';
+
+    if (isMany) {
+      for (final p in localPaths) {
+        req.files.add(await http.MultipartFile.fromPath('files[]', p));
+      }
+    } else {
+      req.files.add(await http.MultipartFile.fromPath('file', localPaths.first));
+    }
+
+    final streamed = await req.send().timeout(const Duration(seconds: 40));
+    final resp = await http.Response.fromStream(streamed);
+
+    if (resp.statusCode != 200 && resp.statusCode != 201) {
+      throw Exception("Échec de l’upload (${resp.statusCode}) ${resp.body}");
+    }
+
+    final body = resp.body.isEmpty ? {} : jsonDecode(resp.body);
+    List<String> out = [];
+    if (body is Map<String, dynamic>) {
+      if (body['urls'] is List) {
+        out = (body['urls'] as List).map((e) => e.toString()).toList();
+      } else if (body['data'] is List) {
+        out = (body['data'] as List)
+            .map((e) => (e is Map && e['url'] != null) ? e['url'].toString() : null)
+            .whereType<String>()
+            .toList();
+      } else if (body['url'] != null) {
+        out = [body['url'].toString()];
+      }
+    }
+    if (out.isEmpty) {
+      throw Exception("Réponse upload inattendue: ${resp.body}");
+    }
+    return out;
+  }
+
+  Future<Map<String, dynamic>> createFromUi({
     required String nom,
-    String? description,
+    required String description,
     required double prix,
     required String uiCategorie,
     required String regionLabel,
     required int stock,
     required List<String> imageLocalPathsOrUrls,
+    String? couleur,
   }) async {
-    final toUpload = <String>[];
-    final passThrough = <String>[];
-    for (final p in imageLocalPathsOrUrls) {
-      if (p.startsWith('http://') || p.startsWith('https://')) {
-        passThrough.add(p);
-      } else {
-        toUpload.add(p);
-      }
+    final token = await currentToken();
+    if (token == null || token.trim().isEmpty) {
+      throw Exception("Session expirée, reconnectez-vous.");
     }
-    final uploaded = toUpload.isEmpty ? <String>[] : await uploader.uploadAll(toUpload);
-    final images = [...passThrough, ...uploaded];
 
-    final categorie = uiToBackendCategorie(uiCategorie);
-    final regionId = uiRegionLabelToId(regionLabel);
+    // Vérifie le rôle vendeur si disponible
+    final role = await currentRole();
+    if (role != null && role.toLowerCase() != 'vendeur') {
+      throw Exception("Votre compte n’a pas le rôle vendeur.");
+    }
 
-    final body = {
-      'nom': nom,
-      if (description != null && description.isNotEmpty) 'description': description,
-      'prix': double.parse(prix.toStringAsFixed(2)),
-      'categorie': categorie,
-      if (regionId != null) 'regionId': regionId,
-      'stock': stock,
-      'images': images, // remplace l’ensemble côté backend
+    final remote = <String>[];
+    final local = <String>[];
+    for (final p in imageLocalPathsOrUrls) {
+      (_isRemote(p) ? remote : local).add(p);
+    }
+
+    final uploaded = await _uploadImagesReturningUrls(localPaths: local, token: token);
+    final allUrls = [...remote, ...uploaded];
+
+    final payload = {
+      "nom": nom,
+      "description": description,
+      "prix": prix,
+      "categorie": uiCategorie,
+      "region": regionLabel,
+      "stock": stock,
+      if (couleur != null) "couleur": couleur,
+      "images": allUrls,
     };
 
-    return api.update(id, body);
+    final url = Uri.parse("$baseUrl/vendeur/produits");
+    final resp = await http
+        .post(url, headers: _authJsonHeaders(token), body: jsonEncode(payload))
+        .timeout(const Duration(seconds: 30));
+
+    if (resp.statusCode == 201) {
+      final data = jsonDecode(resp.body);
+      return data is Map<String, dynamic> ? data : {"data": data};
+    } else if (resp.statusCode == 422) {
+      final data = jsonDecode(resp.body);
+      final errors = (data["errors"] as Map<String, dynamic>?)
+              ?.entries
+              .map((e) => "${e.key}: ${(e.value as List).join(', ')}")
+              .join("\n") ??
+          "Erreur de validation";
+      throw Exception(errors);
+    } else if (resp.statusCode == 401 || resp.statusCode == 403) {
+      // renvoyer le message serveur si présent, sinon message clair
+      final msg = _extractMessage(resp.body) ?? "Non autorisé. Vérifie le token et le rôle vendeur.";
+      throw Exception(msg);
+    } else {
+      throw Exception("Erreur ${resp.statusCode}: ${resp.body}");
+    }
+  }
+
+  Future<Map<String, dynamic>> updateFromUi({
+    required String id,
+    required String nom,
+    required String description,
+    required double prix,
+    required String uiCategorie,
+    required String regionLabel,
+    required int stock,
+    required List<String> imageLocalPathsOrUrls,
+    String? couleur,
+  }) async {
+    final token = await currentToken();
+    if (token == null || token.trim().isEmpty) {
+      throw Exception("Session expirée, reconnectez-vous.");
+    }
+
+    final role = await currentRole();
+    if (role != null && role.toLowerCase() != 'vendeur') {
+      throw Exception("Votre compte n’a pas le rôle vendeur.");
+    }
+
+    final remote = <String>[];
+    final local = <String>[];
+    for (final p in imageLocalPathsOrUrls) {
+      (_isRemote(p) ? remote : local).add(p);
+    }
+
+    final uploaded = await _uploadImagesReturningUrls(localPaths: local, token: token);
+    final allUrls = [...remote, ...uploaded];
+
+    final payload = {
+      "nom": nom,
+      "description": description,
+      "prix": prix,
+      "categorie": uiCategorie,
+      "region": regionLabel,
+      "stock": stock,
+      if (couleur != null) "couleur": couleur,
+      "images": allUrls,
+    };
+
+    final url = Uri.parse("$baseUrl/vendeur/produits/$id");
+    final resp = await http
+        .put(url, headers: _authJsonHeaders(token), body: jsonEncode(payload))
+        .timeout(const Duration(seconds: 30));
+
+    if (resp.statusCode == 200) {
+      final data = jsonDecode(resp.body);
+      return data is Map<String, dynamic> ? data : {"data": data};
+    } else if (resp.statusCode == 422) {
+      final data = jsonDecode(resp.body);
+      final errors = (data["errors"] as Map<String, dynamic>?)
+              ?.entries
+              .map((e) => "${e.key}: ${(e.value as List).join(', ')}")
+              .join("\n") ??
+          "Erreur de validation";
+      throw Exception(errors);
+    } else if (resp.statusCode == 401 || resp.statusCode == 403) {
+      final msg = _extractMessage(resp.body) ?? "Non autorisé. Vérifie le token et le rôle vendeur.";
+      throw Exception(msg);
+    } else {
+      throw Exception("Erreur ${resp.statusCode}: ${resp.body}");
+    }
+  }
+
+  String? _extractMessage(String body) {
+    try {
+      final m = jsonDecode(body);
+      if (m is Map && m['message'] != null) return m['message'].toString();
+    } catch (_) {}
+    return null;
   }
 }

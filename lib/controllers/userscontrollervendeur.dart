@@ -1,49 +1,77 @@
+import 'dart:async';
 import 'dart:convert';
+
+import 'package:flutter/foundation.dart'; // debugPrint
 import 'package:http/http.dart' as http;
 import 'package:malibots_challenge_eni/models/uservendeur.dart';
-String monip="10.236.139.1";
+
 class Userscontrollervendeur {
- Future<Uservendeur> registervendeur({
-  required String nom,
-  required String emailOrPhone,
-  required String motdepasse,
-  required String region,
-  required String telephone,
-  required String telephonePro,
-  required String savoirFaire,
-}) async {
-  final url = Uri.parse("http://10.236.139.1:8000/api/users/create/Vendeur");
+  // Mets la même baseUrl partout (ex: AppConfig.apiBaseUrl sans /api à la fin si tu concatènes /api ensuite)
+  final String baseUrl = "http://192.168.1.103:8000";
 
-  final response = await http.post(
-    url,
-    body: {
-      "nom": nom,
-      "email": emailOrPhone,
-      "motDePasse": motdepasse,
-      "region": region,
-      "telephone": telephone,
-      "telephone_pro": telephonePro,
-      "descrit_ton_savoir_faire": savoirFaire,
-    },
-  );
+  Future<Uservendeur> registervendeur({
+    required String nom,
+    required String email, // email exigé
+    required String motdepasse,
+    required String region,
+    String? telephone,
+    String? telephonePro,
+    String? savoirFaire,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/users/create/Vendeur");
 
-  final data = jsonDecode(response.body);
+    http.Response response;
+    try {
+      response = await http
+          .post(
+            url,
+            headers: const {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              "nom": nom,
+              "email": email,
+              "motDePasse": motdepasse,
+              "region": region,
+              if (telephone != null && telephone.isNotEmpty) "telephone": telephone,
+              if (telephonePro != null && telephonePro.isNotEmpty) "telephone_pro": telephonePro,
+              if (savoirFaire != null && savoirFaire.isNotEmpty) "descrit_ton_savoir_faire": savoirFaire,
+            }),
+          )
+          .timeout(const Duration(seconds: 20));
+    } on TimeoutException {
+      throw Exception("Délai dépassé lors de l’appel au serveur.");
+    }
 
-  if (response.statusCode == 201) {
-    return Uservendeur.fromJson(data["user"]);
-  } else {
-    // Si c'est une erreur de validation
-    if (data.containsKey("errors")) {
+    debugPrint('POST $url -> ${response.statusCode}\n${response.body}');
+
+    final raw = response.body.isEmpty ? '{}' : response.body;
+    Map<String, dynamic> data = {};
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map<String, dynamic>) data = decoded;
+    } catch (_) {}
+
+    if (response.statusCode == 201) {
+      return Uservendeur.fromJson((data["user"] ?? {}) as Map<String, dynamic>);
+    }
+
+    if (response.statusCode == 422 && data.containsKey('errors')) {
       final errors = (data["errors"] as Map<String, dynamic>)
           .entries
-          .map((e) => "${e.key}: ${e.value.join(', ')}")
+          .map((e) => "${e.key}: ${(e.value as List).join(', ')}")
           .join("\n");
-      throw Exception("${data["message"]}\n$errors");
-    } else {
-      // Autres erreurs
-      throw Exception(data["message"] ?? "Erreur lors de l'inscription");
+      final msg = data["message"]?.toString() ?? "Erreur de validation";
+      throw Exception("$msg\n$errors");
     }
-  }
-}
 
+    final details = [
+      if (data['message'] != null) data['message'].toString(),
+      if (data['error'] != null) data['error'].toString(),
+      if (data.isEmpty && response.body.isNotEmpty) response.body,
+    ].where((e) => e.trim().isNotEmpty).join(' — ');
+
+    throw Exception(details.isNotEmpty ? details : "Erreur serveur (${response.statusCode})");
+  }
 }

@@ -29,29 +29,13 @@ import 'package:malibots_challenge_eni/screens/auth/app_inscription.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_inscription_vendeur.dart';
 import 'package:malibots_challenge_eni/screens/paiements/choix_mode.dart';
 import 'package:provider/provider.dart';
-import 'config/app_config.dart';
-import 'api/api_client.dart';
-import 'api/produit_api.dart';
-import 'api/image_uploader.dart';
-import 'repositories/produit_repository.dart';
 import 'services/produit_service.dart';
-import 'screens/catalogue/catalog_controller.dart';
 
 void main() {
-  final apiClient = ApiClient();
-  final produitApi = ProduitApi(apiClient);
-  final uploader = LaravelImageUploader(apiClient);
-  final repo = ProduitRepository(produitApi);
-  final produitService = ProduitService(api: produitApi, uploader: uploader);
   runApp(
     MultiProvider(
       providers: [
-        Provider<ApiClient>.value(value: apiClient),
-        Provider<ProduitApi>.value(value: produitApi),
-        Provider<ImageUploader>.value(value: uploader),
-        Provider<ProduitRepository>.value(value: repo),
-        Provider<ProduitService>.value(value: produitService),
-        ChangeNotifierProvider(create: (_) => CatalogController(repo)),
+        Provider<ProduitService>(create: (_) => ProduitService()),
         // ChangeNotifierProvider(
         //   create: (_) =>
         //       ProductsStore(kProducts), // ta liste initiale de Product
