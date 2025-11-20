@@ -266,6 +266,7 @@ class _InscriptionVendeurPageState extends State<InscriptionVendeurPage> {
                             );
                             return;
                           }
+
                           final controller=Userscontrollervendeur();
                           try{Uservendeur vendeur= await controller.registervendeur(
                             nom: _nameCtrl.text,
@@ -291,6 +292,7 @@ class _InscriptionVendeurPageState extends State<InscriptionVendeurPage> {
     );
                           }
                             
+
                           // if (_formKey.currentState?.validate() ?? false) {
                           //   ScaffoldMessenger.of(context).showSnackBar(
                           //     const SnackBar(content: Text('Compte en cours de création...')),

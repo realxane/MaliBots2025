@@ -17,21 +17,33 @@ class FavoritesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return DefaultTabController(
       length: 5,
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.white,
-          foregroundColor: brown,
+          // Clair: strictement comme avant, Sombre: couleurs du thème
+          backgroundColor: isDark ? cs.surface : Colors.white,
+          foregroundColor: isDark ? cs.onSurface : brown,
           elevation: 0.5,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 18),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          title: Text('Favoris', style: TextStyle(color: brown, fontWeight: FontWeight.w700)),
+          title: Text(
+            'Favoris',
+            style: TextStyle(
+              color: isDark ? cs.onSurface : brown,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           bottom: TabBar(
-            labelColor: brown,
-            indicatorColor: brown,
+            labelColor: isDark ? cs.primary : brown,
+            unselectedLabelColor: isDark ? cs.onSurfaceVariant : null,
+            indicatorColor: isDark ? cs.primary : brown,
             tabs: const [
               Tab(text: 'Articles'),
               Tab(text: 'Musiques'),
@@ -41,9 +53,9 @@ class FavoritesPage extends StatelessWidget {
             ],
           ),
         ),
-        body: TabBarView(
+        body: const TabBarView(
           children: [
-            const _ArticlesTab(),
+            _ArticlesTab(),
             _MusiquesTab(),
             _ProverbesTab(),
             _ContesTab(),
@@ -67,9 +79,14 @@ class _ArticlesTab extends StatelessWidget {
       return const _EmptyState();
     }
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final sepColor =
+        isDark ? theme.colorScheme.outlineVariant : const Color(0xFFEDEDED);
+
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFEDEDED)),
+      separatorBuilder: (_, __) => Divider(height: 1, color: sepColor),
       itemCount: items.length,
       itemBuilder: (context, i) {
         final p = items[i];
@@ -79,17 +96,10 @@ class _ArticlesTab extends StatelessWidget {
           isFavorite: isFav,
           onRemove: () => context.read<FavoritesStore>().removeProduct(p.id),
           onToggleFavorite: () => context.read<FavoritesStore>().toggleProduct(p),
-
-          // NEW: ouvre la page détail
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => ProductDetailPage(
-                  product: p,
-                  // optionnel: passe des images ou couleurs si tu veux
-                  // additionalImages: ['assets/images/xxx.jpg', 'https://...'],
-                  // availableColors: [Colors.black, Colors.brown],
-                ),
+                builder: (_) => ProductDetailPage(product: p),
               ),
             );
           },
@@ -104,29 +114,20 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final subtle = isDark
+        ? theme.colorScheme.onSurfaceVariant
+        : Colors.brown.shade300;
+
     return Center(
       child: Text(
         'Aucun favori ici…',
-        style: TextStyle(color: Colors.brown.shade300),
+        style: TextStyle(color: subtle),
       ),
     );
   }
 }
-
-// class _EmptyTab extends StatelessWidget {
-//   final String label;
-//   const _EmptyTab({required this.label});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Center(
-//       child: Text(
-//         'Aucun favori dans $label.',
-//         style: TextStyle(color: Colors.brown.shade300),
-//       ),
-//     );
-//   }
-// }
 
 class _ProverbesTab extends StatelessWidget {
   const _ProverbesTab();
@@ -137,19 +138,27 @@ class _ProverbesTab extends StatelessWidget {
     final items = store.proverbeFavorites;
     if (items.isEmpty) return const _EmptyState();
 
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final sepColor =
+        isDark ? cs.outlineVariant : const Color(0xFFEDEDED);
+    final subtle =
+        isDark ? cs.onSurfaceVariant : Colors.brown.shade300;
+
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFEDEDED)),
+      separatorBuilder: (_, __) => Divider(height: 1, color: sepColor),
       itemCount: items.length,
       itemBuilder: (context, i) {
         final p = items[i];
         final id = p['id'] ?? store.proverbeIdFrom(p);
         return ListTile(
           title: Text(p['texte'] ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
-          subtitle: Text(p['origine'] ?? '', style: TextStyle(color: Colors.brown.shade300)),
+          subtitle: Text(p['origine'] ?? '', style: TextStyle(color: subtle)),
           trailing: IconButton(
             icon: const Icon(Icons.delete_outline),
-            color: AppColors.primary,
+            color: isDark ? cs.primary : AppColors.primary,
             onPressed: () => context.read<FavoritesStore>().removeProverbe(id),
           ),
         );
@@ -167,9 +176,15 @@ class _ContesTab extends StatelessWidget {
     final items = store.conteFavorites;
     if (items.isEmpty) return const _EmptyState();
 
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final sepColor =
+        isDark ? cs.outlineVariant : const Color(0xFFEDEDED);
+
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFEDEDED)),
+      separatorBuilder: (_, __) => Divider(height: 1, color: sepColor),
       itemCount: items.length,
       itemBuilder: (context, i) {
         final c = items[i];
@@ -179,7 +194,7 @@ class _ContesTab extends StatelessWidget {
           subtitle: Text(c['resume'] ?? '', maxLines: 2, overflow: TextOverflow.ellipsis),
           trailing: IconButton(
             icon: const Icon(Icons.delete_outline),
-            color: AppColors.primary,
+            color: isDark ? cs.primary : AppColors.primary,
             onPressed: () => context.read<FavoritesStore>().removeConte(id),
           ),
           onTap: () {
@@ -252,7 +267,7 @@ class _GalerieTab extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: AppColors.primary, // identique en clair
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -277,9 +292,17 @@ class _MusiquesTab extends StatelessWidget {
     final items = store.musicFavorites;
     if (items.isEmpty) return const _EmptyState();
 
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final sepColor =
+        isDark ? cs.outlineVariant : const Color(0xFFEDEDED);
+    final subtle =
+        isDark ? cs.onSurfaceVariant : Colors.brown.shade300;
+
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFEDEDED)),
+      separatorBuilder: (_, __) => Divider(height: 1, color: sepColor),
       itemCount: items.length,
       itemBuilder: (context, i) {
         final t = items[i];
@@ -299,11 +322,15 @@ class _MusiquesTab extends StatelessWidget {
         return ListTile(
           leading: CircleAvatar(backgroundImage: imgProvider, radius: 24),
           title: Text(t['title'] ?? 'Titre inconnu', maxLines: 1, overflow: TextOverflow.ellipsis),
-          subtitle: Text(t['artist'] ?? 'Artiste inconnu',
-              maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.brown.shade300)),
+          subtitle: Text(
+            t['artist'] ?? 'Artiste inconnu',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: subtle),
+          ),
           trailing: IconButton(
-            icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: AppColors.primary),
+            icon: Icon(isFav ? Icons.favorite : Icons.favorite_border,
+                color: isDark ? cs.primary : AppColors.primary),
             onPressed: () => context.read<FavoritesStore>().toggleMusic(t),
             tooltip: isFav ? 'Retirer des favoris' : 'Ajouter aux favoris',
           ),

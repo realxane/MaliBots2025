@@ -10,6 +10,7 @@ import 'package:malibots_challenge_eni/screens/home/vendeurpages/vendeur_dashboa
 import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
 import 'package:malibots_challenge_eni/screens/profile/profile_screen_user.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:malibots_challenge_eni/widgets/themes.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -24,11 +25,14 @@ class _MainScreenState extends State<MainScreen> {
     FavoritesPage(),
     CartPage(),
     ProfileScreenUser(),
-    SellerDashboardScreen(),
+    SellerDashboardScreen(), 
   ];
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;           // <— ICI on crée "scheme"
+    final isDark = theme.brightness == Brightness.dark;
     return Scaffold(
       body: pages[_currentIndex], // ✅ afficher la page sélectionnée
 
@@ -37,8 +41,9 @@ class _MainScreenState extends State<MainScreen> {
         onTap: (index) {
           setState(() => _currentIndex = index);
         },
-        selectedItemColor: bogolan, // ta couleur
-        unselectedItemColor: Colors.brown[300],
+        backgroundColor: isDark ? scheme.surface : Colors.grey.shade100, // gris en clair, s’adapte en sombre
+        selectedItemColor: scheme.primary,
+        unselectedItemColor: scheme.onSurfaceVariant,
         type: BottomNavigationBarType.fixed, // ✅ Important si + de 3 items
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),
@@ -114,9 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false, // Supprime la flèche de retour
         iconTheme: IconThemeData(color: bogolan, size: 30),

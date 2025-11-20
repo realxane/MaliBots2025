@@ -4,7 +4,10 @@ TextButton text_bouton( {
   required VoidCallback onPressed
   }) {
     return TextButton(
-                      onPressed: onPressed,
-                      child: Text(hint),
-                    );
-}
+            onPressed: onPressed,
+            child: Text(hint),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color.fromRGBO(14, 66, 109, 1),
+            ),
+          );
+} 

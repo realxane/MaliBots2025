@@ -18,7 +18,7 @@ class Activity {
   final String title;
   final String subtitle; // ex: "En attente..." ou le nom d'auteur/declarant
   final IconData icon;
-  final Product? product; // utilisé si type == productAdded
+  final Produit? product; // utilisé si type == productAdded
 
   const Activity({
     required this.type,
@@ -40,22 +40,24 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   int _index = 0;
 
   // Exemple de produit "robe bazin" venant d'une publication vendeur
-  final Product _robeBazin = Product(
-    id: 'p1',
-    name: 'Boubou bazin',
-    region: 'Sikasso',
-    type: 'Tenues',
-    artisan: 'Moussa',
-    price: 18000,
-    rating: 4.8,
-    likes: 31,
-    imageUrl: 'assets/images/produits/Bazin.png',
-  );
+  final Produit _robeBazin = Produit(
+  id: 'p1',
+  nom: 'Boubou bazin',
+  regionId: 'Sikasso',
+  regionName: 'Sikasso',
+  categorie: mapUiTypeToCategorie('Tenues'),
+  artisan: 'Moussa',
+  prix: 18000,
+  ratingAvg: 4.8,
+  ratingCount: 31,
+  imageUrl: 'assets/images/produits/Bazin.png',
+  firstImageUrl: 'assets/images/produits/Bazin.png',
+);
 
   List<Activity> get _activities => [
     Activity(
       type: ActivityType.productAdded,
-      title: 'Produit ajouté ${_robeBazin.name}',
+      title: 'Produit ajouté ${_robeBazin.nom}',
       subtitle: 'En attente aujourd’hui 9h10',
       icon: Icons.check_circle,
       product: _robeBazin,
@@ -65,14 +67,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       title: 'Produit ajouté Boubou bogolan',
       subtitle: 'En attente hier 17h20',
       icon: Icons.new_releases_outlined,
-      product: _robeBazin.copyWith(id: 'p2', name: 'Boubou bogolan'),
+      product: _robeBazin.copyWith(id: 'p2', nom: 'Boubou bogolan'),
     ),
     Activity(
       type: ActivityType.productAdded,
       title: 'Produit ajouté Sandales cuir',
       subtitle: 'En attente 30/10 11h02',
       icon: Icons.shopping_bag_outlined,
-      product: _robeBazin.copyWith(id: 'p3', name: 'Sandales cuir'),
+      product: _robeBazin.copyWith(id: 'p3', nom: 'Sandales cuir'),
     ),
     // Activités non-produit que tu avais
     Activity(
@@ -381,33 +383,6 @@ class _DummyPage extends StatelessWidget {
           style: TextStyle(color: _brown, fontSize: 18),
         ),
       ),
-    );
-  }
-}
-
-// Extension utilitaire pour dupliquer un produit avec quelques champs modifiés
-extension on Product {
-  Product copyWith({
-    String? id,
-    String? name,
-    String? region,
-    String? type,
-    String? artisan,
-    int? price,
-    double? rating,
-    int? likes,
-    String? imageUrl,
-  }) {
-    return Product(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      region: region ?? this.region,
-      type: type ?? this.type,
-      artisan: artisan ?? this.artisan,
-      price: price ?? this.price,
-      rating: rating ?? this.rating,
-      likes: likes ?? this.likes,
-      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 }

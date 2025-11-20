@@ -2,8 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
+import 'package:malibots_challenge_eni/services/produit_service.dart';
+import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'produit.dart';
+import 'package:malibots_challenge_eni/models/product.dart' as backend;
 
 const Color bogolan = Color(0xFF7B3F00);
 
@@ -89,31 +92,65 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     setState(() => _images.remove(path));
   }
 
-  void _submit() {
-    if (!_formKey.currentState!.validate()) return;
-    if (_images.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ajoutez au moins une image')),
+  void _submit() async {
+  if (!_formKey.currentState!.validate()) return;
+  if (_images.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Ajoutez au moins une image')),
+    );
+    return;
+  }
+
+  final isEdit = widget.product != null;
+
+  // petit loader
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const Center(child: CircularProgressIndicator()),
+  );
+
+  try {
+    final service = context.read<ProduitService>();
+    backend.Produit result;
+
+    if (isEdit) {
+      result = await service.updateFromUi(
+        id: widget.product!.id,
+        nom: _nameC.text.trim(),
+        description: _descC.text.trim(),
+        prix: double.tryParse(_priceC.text.trim()) ?? 0,
+        uiCategorie: _category,
+        regionLabel: _region,
+        stock: int.tryParse(_stockC.text.trim()) ?? 0,
+        imageLocalPathsOrUrls: _images,
       );
-      return;
+    } else {
+      result = await service.createFromUi(
+        nom: _nameC.text.trim(),
+        description: _descC.text.trim(),
+        prix: double.tryParse(_priceC.text.trim()) ?? 0,
+        uiCategorie: _category,
+        regionLabel: _region,
+        stock: int.tryParse(_stockC.text.trim()) ?? 0,
+        imageLocalPathsOrUrls: _images,
+      );
     }
 
-    final id = widget.product?.id ?? const Uuid().v4();
-
-    final product = Product(
-      id: id,
-      name: _nameC.text.trim(),
-      description: _descC.text.trim(),
-      price: double.tryParse(_priceC.text.trim()) ?? 0,
-      stock: int.tryParse(_stockC.text.trim()) ?? 0,
-      images: _images,
-      region: _region,
-      category: _category,
-      color: _color,
+    Navigator.of(context).pop(); // ferme loader
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(isEdit ? 'Produit mis à jour' : 'Produit publié')),
     );
 
-    Navigator.of(context).pop(product);
+    // Retourne le produit backend pour rafraîchir l’appelant
+    Navigator.of(context).pop(result);
+  } catch (e) {
+    Navigator.of(context).pop(); // ferme loader
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Erreur: $e')),
+    );
   }
+}
 
   Widget _buildImagePicker() {
     return Column(

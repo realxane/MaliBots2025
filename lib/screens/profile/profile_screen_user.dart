@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:malibots_challenge_eni/api/authencotrollerapi.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
@@ -184,7 +185,10 @@ String reason = "Produit non conforme aux règles du marché"; // raison du sign
                   alignment: Alignment.center,
                   child:text_bouton( 
                     hint: "Déconnecter",
-                    onPressed: (){}), 
+                    onPressed: (){
+                      final cotroller=AuthController();
+                      cotroller.logout(context);
+                    }), 
                 ),
                 Divider(color: Theme.of(context).dividerColor,),
                 const SizedBox(height: 25),
@@ -205,7 +209,7 @@ String reason = "Produit non conforme aux règles du marché"; // raison du sign
                   const SizedBox(height: 25),
                   SizedBox(
                     width: double.infinity,
-                    child: bouton_large(hint: "A props", onPressed: (){
+                    child: bouton_large(hint: "A propOs", onPressed: (){
                       Navigator.push(
                         context,
                         MaterialPageRoute(

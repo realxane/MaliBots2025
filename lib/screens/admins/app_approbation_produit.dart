@@ -2,22 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/models/product.dart';
 
-
 final Color _brown = AppColors.textSecondary;
+
 class ProductReviewPage extends StatelessWidget {
-  final Product product;
+  final Produit product;
   final String statusText;
-  const ProductReviewPage({super.key, required this.product, required this.statusText});
+
+  const ProductReviewPage({
+    super.key,
+    required this.product,
+    required this.statusText,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final priceText = '${product.price.toString()} FCFA';
+    final String priceText = '${product.prixInt} FCFA';
+
+    // Meilleure image dispo (firstImageUrl -> imageUrl -> images -> '')
+    final String img = product.imageBest;
+    final bool hasImg = img.isNotEmpty;
+    final bool isNetwork = hasImg && (img.startsWith('http://') || img.startsWith('https://'));
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: _brown,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: Text(product.name),
+        title: Text(product.nom),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -28,15 +39,19 @@ class ProductReviewPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               child: AspectRatio(
                 aspectRatio: 4 / 3,
-                child: Image.asset(
-                  product.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: Colors.grey.shade200,
-                    alignment: Alignment.center,
-                    child: Icon(Icons.broken_image_outlined, color: _brown.withOpacity(.6), size: 48),
-                  ),
-                ),
+                child: hasImg
+                    ? (isNetwork
+                        ? Image.network(
+                            img,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _imageError(),
+                          )
+                        : Image.asset(
+                            img,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _imageError(),
+                          ))
+                    : _imageError(),
               ),
             ),
             const SizedBox(height: 16),
@@ -49,18 +64,23 @@ class ProductReviewPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _labelValue('Nom', product.name),
+                      _labelValue('Nom', product.nom),
                       const SizedBox(height: 8),
+                      // Description brute si fournie
+                      if ((product.description ?? '').trim().isNotEmpty) ...[
+                        _labelValue('Description', product.description!.trim()),
+                        const SizedBox(height: 8),
+                      ],
+                      // Détails UI-friendly via l’extension ProduitUi
                       _labelValue(
-                      'Description',
-                      'Type: ${product.type} • Région: ${product.region}\n'
-                      'Prix: $priceText',
+                        'Détails',
+                        'Type: ${product.typeUi} • Région: ${product.regionLabel}\n'
+                        'Prix: $priceText',
                       ),
-                      
                       const SizedBox(height: 8),
-                      _labelValue('Auteur', product.artisan),
+                      _labelValue('Artisan', product.artisan ?? '—'),
                       const SizedBox(height: 8),
-                      _labelValue('Date', statusText.replaceFirst('En attente ', '')),
+                      _labelValue('Statut', statusText),
                     ],
                   ),
                 ),
@@ -80,9 +100,7 @@ class ProductReviewPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  onPressed: () {
-                    Navigator.pop(context, 'rejected');
-                  },
+                  onPressed: () => Navigator.pop(context, 'rejected'),
                   child: const Text('Rejeter'),
                 ),
                 ElevatedButton(
@@ -92,15 +110,25 @@ class ProductReviewPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  onPressed: () {
-                    Navigator.pop(context, 'approved');
-                  },
+                  onPressed: () => Navigator.pop(context, 'approved'),
                   child: const Text('Approuver'),
                 ),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _imageError() {
+    return Container(
+      color: Colors.grey.shade200,
+      alignment: Alignment.center,
+      child: Icon(
+        Icons.broken_image_outlined,
+        color: _brown.withOpacity(.6),
+        size: 48,
       ),
     );
   }

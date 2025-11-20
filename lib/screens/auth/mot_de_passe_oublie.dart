@@ -37,40 +37,20 @@ class MotDePasseOublie extends StatelessWidget {
             horizontal: width * 0.06, // marge adaptative
             vertical: height * 0.04,),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            // mainAxisAlignment: MainAxisAlignment.center,
             children: [
-            SizedBox(height: height * 0.05),            
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            SizedBox(height: height * 0.01),            
+        Image.asset(AppImages.logo, height: 64),
+                const SizedBox(height: 16),
 
-              children: [
-                Container(
-                 height: height * 0.12,
-                  width: height * 0.12,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
+                Text( 
+                  'Bienvenue sur Anw ka Dambe !',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
-                  child: Image.asset(  
-                    AppImages.logo, height: 64,),
                 ),
-                  SizedBox(width: width * 0.03),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                    Text("Anw Ka Dembe",style: TextStyle(
-                       fontSize: width * 0.06,
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold
-                    ),),
-                    Padding(
-                      padding: EdgeInsets.only(left: width*0.045),
-                      child: Text("Découvrez l'âme du Mali",style: AppTextStyles.soustitre.copyWith(
-                          fontSize: width * 0.040,
-                        ),),
-                    ),
-                  ])
-              
-            ]),
             SizedBox(height: height * 0.06),            
                Align(
                 alignment: Alignment.centerLeft,

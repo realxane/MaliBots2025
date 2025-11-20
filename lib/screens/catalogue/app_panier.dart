@@ -16,7 +16,7 @@ class CartItem {
     required this.name,
     this.color, // hex (#A0522D) ou nom
     required this.price, // en unités (ex: 18000 pour 18000f)
-    required this.assetImagePath,
+    required this.assetImagePath, // peut être asset OU URL
     this.qty = 1,
   });
 
@@ -24,7 +24,7 @@ class CartItem {
   final String name;
   final String? color;
   final int price;
-  final String assetImagePath;
+  final String assetImagePath; // asset path OU URL
   int qty;
 
   String get key => (color == null || color!.isEmpty)
@@ -47,11 +47,10 @@ class CartController extends ChangeNotifier {
     required String name,
     String? color,
     required int price,
-    required String assetImagePath,
+    required String assetImagePath, // accepte aussi des URLs
     int qty = 1,
   }) {
-    assert(!assetImagePath.startsWith('http'),
-        'CartController n’accepte que des assets locaux pour les images.');
+    // On accepte désormais aussi les URLs (plus d'assert bloquante).
     final temp = CartItem(
       productId: productId,
       name: name,
@@ -107,18 +106,19 @@ class CartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brown = AppColors.textSecondary; // brun chaleureux
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
+    final surface = isDark ? cs.surface : Colors.white;
+    final onSurface = isDark ? cs.onSurface : AppColors.textSecondary;
+    final accent = isDark ? cs.primary : AppColors.textSecondary;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: brown,
+        backgroundColor: surface,
+        foregroundColor: onSurface,
         elevation: 0.5,
-        // leading: IconButton(
-        //   icon: const Icon(Icons.grid_view_rounded),
-        //   onPressed: () {
-        //     Navigator.of(context).maybePop();
-        //   },
-        // ),
         leading: Navigator.canPop(context)
             ? fleche_retour(
                 onPressed: () {
@@ -154,11 +154,11 @@ class CartPage extends StatelessWidget {
                   separatorBuilder: (_, __) => const Divider(height: 1),
                   itemBuilder: (context, index) {
                     final it = items[index];
-                    return _CartRow(item: it, accent: brown);
+                    return _CartRow(item: it, accent: accent);
                   },
                 ),
               ),
-              _CartBottomBar(accent: brown),
+              _CartBottomBar(accent: accent),
             ],
           );
         },
@@ -175,6 +175,8 @@ class _CartRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final key = item.key;
     final swatch = _parseColor(item.color);
 
@@ -194,6 +196,17 @@ class _CartRow extends StatelessWidget {
       );
     }
 
+    Widget _image(String path) {
+      final isUrl = path.startsWith('http');
+      final img = isUrl
+          ? Image.network(path, width: 88, height: 88, fit: BoxFit.cover)
+          : Image.asset(path, width: 88, height: 88, fit: BoxFit.cover);
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: img,
+      );
+    }
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -204,16 +217,7 @@ class _CartRow extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image du produit
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: Image.asset(
-                  item.assetImagePath,
-                  width: 88,
-                  height: 88,
-                  fit: BoxFit.cover,
-                ),
-              ),
+              _image(item.assetImagePath),
               const SizedBox(width: 10),
               // Infos produit
               Expanded(
@@ -223,37 +227,29 @@ class _CartRow extends StatelessWidget {
                     // Ligne titre + supprimer
                     Row(
                       children: [
-                        // Rendre aussi le titre cliquable explicitement (optionnel)
                         Expanded(
-                          child: GestureDetector(
-                            onTap: _openDetails,
-                            behavior: HitTestBehavior.opaque,
-                            child: const SizedBox(), // occupe l'espace du titre
+                          child: Text(
+                            item.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ),
-                        InkWell(
-                          onTap: () => CartController.I.remove(key),
-                          child: const Padding(
-                            padding: EdgeInsets.all(4.0),
-                            child: Text('x', style: TextStyle(fontSize: 16)),
-                          ),
+                        IconButton(
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.all(4),
+                          icon: Icon(Icons.close, color: cs.onSurfaceVariant),
+                          onPressed: () => CartController.I.remove(key),
+                          tooltip: 'Supprimer',
                         ),
                       ],
                     ),
-                    // On remet le texte du titre en dessous pour l'affichage
-                    // (alternative: garder le Text dans la Row et enlever le GestureDetector ci-dessus)
-                    Text(
-                      item.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
                     const SizedBox(height: 6),
-                    // Couleurs
+                    // Couleur
                     if (item.color != null && item.color!.isNotEmpty)
                       Row(
                         children: [
-                          const Text('Couleur   '),
+                          const Text('Couleur  '),
                           if (swatch != null)
                             Container(
                               width: 36,
@@ -261,14 +257,15 @@ class _CartRow extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: swatch,
                                 borderRadius: BorderRadius.circular(2),
-                                border: Border.all(color: Colors.black12),
+                                border: Border.all(color: cs.outlineVariant),
                               ),
                             )
                           else
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                border: Border.all(color: Colors.black12),
+                                border: Border.all(color: cs.outlineVariant),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -321,6 +318,7 @@ class _QtyControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final border = BorderSide(color: accent, width: 1);
     final radius = BorderRadius.circular(4);
     return Row(
@@ -328,21 +326,41 @@ class _QtyControl extends StatelessWidget {
         InkWell(
           onTap: onMinus,
           child: Container(
-            
-            decoration: BoxDecoration(border: Border(left: border, top: border, bottom: border), borderRadius: BorderRadius.only(topLeft: radius.topLeft, bottomLeft: radius.bottomLeft)),
+            decoration: BoxDecoration(
+              border: Border(left: border, top: border, bottom: border),
+              borderRadius: BorderRadius.only(
+                topLeft: radius.topLeft,
+                bottomLeft: radius.bottomLeft,
+              ),
+            ),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             child: Text('−', style: TextStyle(color: accent, fontSize: 16)),
           ),
         ),
         Container(
-          decoration: BoxDecoration(color: accent, border: Border(top: border, bottom: border)),
+          decoration: BoxDecoration(
+            color: accent,
+            border: Border(top: border, bottom: border),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          child: Text('$qty', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
+          child: Text(
+            '$qty',
+            style: TextStyle(
+              color: cs.onPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
         InkWell(
           onTap: onPlus,
           child: Container(
-            decoration: BoxDecoration(border: Border(right: border, top: border, bottom: border), borderRadius: BorderRadius.only(topRight: radius.topRight, bottomRight: radius.bottomRight)),
+            decoration: BoxDecoration(
+              border: Border(right: border, top: border, bottom: border),
+              borderRadius: BorderRadius.only(
+                topRight: radius.topRight,
+                bottomRight: radius.bottomRight,
+              ),
+            ),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             child: Text('+', style: TextStyle(color: accent, fontSize: 16)),
           ),
@@ -358,14 +376,15 @@ class _CartBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final total = CartController.I.total;
     return SafeArea(
       top: false,
       child: Container(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Color(0x11000000))),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          border: Border(top: BorderSide(color: cs.outlineVariant)),
         ),
         child: Row(
           children: [
@@ -383,7 +402,6 @@ class _CartBottomBar extends StatelessWidget {
                 height: 40,
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: action de validation (paiement, récap, etc.)
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Panier validé')),
                     );

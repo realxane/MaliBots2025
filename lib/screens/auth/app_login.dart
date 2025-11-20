@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:malibots_challenge_eni/api/authencotrollerapi.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_images.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
-import 'package:malibots_challenge_eni/controllers/authcontroller.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_social.dart';
@@ -99,32 +99,42 @@ class _LoginPageState extends State<Login> {
                   child: bouton_large(
 
                     hint: "se connecter",
-                   onPressed: () async {
-                  setState(() => _isLoading = true); // si tu veux un loader
-                  try{
-                     // Instancie le controller
-                    final controller = AuthController();
-                     // Appelle la fonction login du backend
-                  final result = await controller.login(
-                   email: _emailCtrl.text,
-                  motDePasse: _passwordCtrl.text, );
-                  final page=result["home_page"];
-                  //dedions les pages 
-                  if(page=="admin_dashboard"){
-                     Navigator.pushReplacementNamed(context, AppRoutes.admin_dash);
-                  }else{
-                    Navigator.pushReplacementNamed(context, AppRoutes.accueil);
-                  }
-                  } catch (e) {
-        // Affiche le message exact du backend
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      } finally {
-        setState(() => _isLoading = false);
-      }
+                  onPressed: () async {
+  setState(() => _isLoading = true);
 
-                  }
+  try {
+    final controller = AuthController();
+
+    final result = await controller.login(
+      _emailCtrl.text.trim(),
+      _passwordCtrl.text.trim(),
+    );
+
+    // Vérifier si le login est OK
+    if (result["success"] != true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result["error"] ?? "Erreur inconnue")),
+      );
+      return;
+    }
+
+    // 👍 Login réussi
+    final page = result["homePage"];
+
+    if (page == "admin_dashboard") {
+      Navigator.pushReplacementNamed(context, AppRoutes.admin_dash);
+    } else {
+      Navigator.pushReplacementNamed(context, AppRoutes.accueil);
+    }
+
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(e.toString())),
+    );
+  } finally {
+    setState(() => _isLoading = false);
+  }
+}
 
                   ),
                 ),
@@ -135,16 +145,16 @@ class _LoginPageState extends State<Login> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                     Text(
                       "Vous n'avez pas de compte ?",
-                      style: AppTextStyles.body,
+                      style: AppTextStyles.body.copyWith(fontSize: 15),
                     ),
                     text_bouton(
                       hint: "S'inscrire",
                       onPressed: () {
                         Navigator.pushNamed(context, AppRoutes.choixprofil);
                       },
-                    ),
+                    ), 
                   ],
                 ),
 
