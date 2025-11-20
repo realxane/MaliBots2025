@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/screens/musiques/music_player_screen.dart';
+import 'package:malibots_challenge_eni/services/api_musique_service.dart';
+import 'package:malibots_challenge_eni/services/api_photo_service.dart';
 
 class CulturesListePage extends StatefulWidget {
   const CulturesListePage({super.key});
@@ -192,7 +194,9 @@ class _CulturesListePageState extends State<CulturesListePage>
             child: const Text('Annuler'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.textSecondary,
+            ),
             onPressed: () {
               setState(() => item['texte'] = _editController.text);
               Navigator.pop(context);
@@ -264,7 +268,9 @@ class _CulturesListePageState extends State<CulturesListePage>
             child: const Text("Annuler"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.textSecondary,
+            ),
             onPressed: () {
               setState(() {
                 item['titre'] = _titreCtrl.text;
@@ -287,26 +293,26 @@ class _CulturesListePageState extends State<CulturesListePage>
   }
 
   // 🔹 Jouer une musique
-  void _playMusic(Map<String, dynamic> item) {
-    final path = item['fichier'];
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => MusicPlayerScreen(
-          tracks: [
-            {
-              'path': path,
-              'title': item['titre'],
-              'artist': item['auteur'] ?? 'Artiste inconnu',
-              'img': item['image'],
-              'isLocal': !path.toString().startsWith('assets/'),
-            },
-          ],
-          index: 0,
-        ),
-      ),
-    );
-  }
+  // void _playMusic(Map<String, dynamic> item) {
+  //   final path = item['fichier'];
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (_) => MusicPlayerScreen(
+  //         tracks: [
+  //           {
+  //             'path': path,
+  //             'title': item['titre'],
+  //             'artist': item['auteur'] ?? 'Artiste inconnu',
+  //             'img': item['image'],
+  //             'isLocal': !path.toString().startsWith('assets/'),
+  //           },
+  //         ],
+  //         index: 0,
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // 🔹 Construire une carte
   Widget _buildCard(Map<String, dynamic> item, String type) {
@@ -422,7 +428,7 @@ class _CulturesListePageState extends State<CulturesListePage>
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          if (type == 'Musique') _playMusic(item);
+          // if (type == 'Musique') _playMusic(item);
           if (type == 'Image') _viewImage(item);
           if (type == 'Conte') _viewConte(item);
         },
@@ -445,8 +451,8 @@ class _CulturesListePageState extends State<CulturesListePage>
                 setState(() => item['approuve'] = true);
               else if (value == 'Modifier' && type == 'Proverbe')
                 _editProverbe(item);
-              else if (value == 'Lire' && type == 'Musique')
-                _playMusic(item);
+              //else if (value == 'Lire' && type == 'Musique')
+              //  _playMusic(item);
               else if (value == 'Voir' && type == 'Image')
                 _viewImage(item);
               else if (value == 'LireConte' && type == 'Conte')
@@ -523,7 +529,10 @@ class _CulturesListePageState extends State<CulturesListePage>
                     value: 'Voir',
                     child: Row(
                       children: [
-                        Icon(Icons.remove_red_eye, color: AppColors.textSecondary),
+                        Icon(
+                          Icons.remove_red_eye,
+                          color: AppColors.textSecondary,
+                        ),
                         SizedBox(width: 10),
                         Text('Voir'),
                       ],
@@ -604,67 +613,89 @@ class _CulturesListePageState extends State<CulturesListePage>
     }).toList();
   }
 
-  // 🔹 Boîte d’ajout musique (avec image via ImagePicker)
+  // Fichier: [Votre fichier d'administration/PlaylistScreen.dart]
+
+  // Assurez-vous que l'instance de l'API est définie dans la classe _[NomDeVotreState]State
+  final MusiqueApi api = MusiqueApi();
+
   void _addMusic() async {
-    final TextEditingController _titreCtrl = TextEditingController();
-    final TextEditingController _auteurCtrl = TextEditingController();
-    final TextEditingController _genreCtrl = TextEditingController();
-    XFile? pickedImage;
-    String? fichierPath;
+    final TextEditingController titreCtrl = TextEditingController();
+    final TextEditingController auteurCtrl = TextEditingController();
+    final TextEditingController genreCtrl = TextEditingController();
+    XFile? pickedImage; // Image sélectionnée par ImagePicker
+    String? fichierPath; // Chemin du fichier audio sélectionné par FilePicker
+
+    // Cette variable gère l'état d'upload dans le dialogue
+    bool isUploading = false;
 
     await showDialog(
       context: context,
+      // Utilisation de StatefulBuilder pour mettre à jour l'icône de chargement DANS le dialogue
       builder: (_) => StatefulBuilder(
         builder: (context, setStateDialog) => AlertDialog(
           title: const Text("Nouvelle musique"),
           content: SingleChildScrollView(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
-                  controller: _titreCtrl,
-                  decoration: const InputDecoration(labelText: "Titre"),
+                  controller: titreCtrl,
+                  decoration: const InputDecoration(labelText: "Titre *"),
                 ),
                 TextField(
-                  controller: _auteurCtrl,
-                  decoration: const InputDecoration(labelText: "Artiste"),
+                  controller: auteurCtrl,
+                  decoration: const InputDecoration(labelText: "Artiste *"),
                 ),
                 TextField(
-                  controller: _genreCtrl,
+                  controller: genreCtrl,
                   decoration: const InputDecoration(labelText: "Genre"),
                 ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () async {
-                    final result = await FilePicker.platform.pickFiles(
-                      type: FileType.audio,
-                    );
-                    if (result != null && result.files.single.path != null) {
-                      setStateDialog(
-                        () => fichierPath = result.files.single.path!,
-                      );
-                    }
-                  },
-                  child: Text(
+                const SizedBox(height: 15),
+
+                // 🎵 Sélecteur de Fichier Audio
+                ElevatedButton.icon(
+                  onPressed: isUploading
+                      ? null
+                      : () async {
+                          final result = await FilePicker.platform.pickFiles(
+                            type: FileType.audio,
+                          );
+                          if (result != null &&
+                              result.files.single.path != null) {
+                            setStateDialog(
+                              () => fichierPath = result.files.single.path!,
+                            );
+                          }
+                        },
+                  icon: const Icon(Icons.audiotrack),
+                  label: Text(
                     fichierPath == null
-                        ? "Choisir le fichier audio"
-                        : "Fichier sélectionné",
+                        ? "Choisir le fichier audio *"
+                        : "Audio : ${fichierPath!.split('/').last}",
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 15),
+
+                // 🖼️ Sélecteur d'Image
                 GestureDetector(
-                  onTap: () async {
-                    final picker = ImagePicker();
-                    final img = await picker.pickImage(
-                      source: ImageSource.gallery,
-                    );
-                    if (img != null) setStateDialog(() => pickedImage = img);
-                  },
+                  onTap: isUploading
+                      ? null
+                      : () async {
+                          final picker = ImagePicker();
+                          final img = await picker.pickImage(
+                            source: ImageSource.gallery,
+                          );
+                          if (img != null)
+                            setStateDialog(() => pickedImage = img);
+                        },
                   child: pickedImage == null
                       ? Container(
                           height: 120,
                           width: double.infinity,
                           color: Colors.grey[200],
-                          child: const Center(child: Text("Choisir une image")),
+                          child: const Center(
+                            child: Text("Choisir une image de couverture"),
+                          ),
                         )
                       : Image.file(
                           File(pickedImage!.path),
@@ -682,83 +713,183 @@ class _CulturesListePageState extends State<CulturesListePage>
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
+                // Vous devez définir AppColors.textSecondary
                 backgroundColor: AppColors.textSecondary,
               ),
-              onPressed: () {
-                if (fichierPath != null) {
-                  setState(() {
-                    musiques.add({
-                      'titre': _titreCtrl.text,
-                      'auteur': _auteurCtrl.text,
-                      'genre': _genreCtrl.text,
-                      'image': pickedImage?.path ?? 'assets/img1.jpg',
-                      'fichier': fichierPath,
-                      'approuve': false,
-                    });
-                  });
-                  Navigator.pop(context);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Veuillez choisir un fichier audio"),
+              // Désactiver le bouton pendant le chargement
+              onPressed: isUploading
+                  ? null
+                  : () async {
+                      // --- VÉRIFICATION DES CHAMPS OBLIGATOIRES ---
+                      if (fichierPath == null ||
+                          titreCtrl.text.isEmpty ||
+                          auteurCtrl.text.isEmpty) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Le Titre, l'Artiste et le Fichier audio sont obligatoires.",
+                              ),
+                            ),
+                          );
+                        }
+                        return;
+                      }
+
+                      // --- DÉBUT DE L'UPLOAD ---
+                      setStateDialog(() => isUploading = true);
+
+                      try {
+                        // Création des objets File nécessaires pour la fonction API
+                        final audioFile = File(fichierPath!);
+                        final imageFile = pickedImage != null
+                            ? File(pickedImage!.path)
+                            : null;
+
+                        // Appel de l'API
+                        final success = await api.uploadMusique(
+                          titre: titreCtrl.text,
+                          artist: auteurCtrl.text,
+                          genre: genreCtrl.text,
+                          image: imageFile,
+                          audio: audioFile,
+                        );
+
+                        // Gérer la réponse du serveur
+                        if (success) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Musique publiée avec succès !"),
+                              ),
+                            );
+                            // Mettre à jour la liste des musiques après succès (si nécessaire)
+                            // _loadAndFilterMusiques();
+                            Navigator.pop(context); // Fermer le dialogue
+                          }
+                        } else {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Échec de la publication. Statut non valide du serveur.",
+                                ),
+                              ),
+                            );
+                          }
+                        }
+                      } catch (e) {
+                        // Gérer les erreurs de connexion ou de Dio
+                        debugPrint("Erreur UPLOAD: $e");
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                "Erreur lors de l'envoi: ${e.toString()}",
+                              ),
+                            ),
+                          );
+                        }
+                      } finally {
+                        // Fin du chargement, quel que soit le résultat
+                        setStateDialog(() => isUploading = false);
+                      }
+                    },
+              child: isUploading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      "Ajouter",
+                      style: TextStyle(color: Colors.white),
                     ),
-                  );
-                }
-              },
-              child: const Text(
-                "Ajouter",
-                style: TextStyle(color: Colors.white),
-              ),
             ),
           ],
         ),
       ),
     );
   }
-
   // 🔹 Ajouter une image (choix fichier image + titre)
 
-  void _addImage() async {
+  // Remplacez votre fonction _addImage existante par celle-ci
+  void _addImage(BuildContext context) async {
     final TextEditingController _titleCtrl = TextEditingController();
     final TextEditingController _descCtrl = TextEditingController();
-    final TextEditingController _ethnieCtrl = TextEditingController();
+    final TextEditingController _regionCtrl =
+        TextEditingController(); // Renommé ethnie en region
     List<XFile> pickedImages = [];
+    const String adminId = '9aa1d9d0-c00a-11f0-8bc6-80e82c538f4c';
+
+    // L'instance de votre service API
+    final PhotoApi photoApi =
+        PhotoApi(); // Assurez-vous que cette instance est accessible
+
+    bool isLoading = false; // Pour gérer l'état de chargement
 
     await showDialog(
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (context, setStateDialog) => AlertDialog(
-          title: const Text("Nouvelle image"),
+          title: const Text("Nouvelle Publication Photo"),
           content: SingleChildScrollView(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: _titleCtrl,
-                  decoration: const InputDecoration(labelText: "Titre"),
+                  decoration: const InputDecoration(labelText: "Titre *"),
                 ),
                 TextField(
                   controller: _descCtrl,
                   decoration: const InputDecoration(labelText: "Description"),
+                  maxLines: 3,
                 ),
                 TextField(
-                  controller: _ethnieCtrl,
-                  decoration: const InputDecoration(labelText: "Ethnie"),
+                  controller: _regionCtrl, // L'admin publie la Region (Ethnie)
+                  decoration: const InputDecoration(
+                    labelText: "Région (ou Ethnie) *",
+                  ),
                 ),
-                const SizedBox(height: 10),
-                ElevatedButton(
+                const SizedBox(height: 20),
+
+                // BOUTON CHOIX DES IMAGES
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.photo_library),
+                  label: Text(
+                    pickedImages.isEmpty
+                        ? "Choisir les images *"
+                        : "${pickedImages.length} image(s) sélectionnée(s)",
+                  ),
                   onPressed: () async {
                     final results = await ImagePicker().pickMultiImage();
-                    if (results.isNotEmpty)
+                    if (results.isNotEmpty) {
                       setStateDialog(() => pickedImages = results);
+                    }
                   },
-                  child: const Text("Choisir plusieurs images"),
                 ),
                 const SizedBox(height: 10),
+
+                // AFFICHAGE DE LA PREMIÈRE IMAGE SÉLECTIONNÉE
                 if (pickedImages.isNotEmpty)
-                  Image.file(
-                    File(pickedImages[0].path),
-                    height: 120,
-                    fit: BoxFit.cover,
+                  Container(
+                    width: 150,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.file(
+                      File(pickedImages[0].path),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Center(child: Text("Erreur image")),
+                    ),
                   ),
               ],
             ),
@@ -768,33 +899,92 @@ class _CulturesListePageState extends State<CulturesListePage>
               onPressed: () => Navigator.pop(context),
               child: const Text("Annuler"),
             ),
+
+            // BOUTON PUBLIER
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.textSecondary,
-              ),
-              onPressed: () {
-                if (pickedImages.isNotEmpty) {
-                  setState(() {
-                    images.add({
-                      'titre': _titleCtrl.text,
-                      'description': _descCtrl.text,
-                      'ethnie': _ethnieCtrl.text,
-                      'images': pickedImages.map((e) => e.path).toList(),
-                      'approuve': false,
-                    });
-                  });
-                  Navigator.pop(context);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Veuillez choisir au moins une image."),
+              onPressed: isLoading
+                  ? null // Désactiver pendant le chargement
+                  : () async {
+                      // 1. Validation de base
+                      if (_titleCtrl.text.isEmpty ||
+                          _regionCtrl.text.isEmpty ||
+                          pickedImages.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "Veuillez remplir le titre, la région et choisir au moins une image.",
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      setStateDialog(
+                        () => isLoading = true,
+                      ); // Début du chargement
+
+                      try {
+                        // 2. Conversion des XFile en File pour l'API
+                        List<File> imageFiles = pickedImages
+                            .map((xfile) => File(xfile.path))
+                            .toList();
+
+                        // 3. Appel à l'API
+                        await photoApi.storePhoto(
+                          titre: _titleCtrl.text,
+                          description: _descCtrl.text,
+                          region: _regionCtrl
+                              .text, // C'est le nom de la région/ethnie
+                          images: imageFiles,
+                          publieParAdminId: adminId, // REMPLACER avec l'ID réel
+                        );
+
+                        // 4. Succès
+                        Navigator.pop(context); // Fermer le dialogue
+                        // Mise à jour de l'interface principale (si nécessaire)
+                        // setState(() { ... });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Publication ajoutée avec succès !"),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } catch (e) {
+                        // 5. Erreur
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              "Erreur lors de la publication : ${e.toString().split(':').last}",
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        setStateDialog(
+                          () => isLoading = false,
+                        ); // Fin du chargement en cas d'erreur
+                      } finally {
+                        // Assurez-vous que l'état de chargement est désactivé si l'on reste dans la boîte de dialogue
+                        if (Navigator.of(context).canPop()) {
+                          setStateDialog(() => isLoading = false);
+                        }
+                      }
+                    },
+              child: isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 3,
+                      ),
+                    )
+                  : const Text(
+                      "Publier",
+                      style: TextStyle(color: Colors.white),
                     ),
-                  );
-                }
-              },
-              child: const Text(
-                "Ajouter",
-                style: TextStyle(color: Colors.white),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent, // Couleur d'action
               ),
             ),
           ],
@@ -831,7 +1021,9 @@ class _CulturesListePageState extends State<CulturesListePage>
             child: const Text("Annuler"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.textSecondary,
+            ),
             onPressed: () {
               if (_textCtrl.text.isNotEmpty) {
                 setState(() {
@@ -894,7 +1086,9 @@ class _CulturesListePageState extends State<CulturesListePage>
             child: const Text("Annuler"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.textSecondary,
+            ),
             onPressed: () {
               setState(() {
                 contes.add({
@@ -920,7 +1114,7 @@ class _CulturesListePageState extends State<CulturesListePage>
         _addMusic();
         break;
       case 1:
-        _addImage();
+        _addImage(context);
         break;
       case 2:
         _addProverbe();
@@ -957,7 +1151,10 @@ class _CulturesListePageState extends State<CulturesListePage>
               onChanged: (value) => setState(() => query = value),
               decoration: InputDecoration(
                 hintText: 'Rechercher un contenu...',
-                prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: AppColors.textSecondary,
+                ),
                 filled: true,
                 fillColor: Colors.white,
                 enabledBorder: OutlineInputBorder(
