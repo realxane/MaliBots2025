@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 import '../services/auth_storage.dart';
@@ -30,6 +31,7 @@ class ApiClient {
       if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
     };
   }
+  
 
   // Spécial multipart (ne pas fixer Content-Type, laisser http le faire)
   Future<Map<String, String>> multipartHeaders() async {
@@ -89,4 +91,42 @@ class ApiClient {
         : 'Erreur API';
     throw ApiException(res.statusCode, msg, details: decoded is Map<String, dynamic> ? decoded : null);
   }
+  Future<Map<String, dynamic>> postMultipart(
+    String path,
+    Map<String, dynamic> fields, {
+    Map<String, File>? files,
+  }) async {
+    final uri = Uri.parse('$baseUrl$path');
+    final request = http.MultipartRequest('POST', uri);
+     // Ajouter le token
+    final token = await _auth.readToken();
+    if (token != null && token.isNotEmpty) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+
+    // Ajouter les champs texte
+    fields.forEach((key, value) {
+      request.fields[key] = value.toString();
+    });
+
+    // Ajouter les fichiers
+    if (files != null) {
+      for (var entry in files.entries) {
+        request.files.add(await http.MultipartFile.fromPath(entry.key, entry.value.path));
+      }
+    }
+    
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      final decoded = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+      final msg = decoded is Map<String, dynamic> ? (decoded['message'] ?? 'Erreur API') : 'Erreur API';
+      throw ApiException(response.statusCode, msg, details: decoded is Map<String, dynamic> ? decoded : null);
+    }
+  }
+
 }

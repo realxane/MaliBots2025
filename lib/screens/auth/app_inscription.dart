@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_images.dart';
+import 'package:malibots_challenge_eni/controllers/acheteurcontrooler.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_retour.dart';
@@ -285,10 +286,34 @@ class _InscriptionPageState extends State<InscriptionPage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Veuillez accepter les conditions.')),
                             );
-                            return; // on sort ici pour bloquer la navigation
+                            return;
+                             // on sort ici pour bloquer la navigation
                           }
-                          // ✅ L’utilisateur a accepté, on peut aller à la page d’accueil
+                             final controller=Acheteurcontrooler();
+                             try {
+                               
+                             
+                          controller.registeracheteur(
+                            nom: _nameCtrl.text,
+                            emailOrPhone: _emailOrPhoneCtrl.text,
+                            motdepasse: _passwordCtrl.text,
+                            region: _cityRegionCtrl.text,
+                            telephone: _emailOrPhoneCtrl.text,
+                          );
                           Navigator.pushNamed(context, AppRoutes.accueil);
+                          } catch (e){ ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                            content: Text(
+                        e.toString().replaceAll('Exception: ', ''),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 4),
+                               ),
+                 );
+                          }
+                          
+                          // ✅ L’utilisateur a accepté, on peut aller à la page d’accueil
                           // if (_formKey.currentState?.validate() ?? false) {
                           //   ScaffoldMessenger.of(context).showSnackBar(
                           //     const SnackBar(content: Text('Compte en cours de création...')),

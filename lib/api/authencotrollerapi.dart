@@ -52,7 +52,7 @@ class AuthController {
     } catch (e) {
       // Affiche une erreur si le backend ne répond pas
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erreur lors de la déconnexion")),
+        SnackBar(content: Text("Erreur lors de la déconnexion $e",)),
       );
     }
 

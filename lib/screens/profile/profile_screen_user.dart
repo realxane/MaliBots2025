@@ -23,6 +23,24 @@ class _ProfileScreenUserState extends State<ProfileScreenUser> {
   String userName = "Youssouf Guindo";
   String userTag = "@Faso den gnouma";
   String imagePath = "assets/images/profil.jpeg";
+  Map<String, dynamic>? _user ;
+  bool  _loading  = true;
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+  void _loadUser() async {
+    final user = await AuthController().me();
+    setState(() {
+      _user = user;
+      _loading = false;
+      // si backend renvoie une image
+      if (_user?['image'] != null && _user!['image'].isNotEmpty) {
+        imagePath = _user!['image'];
+      }
+    });
+  }
   void _showProfileOptions() {
     showModalBottomSheet(
       context: context,
@@ -81,10 +99,9 @@ class _ProfileScreenUserState extends State<ProfileScreenUser> {
           tag: 'profileImage',
           child: SizedBox.expand(
             child: InteractiveViewer( // permet de zoomer/dézoomer
-              child: Image.asset(
-                imagePath,
-                fit: BoxFit.contain, // garde les proportions
-              ),
+              child: imagePath.startsWith('http') 
+              ? Image.network(imagePath, fit: BoxFit.cover) 
+              : Image.asset(imagePath, fit: BoxFit.cover),
             ),
           ),
         ),
@@ -96,7 +113,14 @@ class _ProfileScreenUserState extends State<ProfileScreenUser> {
   
   Widget build(BuildContext context) {
 bool isSignaled = true; // pour savoir si le vendeur a été signalé
+
 String reason = "Produit non conforme aux règles du marché"; // raison du signalement
+if(_loading){
+  return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+
+}
 
     return Scaffold(
       appBar:AppBar(
@@ -104,7 +128,7 @@ String reason = "Produit non conforme aux règles du marché"; // raison du sign
         elevation: 0,
         leading: Navigator.canPop(context)
             ? fleche_retour(onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.accueil);
+              // Navigator.pushNamed(context, AppRoutes.accueil);
             })
             : null,
       ),
@@ -157,19 +181,25 @@ String reason = "Produit non conforme aux règles du marché"; // raison du sign
                 ),
               ),
               SizedBox(height: 15,),
-              Text("Youssouf Guindo",style: AppTextStyles.titre1),
-               Text("@Faso den gnouma",style: AppTextStyles.soustitre),
+              // Text("Youssouf Guindo",style: AppTextStyles.titre1),
+              //  Text("@Faso den gnouma",style: AppTextStyles.soustitre),
+               Text(
+                "${_user?['nom'] ?? ''}",
+                style: AppTextStyles.titre1,
+              ),
                SizedBox(height: 20,),
                Align(
                 alignment: Alignment.centerLeft,
                child: Text("Informations personnelles",style: AppTextStyles.soustitre),),
                SizedBox(height: 8,),
                Divider(color: Theme.of(context).dividerColor,),
-              _buildInfoRow("Tel :", "93 15 31 24"),
+                _buildInfoRow("Tel :", _user?['telephone'] ?? "Non renseigné"),
+
+              // _buildInfoRow("Tel :", "93 15 31 24"),
                Divider(color: Theme.of(context).dividerColor,),
-              _buildInfoRow("Email :", "youss210.com@gmail.com"),
+               _buildInfoRow("Email :", _user?['email'] ?? "Non renseigné"),
                Divider(color: Theme.of(context).dividerColor,),
-              _buildInfoRow("Ville :", "koulikoro"),
+                    _buildInfoRow("region :", _user?['region'] ?? "Non renseigné"),
                Divider(color: Theme.of(context).dividerColor,),
               const SizedBox(height: 25),
                Align(

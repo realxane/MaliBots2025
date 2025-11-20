@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:malibots_challenge_eni/api/usercontroller.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
@@ -19,6 +20,8 @@ class _ModifierprofileState extends State<Modifierprofile> {
   final ImagePicker _picker = ImagePicker();
   final TextEditingController _nameController =
       TextEditingController(text: "Youssouf Guindo");
+  final controller=ProfileController();
+  bool _loading = false;
 
   Future<void> _pickImage(ImageSource source) async {
     final picked = await _picker.pickImage(source: source, imageQuality: 70);
@@ -57,14 +60,25 @@ class _ModifierprofileState extends State<Modifierprofile> {
     );
   }
 
-  void _saveChanges() {
-    final name = _nameController.text.trim();
-    if (name.isEmpty) return;
+  Future<void> _saveChanges() async {
+    setState(() => _loading = true);
+    // final name = _nameController.text.trim();
+    final result = await controller.updateProfile(
+    nom: _nameController.text.trim(),
+    image: _imageFile,
+  );
+   setState(() => _loading = false);
 
+    if (result['success']) {
     Navigator.pop(context, {
-      'name': name,
+      'name': result['user']['nom'],
       'image': _imageFile,
     });
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Erreur: ${result['error']}")),
+    );
+  }
   }
 
   @override
