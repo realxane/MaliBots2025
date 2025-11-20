@@ -28,7 +28,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
   late TextEditingController _priceC;
   late TextEditingController _stockC;
   String _region = 'Bamako';
-  String _category = 'Tenue';
+  String _category = 'Habit';
   String _color = 'Bogolan';
   List<String> _images = [];
 
@@ -40,11 +40,9 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     'Tombouctou',
   ];
   final List<String> _categories = [
-    'Tenue',
+    'Habit',
+    'Plat',
     'Accessoire',
-    'Chapeau',
-    'Robe',
-    'Bijoux',
   ];
   final List<String> _colors = ['Bogolan', 'Rouge', 'Bleu', 'Vert', 'Marron'];
 
@@ -93,64 +91,67 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
   }
 
   void _submit() async {
-  if (!_formKey.currentState!.validate()) return;
-  if (_images.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Ajoutez au moins une image')),
-    );
-    return;
-  }
-
-  final isEdit = widget.product != null;
-
-  // petit loader
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) => const Center(child: CircularProgressIndicator()),
-  );
-
-  try {
-    final service = context.read<ProduitService>();
-    backend.Produit result;
-
-    if (isEdit) {
-      result = await service.updateFromUi(
-        id: widget.product!.id,
-        nom: _nameC.text.trim(),
-        description: _descC.text.trim(),
-        prix: double.tryParse(_priceC.text.trim()) ?? 0,
-        uiCategorie: _category,
-        regionLabel: _region,
-        stock: int.tryParse(_stockC.text.trim()) ?? 0,
-        imageLocalPathsOrUrls: _images,
+    if (!_formKey.currentState!.validate()) return;
+    if (_images.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ajoutez au moins une image')),
       );
-    } else {
-      result = await service.createFromUi(
-        nom: _nameC.text.trim(),
-        description: _descC.text.trim(),
-        prix: double.tryParse(_priceC.text.trim()) ?? 0,
-        uiCategorie: _category,
-        regionLabel: _region,
-        stock: int.tryParse(_stockC.text.trim()) ?? 0,
-        imageLocalPathsOrUrls: _images,
-      );
+      return;
     }
 
-    Navigator.of(context).pop(); // ferme loader
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(isEdit ? 'Produit mis à jour' : 'Produit publié')),
+    final service = context.read<ProduitService>();
+    final token = await service.currentToken();
+    if (token == null || token.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Session expirée. Veuillez vous reconnecter.')),
+      );
+      return;
+    }
+
+    final isEdit = widget.product != null;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
     );
 
-    // Retourne le produit backend pour rafraîchir l’appelant
-    Navigator.of(context).pop(result);
-  } catch (e) {
-    Navigator.of(context).pop(); // ferme loader
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Erreur: $e')),
-    );
+    try {
+      final result = isEdit
+          ? await service.updateFromUi(
+              id: widget.product!.id,
+              nom: _nameC.text.trim(),
+              description: _descC.text.trim(),
+              prix: double.tryParse(_priceC.text.trim()) ?? 0,
+              uiCategorie: _category,
+              regionLabel: _region,
+              stock: int.tryParse(_stockC.text.trim()) ?? 0,
+              imageLocalPathsOrUrls: _images,
+              couleur: _color,
+            )
+          : await service.createFromUi(
+              nom: _nameC.text.trim(),
+              description: _descC.text.trim(),
+              prix: double.tryParse(_priceC.text.trim()) ?? 0,
+              uiCategorie: _category,
+              regionLabel: _region,
+              stock: int.tryParse(_stockC.text.trim()) ?? 0,
+              imageLocalPathsOrUrls: _images,
+              couleur: _color,
+            );
+
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(isEdit ? 'Produit mis à jour' : 'Produit publié')),
+      );
+      Navigator.of(context).pop(result);
+    } catch (e) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
   }
-}
 
   Widget _buildImagePicker() {
     return Column(
@@ -168,38 +169,44 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
             children: [
               const SizedBox(width: 6),
               ..._images.map(
-                (p) => Stack(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(right: 10),
-                      width: 140,
-                      height: 110,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        image: DecorationImage(
-                          image: FileImage(File(p)),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: GestureDetector(
-                        onTap: () => _removeImage(p),
-                        child: const CircleAvatar(
-                          radius: 14,
-                          backgroundColor: Colors.black54,
-                          child: Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 16,
+                (p) {
+                  final isRemote = p.startsWith('http://') || p.startsWith('https://');
+                  final ImageProvider imageProvider =
+                      isRemote ? NetworkImage(p) : FileImage(File(p)) as ImageProvider;
+
+                  return Stack(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(right: 10),
+                        width: 140,
+                        height: 110,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: GestureDetector(
+                          onTap: () => _removeImage(p),
+                          child: const CircleAvatar(
+                            radius: 14,
+                            backgroundColor: Colors.black54,
+                            child: Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
               GestureDetector(
                 onTap: _pickImages,
@@ -302,12 +309,10 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                           decoration: _inputDecoration('Région'),
                           items: _regions
                               .map(
-                                (r) =>
-                                    DropdownMenuItem(value: r, child: Text(r)),
+                                (r) => DropdownMenuItem(value: r, child: Text(r)),
                               )
                               .toList(),
-                          onChanged: (v) =>
-                              setState(() => _region = v ?? _region),
+                          onChanged: (v) => setState(() => _region = v ?? _region),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -317,12 +322,10 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                           decoration: _inputDecoration('Catégorie'),
                           items: _categories
                               .map(
-                                (c) =>
-                                    DropdownMenuItem(value: c, child: Text(c)),
+                                (c) => DropdownMenuItem(value: c, child: Text(c)),
                               )
                               .toList(),
-                          onChanged: (v) =>
-                              setState(() => _category = v ?? _category),
+                          onChanged: (v) => setState(() => _category = v ?? _category),
                         ),
                       ),
                     ],

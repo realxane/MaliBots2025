@@ -3,23 +3,26 @@ import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_images.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
+import 'package:malibots_challenge_eni/controllers/authcontroller.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
+import 'package:malibots_challenge_eni/services/auth_storage.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_social.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/text_button.dart';
 import 'package:malibots_challenge_eni/widgets/text_fields/text_field_decor.dart';
+import 'package:provider/provider.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
 
   @override
   State<Login> createState() => _LoginPageState();
-}
+} 
 
 class _LoginPageState extends State<Login> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
-  bool _obscure = true;
+  bool _obscure = true, _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -98,9 +101,39 @@ class _LoginPageState extends State<Login> {
                   child: bouton_large(
 
                     hint: "se connecter",
-                    onPressed: () {
-                      Navigator.pushNamed(context, AppRoutes.choixprofil);
-                    },
+                   onPressed: () async {
+                  setState(() => _isLoading = true); // si tu veux un loader
+                  try{
+                     // Instancie le controller
+                    final controller = AuthController();
+                     // Appelle la fonction login du backend
+                  final result = await controller.login(
+                   email: _emailCtrl.text,
+                  motDePasse: _passwordCtrl.text, );
+
+                  // extrait le token selon ta réponse backend
+                  final token = result["token"] ?? result["access_token"] ?? result["data"]?["token"];
+                  if (token is String && token.isNotEmpty) {
+                    await AuthStorage().saveToken(token);
+                  }
+                  final page=result["home_page"];
+                  //dedions les pages 
+                  if(page=="admin_dashboard"){
+                     Navigator.pushReplacementNamed(context, AppRoutes.admin_dash);
+                  }else{
+                    Navigator.pushReplacementNamed(context, AppRoutes.accueil);
+                  }
+                  } catch (e) {
+        // Affiche le message exact du backend
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      } finally {
+        setState(() => _isLoading = false);
+      }
+
+                  }
+
                   ),
                 ),
 

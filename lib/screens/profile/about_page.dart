@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:malibots_challenge_eni/constants/app_colors.dart';
+import 'package:malibots_challenge_eni/constants/app_images.dart';
+import 'package:malibots_challenge_eni/routes/app_routes.dart';
+import 'package:malibots_challenge_eni/widgets/buttons/bouton_retour.dart';
 
 class AboutAppPage extends StatelessWidget {
   const AboutAppPage({super.key});
@@ -6,10 +10,14 @@ class AboutAppPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("À propos de l'application"),
-        centerTitle: true,
-        backgroundColor: Colors.brown.shade700,
+      appBar:AppBar(
+        title: const Text("A propos de l'application"),
+        elevation: 0,
+        leading: Navigator.canPop(context)
+            ? fleche_retour(onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.profil_user);
+            })
+            : null,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -18,13 +26,13 @@ class AboutAppPage extends StatelessWidget {
           children: [
             Center(
               child: Image.asset(
-                "assets/images/icon3.png", 
+                AppImages.logo, 
                 height: 120,
               ),
             ),
             const SizedBox(height: 20),
             const Text(
-              "🇲🇱 À propos de MaliBots Culture",
+              "🇲🇱 À propos de ANW KA DAMBE",
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
@@ -33,7 +41,7 @@ class AboutAppPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text(
-              "Bienvenue dans MaliBots Culture, une application 100 % dédiée à la découverte, la valorisation et la transmission de la culture malienne. "
+              "Bienvenue dans ANW KA DAMBE, une application 100 % dédiée à la découverte, la valorisation et la transmission de la culture malienne. "
               "Notre mission est simple : promouvoir le savoir-faire traditionnel du Mali et offrir une plateforme moderne où artisans, créateurs et passionnés peuvent se rencontrer, vendre et acheter des produits authentiques.",
               style: TextStyle(fontSize: 16, height: 1.5),
             ),
@@ -44,7 +52,7 @@ class AboutAppPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text(
-              "MaliBots Culture n’est pas seulement une application de vente, c’est une fenêtre ouverte sur l’identité malienne. "
+              "ANW KA DAMBE n’est pas seulement une application de vente, c’est une fenêtre ouverte sur l’identité malienne. "
               "Tu y trouveras une grande variété d’articles issus de nos traditions :\n\n"
               "• 👕 Vêtements traditionnels : bazins, boubous, pagnes, bogolans...\n"
               "• 💍 Accessoires artisanaux : bijoux, chapeaux, sandales, perles, objets décoratifs.\n"
@@ -60,7 +68,7 @@ class AboutAppPage extends StatelessWidget {
             const SizedBox(height: 10),
             const Text(
               "Notre objectif est d’unir l’héritage culturel et les technologies d’aujourd’hui. "
-              "Grâce à MaliBots Culture, tu peux acheter ou vendre facilement des produits traditionnels, "
+              "Grâce à ANW KA DAMBE, tu peux acheter ou vendre facilement des produits traditionnels, "
               "soutenir directement les artisans locaux et partager ta passion avec une communauté engagée.",
               style: TextStyle(fontSize: 16, height: 1.5),
             ),
@@ -71,7 +79,7 @@ class AboutAppPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text(
-              "Que tu sois au Mali ou à l’étranger, MaliBots Culture te permet de rester connecté à tes racines. "
+              "Que tu sois au Mali ou à l’étranger, ANW KA DAMBE te permet de rester connecté à tes racines. "
               "Elle t’offre un espace d’échange et de valorisation où chaque achat devient un geste pour la culture.",
               style: TextStyle(fontSize: 16, height: 1.5),
             ),
@@ -94,7 +102,7 @@ class AboutAppPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text(
-              "Faire de MaliBots Culture la référence numérique du patrimoine malien, "
+              "Faire de ANW KA DAMBE la référence numérique du patrimoine malien, "
               "un lieu où la tradition rencontre l’innovation et où chaque utilisateur devient acteur de la préservation de notre culture.",
               style: TextStyle(fontSize: 16, height: 1.5),
             ),
@@ -105,14 +113,14 @@ class AboutAppPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text(
-              "Merci d’utiliser MaliBots Culture. En rejoignant cette aventure, tu contribues à faire vivre la beauté, la diversité et la fierté du Mali à travers ses arts, ses sons et ses saveurs.\n\n"
-              "✨ MaliBots Culture — La tradition au bout des doigts.",
+              "Merci d’utiliser ANW KA DAMBE. En rejoignant cette aventure, tu contribues à faire vivre la beauté, la diversité et la fierté du Mali à travers ses arts, ses sons et ses saveurs.\n\n"
+              "✨ ANW KA DAMBE — La tradition au bout des doigts.",
               style: TextStyle(fontSize: 16, height: 1.5),
             ),
             const SizedBox(height: 40),
             Center(
               child: Text(
-                "© 2025 MaliBots Culture. Tous droits réservés.",
+                "© 2025 ANW KA DAMBE. Tous droits réservés.",
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey.shade700,

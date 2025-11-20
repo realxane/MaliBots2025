@@ -34,7 +34,7 @@ class MotDePasseOublie extends StatelessWidget {
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: width * 0.08, // marge adaptative
+            horizontal: width * 0.06, // marge adaptative
             vertical: height * 0.04,),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -63,9 +63,9 @@ class MotDePasseOublie extends StatelessWidget {
                       fontWeight: FontWeight.bold
                     ),),
                     Padding(
-                      padding: const EdgeInsets.only(left: 40),
+                      padding: EdgeInsets.only(left: width*0.045),
                       child: Text("Découvrez l'âme du Mali",style: AppTextStyles.soustitre.copyWith(
-                          fontSize: width * 0.036,
+                          fontSize: width * 0.040,
                         ),),
                     ),
                   ])
@@ -101,7 +101,7 @@ class MotDePasseOublie extends StatelessWidget {
             decoration: decor("Entrez votre adresse email"),
           
           ),
-            SizedBox(height: height * 0.05),
+            SizedBox(height: height * 0.03),
           SizedBox(
             width: double.infinity,
             child: bouton_large( hint:"Envoyer le code",onPressed: (){

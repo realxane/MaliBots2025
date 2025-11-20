@@ -38,7 +38,7 @@ class _CreeNouveauMotdepasseState extends State<CreeNouveauMotdepasse> {
       body:SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: width * 0.08, // marge adaptative
+            horizontal: width * 0.06, // marge adaptative
             vertical: height * 0.04,),
           child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -70,9 +70,9 @@ class _CreeNouveauMotdepasseState extends State<CreeNouveauMotdepasse> {
                     ),),
                     // SizedBox(height: 0,),
                     Padding(
-                      padding:  EdgeInsets.only(left: 40),
+                      padding:  EdgeInsets.only(left: width*0.045),
                       child: Text("Découvrez l'âme du Mali",style: AppTextStyles.soustitre.copyWith(
-                          fontSize: width * 0.035,
+                          fontSize: width * 0.040,
                         ),),
                     ),
                   ])
