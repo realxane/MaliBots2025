@@ -14,7 +14,7 @@ class Comment {
   final String userName;
   final String text;
   Comment({required this.userName, required this.text});
-}
+} 
 
 class ProductDetailPage extends StatefulWidget {
   final Produit product;

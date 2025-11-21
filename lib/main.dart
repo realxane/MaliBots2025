@@ -30,6 +30,7 @@ import 'package:malibots_challenge_eni/screens/auth/app_inscription_vendeur.dart
 import 'package:malibots_challenge_eni/screens/paiements/choix_mode.dart';
 import 'package:provider/provider.dart';
 import 'services/produit_service.dart';
+import 'package:malibots_challenge_eni/screens/catalogue/catalog_controller.dart';
 
 void main() {
   runApp(
@@ -40,6 +41,9 @@ void main() {
         //   create: (_) =>
         //       ProductsStore(kProducts), // ta liste initiale de Product
         // ),
+        ChangeNotifierProvider<CatalogController>(
+          create: (ctx) => CatalogController(ctx.read<ProduitService>()),
+        ),
         ChangeNotifierProvider(create: (_) => FavoritesStore()),
         ChangeNotifierProvider(create: (_) => ThemeStore()),
       ],

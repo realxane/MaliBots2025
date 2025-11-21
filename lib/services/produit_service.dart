@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'package:collection/collection.dart';
 import 'package:malibots_challenge_eni/services/auth_storage.dart';
 import 'package:malibots_challenge_eni/models/product.dart';
+import 'package:malibots_challenge_eni/utils/image_urls.dart';
 
 // ====== MODELE TOP-LEVEL (pas de classe imbriquée) ======
 class RegionRef {
@@ -16,6 +18,21 @@ class RegionRef {
     final name = (j['nom'] ?? j['name'] ?? j['label'] ?? j['libelle'] ?? '').toString();
     return RegionRef(id: id, name: name);
   }
+}
+
+// ---------- Page générique ----------
+class PageResult<T> {
+  final List<T> items;
+  final int page;
+  final bool hasNext;
+  final int? total;
+
+  const PageResult({
+    required this.items,
+    required this.page,
+    required this.hasNext,
+    this.total,
+  });
 }
 
 class ProduitService {
@@ -39,7 +56,10 @@ class ProduitService {
 
   Future<void> _debugAuth() async {
     final t = await currentToken();
-    if (t == null) { debugPrint("Pas de token en storage"); return; }
+    if (t == null) {
+      debugPrint("Pas de token en storage");
+      return;
+    }
     debugPrint("TOKEN=${t.substring(0, 12)}...");
 
     final me = await http.get(Uri.parse("$baseUrl/me"), headers: _authJsonHeaders(t));
@@ -247,5 +267,110 @@ class ProduitService {
       if (m is Map && m['message'] != null) return m['message'].toString();
     } catch (_) {}
     return null;
+  }
+}
+
+// ---------- Dans ProduitService ----------
+extension CatalogueApi on ProduitService {
+  // Ajuste si ton backend expose un autre chemin (ex: "/catalogue" ou "/products")
+  String get _cataloguePath => "$baseUrl/produits";
+
+  Future<PageResult<Produit>> fetchCataloguePage({
+    int page = 1,
+    int perPage = 20,
+    String? q,
+    String? regionId,
+    String? categorie, // 'Habit' | 'Plat' | 'Accessoire'
+    String? sort, // ex: "prix:asc" ou "prix:desc"
+  }) async {
+    // Acheteur: pas besoin de token (ressource publique). On n’envoie que Accept.
+    final qp = <String, String>{
+      'page': '$page',
+      'per_page': '$perPage',
+      // côté serveur tu peux filtrer si supporté
+      if (q != null && q.trim().isNotEmpty) 'q': q.trim(),
+      if (regionId != null && regionId.isNotEmpty) 'regionId': regionId,
+      if (categorie != null && categorie.isNotEmpty) 'categorie': categorie,
+      if (sort != null && sort.isNotEmpty) 'sort': sort,
+      // utile si l’API n’expose que les produits validés en public
+      'statut': 'valide',
+    };
+
+    final uri = Uri.parse(_cataloguePath).replace(queryParameters: qp);
+    final resp = await http.get(uri, headers: {'Accept': 'application/json'}).timeout(const Duration(seconds: 20));
+
+    if (resp.statusCode != 200) {
+      throw Exception("Impossible de charger le catalogue (${resp.statusCode})");
+    }
+
+    final body = resp.body.isEmpty ? {} : jsonDecode(resp.body);
+
+    // On gère plusieurs formes possibles de payload:
+    // - { data: [..], meta: { current_page, last_page, total } }
+    // - { data: { items: [..], meta: {...} } }
+    // - [..]
+    List<dynamic> rawList;
+    Map<String, dynamic>? meta;
+
+    if (body is List) {
+      rawList = body;
+      meta = null;
+    } else if (body is Map) {
+      if (body['data'] is List) {
+        rawList = body['data'] as List;
+        meta = (body['meta'] is Map) ? body['meta'] as Map<String, dynamic> : null;
+      } else if (body['data'] is Map) {
+        final dataMap = body['data'] as Map<String, dynamic>;
+        if (dataMap['items'] is List) {
+          rawList = dataMap['items'] as List;
+        } else if (dataMap['data'] is List) {
+          rawList = dataMap['data'] as List;
+        } else {
+          rawList = const [];
+        }
+        meta = (dataMap['meta'] is Map)
+            ? dataMap['meta'] as Map<String, dynamic>
+            : (body['meta'] as Map<String, dynamic>?);
+      } else {
+        rawList = const [];
+        meta = (body['meta'] is Map) ? body['meta'] as Map<String, dynamic> : null;
+      }
+    } else {
+      rawList = const [];
+      meta = null;
+    }
+
+    final items = rawList.whereType<Map<String, dynamic>>().map((m) => Produit.fromJson(m)).toList();
+
+    // Déduction pagination
+    int currentPage = page;
+    bool hasNext;
+
+    if (meta != null) {
+      final lastPage = int.tryParse('${meta['last_page'] ?? meta['lastPage'] ?? ''}');
+      final current = int.tryParse('${meta['current_page'] ?? meta['currentPage'] ?? page}');
+      currentPage = current ?? page;
+
+      if (lastPage != null) {
+        hasNext = currentPage < lastPage;
+      } else {
+        // fallback: s'il y a au moins perPage items, on suppose qu'il y a une suite
+        hasNext = items.length >= perPage;
+      }
+    } else {
+      hasNext = items.length >= perPage;
+    }
+
+    final total = int.tryParse('${meta?['total'] ?? meta?['count'] ?? meta?['items_total'] ?? ''}');
+
+    // Normalise toutes les URLs d’images (cohérent avec ton Add/Edit)
+    final fixedItems = items
+        .map((p) => p.copyWith(
+              images: p.images.map(normalizeImageRef).toList(),
+              firstImageUrl: p.firstImageUrl != null ? normalizeImageRef(p.firstImageUrl!) : null,
+            ))
+        .toList();
+
+    return PageResult(items: fixedItems, page: currentPage, hasNext: hasNext, total: total);
   }
 }
