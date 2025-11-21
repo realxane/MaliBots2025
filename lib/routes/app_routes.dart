@@ -16,7 +16,8 @@ class AppRoutes {
   //page accueil
   static const String accueil = '/accueil';
   //page profil
-  static const String profil = '/profil';
+  static const String profil_vendeur = '/profil_vendeur';
+  static const String profil_user = '/profil_user';
   //page choix profil
   static const String choixprofil = '/choix_profil';
   
@@ -43,4 +44,8 @@ class AppRoutes {
   static const String adminListeCultures = '/admin_liste_cultures';
   //page admin profil
   static const String adminprofile = '/adminprofile';
+  //page bienvenue acheteur
+  static const String bienvenue_acheteur = '/bienvenue_acheteur';
+  //page bienvenue vendeur
+  static const String bienvenue_vendeur = '/bienvenue_vendeur';
 }

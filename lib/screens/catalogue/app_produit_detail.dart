@@ -7,6 +7,7 @@ import 'package:malibots_challenge_eni/providers/favoris_store.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_panier.dart';
 import 'package:malibots_challenge_eni/screens/favoris/app_favoris.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 
 class Comment {
@@ -200,9 +201,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: OutlinedButton(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Contacter le vendeur…')),
-                );
+                final phone = "+22372567555"; 
+                if (phone == null || phone.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Numéro du vendeur indisponible')),
+                  );
+                  return;
+                }
+                _callSeller(context, phone);
               },
               style: OutlinedButton.styleFrom(
                 foregroundColor: brown,
@@ -546,6 +552,29 @@ class _Stars extends StatelessWidget {
         if (i == full && hasHalf) return Icon(Icons.star_half, color: color, size: 20);
         return Icon(Icons.star_border, color: color, size: 20);
       }),
+    );
+  }
+}
+
+Future<void> _callSeller(BuildContext context, String phone) async {
+  final cleaned = phone.replaceAll(RegExp(r'[^0-9+]'), '');
+  if (cleaned.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Numéro indisponible')),
+    );
+    return;
+  }
+
+  final uri = Uri(scheme: 'tel', path: cleaned);
+
+  final ok = await launchUrl(
+    uri,
+    mode: LaunchMode.externalApplication, // ouvre l’app Téléphone
+  );
+
+  if (!ok) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Impossible d’ouvrir l’app Téléphone')),
     );
   }
 }

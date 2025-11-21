@@ -335,6 +335,7 @@ class _ProverbeCardState extends State<ProverbeCard> {
                       ScaffoldMessenger.of(context)
                         ..hideCurrentSnackBar()
                         ..showSnackBar(SnackBar(content: Text(text)));
+                      
                     },
                   ),
                 ],
