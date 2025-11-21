@@ -257,41 +257,6 @@ class _InscriptionVendeurPageState extends State<InscriptionVendeurPage> {
                           } else {
                             setState(() => _accepted = false);
                           }
-<<<<<<< HEAD
-
-                          final controller=Userscontrollervendeur();
-                          try{Uservendeur vendeur= await controller.registervendeur(
-                            nom: _nameCtrl.text,
-                            emailOrPhone: _emailOrPhoneCtrl.text,
-                            motdepasse: _passwordCtrl.text,
-                            region: _cityRegionCtrl.text,
-                            telephone: _emailOrPhoneCtrl.text,
-                            telephonePro: _proPhoneCtrl.text,
-                            savoirFaire: _savoirFaireCtrl.text,
-                            );
-                          Navigator.pushNamed(context, AppRoutes.bienvenue_vendeur);
-                            }catch (e) {
-    // Affiche le message exact du backend
-             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-              content: Text(
-          e.toString().replaceAll('Exception: ', ''),
-          style: const TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 4),
-      ),
-    );
-                          }
-                            
-
-                          // if (_formKey.currentState?.validate() ?? false) {
-                          //   ScaffoldMessenger.of(context).showSnackBar(
-                          //     const SnackBar(content: Text('Compte en cours de création...')),
-                          //   );
-                          // }
-=======
->>>>>>> Alassane
                         },
                         activeColor: Colors.brown,
                       ),

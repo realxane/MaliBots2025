@@ -17,11 +17,35 @@ class Modifierprofile extends StatefulWidget {
 
 class _ModifierprofileState extends State<Modifierprofile> {
   File? _imageFile;
+  String? _imageUrl;
   final ImagePicker _picker = ImagePicker();
   final TextEditingController _nameController =
-      TextEditingController(text: "Youssouf Guindo");
+      TextEditingController();
   final controller=ProfileController();
   bool _loading = false;
+  bool _isloadprofile=true;
+  @override
+void initState() {
+  super.initState();
+  _loadUser();
+}
+Future<void> _loadUser() async {
+     try {
+    final user = await controller.getProfile();
+    if (!mounted) return; // Vérifie que le widget est encore actif
+
+    setState(() {
+      _nameController.text = user?['nom'] ?? '';
+      _imageUrl = user?['image_path'];
+      _isloadprofile = false;
+    });
+  } catch (e) {
+    setState(() {
+      _isloadprofile = false;
+    });
+    debugPrint("Erreur lors du chargement du profil: $e");
+  }
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     final picked = await _picker.pickImage(source: source, imageQuality: 70);
@@ -72,7 +96,7 @@ class _ModifierprofileState extends State<Modifierprofile> {
     if (result['success']) {
     Navigator.pop(context, {
       'name': result['user']['nom'],
-      'image': _imageFile,
+      'image': result['user']['image_path'],
     });
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -81,8 +105,16 @@ class _ModifierprofileState extends State<Modifierprofile> {
   }
   }
 
+
+
   @override
   Widget build(BuildContext context) {
+    if (_isloadprofile) {
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
+    );
+  }
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -111,13 +143,18 @@ class _ModifierprofileState extends State<Modifierprofile> {
                               width: 100,
                               height: 100,
                               fit: BoxFit.cover,
-                            )
-                          : Image.asset(
-                              "assets/images/profil.jpeg",
-                              width: 100,
-                              height: 100,
-                              fit: BoxFit.cover,
-                            ),
+                            ) 
+                          : (_imageUrl != null && _imageUrl!.isNotEmpty) 
+                            ? Image.network('http://10.236.139.1:8000/storage/profile_images/$_imageUrl',
+                          height: 100,width:
+                           100,fit: 
+                           BoxFit.cover,)
+                           : Image.asset(
+                            "assets/images/profil.jpeg",
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                         ),
                     ),
                     Positioned(
                       bottom: 0,

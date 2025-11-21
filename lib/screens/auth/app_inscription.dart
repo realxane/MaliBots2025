@@ -289,18 +289,37 @@ class _InscriptionPageState extends State<InscriptionPage> {
                             return;
                              // on sort ici pour bloquer la navigation
                           }
+                           // Validation e-mail (exigé)
+                        final email = _emailOrPhoneCtrl.text.trim();
+                        final isEmail = RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email);
+                        if (!isEmail) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Veuillez saisir un e-mail valide.')),
+                          );
+                          return;
+                        }
                              final controller=Acheteurcontrooler();
+                              // Petit loader
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (_) => const Center(child: CircularProgressIndicator()),
+                        );
+
                              try {
                                
                              
                           controller.registeracheteur(
                             nom: _nameCtrl.text,
-                            emailOrPhone: _emailOrPhoneCtrl.text,
+                            emailOrPhone: email,
                             motdepasse: _passwordCtrl.text,
                             region: _cityRegionCtrl.text,
-                            telephone: _emailOrPhoneCtrl.text,
+                            telephone: email,
                           );
-                          Navigator.pushNamed(context, AppRoutes.accueil);
+                          if (context.mounted) {
+                            Navigator.of(context).pop(); // ferme le loader
+                            Navigator.pushReplacementNamed(context, AppRoutes.bienvenue_acheteur);
+                          }
                           } catch (e){ ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                             content: Text(

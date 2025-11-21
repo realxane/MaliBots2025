@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:malibots_challenge_eni/api/adminapicontroller.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/screens/admins/app_users_details.dart';
 
@@ -13,102 +14,27 @@ class _UserListPageState extends State<UserListPage> {
   final TextEditingController _searchController = TextEditingController();
   String query = '';
 
-  // Liste d'utilisateurs
-  List<Map<String, dynamic>> users = [
-  {
-    'name': 'Bassirou Dramé',
-    'email': 'bassirou@example.com',
-    'password': '123456',
-    'city': 'Bamako',
-    'preferences': ['Tenue traditionnelle', 'Cuisine'],
-    'image': 'assets/img1.jpg',
-  },
-  {
-    'name': 'Alassane Sow',
-    'email': 'alassane@example.com',
-    'password': 'abcdef',
-    'city': 'Kayes',
-    'preferences': ['Accessoires'],
-    'image': 'assets/img2.jpg',
-  },
-  {
-    'name': 'Vieux Maiga',
-    'email': 'vieux@example.com',
-    'password': 'maiga2025',
-    'city': 'Mopti',
-    'preferences': ['Cuisine'],
-    'image': 'assets/img3.jpg',
-  },
-  {
-    'name': 'Youssouf Guindo',
-    'email': 'youssouf@example.com',
-    'password': 'guindo789',
-    'city': 'Sikasso',
-    'preferences': ['Tenue traditionnelle', 'Accessoires'],
-    'image': 'assets/img4.jpg',
-  },
-  {
-    'name': 'Nana S Keita',
-    'email': 'nana@example.com',
-    'password': 'nanaPass',
-    'city': 'Ségou',
-    'preferences': ['Cuisine', 'Accessoires'],
-    'image': 'assets/img5.jpg',
-  },
-  {
-    'name': 'Oumou Maliki Tembely',
-    'email': 'oumou@example.com',
-    'password': 'tembely2025',
-    'city': 'Bamako',
-    'preferences': ['Tenue traditionnelle'],
-    'image': null,
-  },
-  {
-    'name': 'Fatouma Sow',
-    'email': 'fatouma@example.com',
-    'password': 'fatouma123',
-    'city': 'Kayes',
-    'preferences': ['Cuisine'],
-    'image': null,
-  },
-  {
-    'name': 'Guedjouma Diabate',
-    'email': 'guedjouma@example.com',
-    'password': 'diabate456',
-    'city': 'Mopti',
-    'preferences': ['Tenue traditionnelle', 'Accessoires'],
-    'image': 'assets/img7.jpg',
-  },
-  {
-    'name': 'Abdoul Wayab',
-    'email': 'abdoul@example.com',
-    'password': 'abdoulpass',
-    'city': 'Tombouctou',
-    'preferences': ['Cuisine'],
-    'image': 'assets/img8.jpg',
-  },
-  {
-    'name': 'Oumar Diarra',
-    'email': 'oumar@example.com',
-    'password': 'oumar123',
-    'city': 'Gao',
-    'preferences': ['Tenue traditionnelle'],
-    'image': 'assets/img9.jpg',
-  },
-];
+  late Future<Map<String, dynamic>> _futureUsers; // ⚡ nouvelle version
+  final userController = Adminapicontroller();
 
+  @override
+  void initState() {
+    super.initState();
+    _futureUsers = userController.getAllUsers(); // ⚡ récupère Map
+  }
 
-  // Construction de la carte utilisateur (cliquable)
+  // Construction de la carte utilisateur
   Widget _buildUserCard(Map<String, dynamic> user) {
+    final image = user['image_path'];
+
     return InkWell(
       onTap: () {
-        // Action lors du clic sur la carte
-         Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => UserDetailPage(user: user),
-        ),
-      );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => UserDetailPage(user: user),
+          ),
+        );
       },
       borderRadius: BorderRadius.circular(12),
       child: Card(
@@ -120,75 +46,85 @@ class _UserListPageState extends State<UserListPage> {
           leading: CircleAvatar(
             radius: 25,
             backgroundColor: Colors.white,
-            backgroundImage: user['image'] != null ? AssetImage(user['image']) : null,
-            child: user['image'] == null
+            backgroundImage: image != null
+                ? NetworkImage("http://0.0.0.0:8000/storage/$image")
+                : null,
+            child: image == null
                 ? const Icon(Icons.person, color: AppColors.primary, size: 30)
                 : null,
           ),
           title: Text(
-            user['name'],
+            user['nom'] ?? "",
             style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
           ),
           subtitle: Text(
-            user['email'],
+            user['email'] ?? "",
             style: const TextStyle(color: Colors.white70),
           ),
-          trailing:  PopupMenuButton<String>(
-  icon: const Icon(Icons.menu, color: Colors.white),
-  onSelected: (value) {
-    if (value == 'Voir') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => UserDetailPage(user: user, isEditable: false),
-        ),
-      );
-    } else if (value == 'Modifier') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => UserDetailPage(user: user, isEditable: true),
-        ),
-      );
-    } else if (value == 'Supprimer') {
-      setState(() => users.remove(user));
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('${user['name']} supprimé')));
-    }
-  },
-  itemBuilder: (context) => [
-    const PopupMenuItem(
-      value: 'Voir',
-      child: Row(
-        children: [
-          Icon(Icons.visibility, color: AppColors.primary),
-          SizedBox(width: 10),
-          Text('Voir profil'),
-        ],
-      ),
-    ),
-    const PopupMenuItem(
-      value: 'Modifier',
-      child: Row(
-        children: [
-          Icon(Icons.edit, color: AppColors.primary),
-          SizedBox(width: 10),
-          Text('Modifier'),
-        ],
-      ),
-    ),
-    const PopupMenuItem(
-      value: 'Supprimer',
-      child: Row(
-        children: [
-          Icon(Icons.delete, color: Colors.red),
-          SizedBox(width: 10),
-          Text('Supprimer'),
-        ],
-      ),
-    ),
-  ],
-)
+          trailing: PopupMenuButton<String>(
+            icon: const Icon(Icons.menu, color: Colors.white),
+            onSelected: (value) {
+              if (value == 'Voir') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UserDetailPage(user: user, isEditable: false),
+                  ),
+                );
+              } else if (value == 'Modifier') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UserDetailPage(user: user, isEditable: true),
+                  ),
+                );
+              } else if (value == 'Supprimer') {
+                setState(() {
+                  _futureUsers = _futureUsers.then((data) {
+                    data['users'].removeWhere((u) => u['id'] == user['id']);
+                    data['total'] = data['users'].length;
+                    return data;
+                  });
+                });
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('${user['nom']} supprimé')),
+                );
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'Voir',
+                child: Row(
+                  children: [
+                    Icon(Icons.visibility, color: AppColors.primary),
+                    SizedBox(width: 10),
+                    Text('Voir profil'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'Modifier',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit, color: AppColors.primary),
+                    SizedBox(width: 10),
+                    Text('Modifier'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'Supprimer',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete, color: Colors.red),
+                    SizedBox(width: 10),
+                    Text('Supprimer'),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -196,14 +132,6 @@ class _UserListPageState extends State<UserListPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Filtrage selon la recherche
-    final filteredUsers = users.where((user) {
-      final nameLower = user['name'].toLowerCase();
-      final emailLower = user['email'].toLowerCase();
-      final searchLower = query.toLowerCase();
-      return nameLower.contains(searchLower) || emailLower.contains(searchLower);
-    }).toList();
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -242,7 +170,7 @@ class _UserListPageState extends State<UserListPage> {
             const Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                "User List",
+                "Users List",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -251,11 +179,33 @@ class _UserListPageState extends State<UserListPage> {
               ),
             ),
             const SizedBox(height: 8),
-            // Liste des utilisateurs
+
             Expanded(
-              child: ListView.builder(
-                itemCount: filteredUsers.length,
-                itemBuilder: (context, index) => _buildUserCard(filteredUsers[index]),
+              child: FutureBuilder<Map<String, dynamic>>(
+                future: _futureUsers,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!["users"].isEmpty) {
+                    return const Center(child: Text('Aucun utilisateur trouvé'));
+                  }
+
+                  final users = snapshot.data!["users"] as List;
+                  final filteredUsers = users.where((user) {
+                    final nameLower = user['nom'].toString().toLowerCase();
+                    final emailLower = user['email'].toString().toLowerCase();
+                    final searchLower = query.toLowerCase();
+                    return nameLower.contains(searchLower) ||
+                        emailLower.contains(searchLower);
+                  }).toList();
+
+                  return ListView.builder(
+                    itemCount: filteredUsers.length,
+                    itemBuilder: (context, index) => _buildUserCard(filteredUsers[index]),
+                  );
+                },
               ),
             ),
           ],

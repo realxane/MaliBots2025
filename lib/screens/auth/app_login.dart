@@ -101,42 +101,9 @@ class _LoginPageState extends State<Login> {
                   child: bouton_large(
 
                     hint: "se connecter",
-<<<<<<< HEAD
                   onPressed: () async {
   setState(() => _isLoading = true);
-=======
-                   onPressed: () async {
-                  setState(() => _isLoading = true); // si tu veux un loader
-                  try{
-                     // Instancie le controller
-                    final controller = AuthController();
-                     // Appelle la fonction login du backend
-                  final result = await controller.login(
-                   email: _emailCtrl.text,
-                  motDePasse: _passwordCtrl.text, );
-
-                  // extrait le token selon ta réponse backend
-                  final token = result["token"] ?? result["access_token"] ?? result["data"]?["token"];
-                  if (token is String && token.isNotEmpty) {
-                    await AuthStorage().saveToken(token);
-                  }
-                  final page=result["home_page"];
-                  //dedions les pages 
-                  if(page=="admin_dashboard"){
-                     Navigator.pushReplacementNamed(context, AppRoutes.admin_dash);
-                  }else{
-                    Navigator.pushReplacementNamed(context, AppRoutes.accueil);
-                  }
-                  } catch (e) {
-        // Affiche le message exact du backend
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      } finally {
-        setState(() => _isLoading = false);
-      }
->>>>>>> Alassane
-
+                   
   try {
     final controller = AuthController();
 
