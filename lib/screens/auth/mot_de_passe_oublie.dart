@@ -1,115 +1,207 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:malibots_challenge_eni/constants/app_colors.dart';
-import 'package:malibots_challenge_eni/constants/app_images.dart';
-import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
-import 'package:malibots_challenge_eni/routes/app_routes.dart';
-import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart';
-import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
-// import 'package:malibots_challenge_eni/widgets/custum_button.dart';
-// import 'package:malibots_challenge_eni/widgets/custum_textfileid.dart';
-import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
-import 'package:malibots_challenge_eni/widgets/buttons/bouton_retour.dart';
+import 'package:http/http.dart' as http;
 
+const String API_URL = 'http://192.168.1.35:8000/api';
 
-import 'package:malibots_challenge_eni/widgets/text_fields/text_field_decor.dart';
+class MotDePasseOublie extends StatefulWidget {
+  const MotDePasseOublie({super.key});
 
-class MotDePasseOublie extends StatelessWidget {
-   MotDePasseOublie({super.key});
-  final _emailrecuperationCtrl = TextEditingController(); // controller de l'email de recuperation de mot de passeCtrl
+  @override
+  State<MotDePasseOublie> createState() => _ForgotPasswordScreenState();
+}
+
+class _ForgotPasswordScreenState extends State<MotDePasseOublie> {
+  final TextEditingController _emailController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+
+  // Fonction pour envoyer l'email de réinitialisation
+  Future<void> _sendResetLink() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('$API_URL/forgot-password'),
+        headers: <String, String>{'Content-Type': 'application/json'},
+        body: jsonEncode(<String, String>{'email': _emailController.text}),
+      );
+
+      final body = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        _showFeedback(
+          'Succès',
+          body['message'] ??
+              'Lien de réinitialisation envoyé avec succès. Vérifiez votre boîte de réception.',
+          Colors.green,
+        );
+        _emailController.clear();
+      } else if (response.statusCode == 404) {
+        _showFeedback(
+          'Erreur',
+          body['message'] ?? 'Utilisateur introuvable.',
+          Colors.red,
+        );
+      } else {
+        // Autres erreurs de serveur (422 pour validation, 500, etc.)
+        String errorMessage =
+            body['message'] ??
+            'Une erreur est survenue lors de l\'envoi du lien.';
+        if (body['errors'] != null) {
+          // Si Laravel renvoie des erreurs de validation (par exemple, email non valide)
+          final errors = body['errors'] as Map<String, dynamic>;
+          errorMessage += '\n' + errors.values.expand((e) => e).join('\n');
+        }
+        _showFeedback('Erreur', errorMessage, Colors.red);
+      }
+    } catch (e) {
+      // Erreur de connexion (réseau)
+      print('Erreur réseau/parsing: $e');
+      _showFeedback(
+        'Erreur Réseau',
+        'Impossible de se connecter au serveur. Vérifiez votre connexion.',
+        Colors.red,
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showFeedback(String title, String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final taill_sreen=MediaQuery.of(context).size;
-   final width = taill_sreen.width;
-    final height = taill_sreen.height;
+    final Color primaryColor = const Color(0xFFA65B45); // Couleur marron/ocre
+    final Color buttonColor = const Color(0xFF6B3A2C); // Couleur du bouton
+
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white,
         elevation: 0,
-        leading: Navigator.canPop(context)
-            ? fleche_retour(onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.connecter);
-            })
-            : null,
+        iconTheme: IconThemeData(color: primaryColor),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: width * 0.08, // marge adaptative
-            vertical: height * 0.04,),
+        padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20.0),
+        child: Form(
+          key: _formKey,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-            SizedBox(height: height * 0.05),            
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-
-              children: [
-                Container(
-                 height: height * 0.12,
-                  width: height * 0.12,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                  ),
-                  child: Image.asset(  
-                    AppImages.logo, height: 64,),
-                ),
-                  SizedBox(width: width * 0.03),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                    Text("Anw Ka Dembe",style: TextStyle(
-                       fontSize: width * 0.06,
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold
-                    ),),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 40),
-                      child: Text("Découvrez l'âme du Mali",style: AppTextStyles.soustitre.copyWith(
-                          fontSize: width * 0.036,
-                        ),),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              // Logo/Titre
+              Center(
+                child: Column(
+                  children: [
+                    // Remplacez 'assets/logo_appli.png' par le chemin réel de votre image
+                    Image.asset('assets/images/logo_appli.png', height: 80),
+                    const SizedBox(height: 5),
+                    Text(
+                      'Anw Ka Dembe',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: primaryColor,
+                      ),
                     ),
-                  ])
-              
-            ]),
-            SizedBox(height: height * 0.06),            
-               Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Mot de passe oublié ?",
-                  style: TextStyle(
-                    fontSize: width * 0.06,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.bold,
+                    Text(
+                      'Découvrez l’âme du Mali',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: primaryColor.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 50),
+
+              Text(
+                'Mot de passe oublié ?',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              ),
+
+              const SizedBox(height: 30),
+
+              // Champ de saisie Email
+              TextFormField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  hintText: 'Entrez votre adresse email',
+                  filled: true,
+                  fillColor: primaryColor.withOpacity(0.1),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 20.0,
+                    horizontal: 20.0,
                   ),
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer votre email';
+                  }
+                  if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
+                    return 'Format d\'email invalide';
+                  }
+                  return null;
+                },
               ),
-             SizedBox(height: height * 0.03),
-             Text(
-                "Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
-                style: AppTextStyles.soustitre.copyWith(
-                  fontSize: width * 0.045,
-                ),
-                textAlign: TextAlign.center,
-              ),
-           SizedBox(height: height * 0.04),
 
-          
-          TextField(
-            controller: _emailrecuperationCtrl,
-             keyboardType: TextInputType.emailAddress,
-             textInputAction: TextInputAction.next,
-            decoration: decor("Entrez votre adresse email"),
-          
+              const SizedBox(height: 50),
+
+              // Bouton d'envoi
+              ElevatedButton(
+                onPressed: _isLoading ? null : _sendResetLink,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  padding: const EdgeInsets.symmetric(vertical: 18.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 3,
+                        ),
+                      )
+                    : const Text(
+                        'Envoyer le code VIS',
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+              ),
+            ],
           ),
-            SizedBox(height: height * 0.05),
-          SizedBox(
-            width: double.infinity,
-            child: bouton_large( hint:"Envoyer le code",onPressed: (){
-              Navigator.pushNamed(context, AppRoutes.newPassword);
-            },),
-          ),
-            
-          ]),
         ),
       ),
     );

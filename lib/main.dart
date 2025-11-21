@@ -1,5 +1,7 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/data/list_product.dart';
+import 'package:malibots_challenge_eni/firebase_options.dart';
 import 'package:malibots_challenge_eni/providers/favoris_store.dart';
 import 'package:malibots_challenge_eni/providers/product_store.dart';
 import 'package:malibots_challenge_eni/screens/admins/app_admin_dashboard.dart';
@@ -29,7 +31,9 @@ import 'package:malibots_challenge_eni/screens/auth/app_inscription.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_inscription_vendeur.dart';
 import 'package:malibots_challenge_eni/screens/paiements/choix_mode.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
     MultiProvider(
       providers: [
@@ -67,7 +71,7 @@ class MyApp extends StatelessWidget {
             AppRoutes.inscrire: (context) => InscriptionPage(),
             AppRoutes.inscrire_vendeur: (context) => InscriptionVendeurPage(),
             AppRoutes.forgotPassword: (context) => MotDePasseOublie(),
-            AppRoutes.newPassword: (context) => CreeNouveauMotdepasse(),
+            //AppRoutes.newPassword: (context) => CreeNouveauMotdepasse(),
             AppRoutes.musique: (context) => const MusiqueScreen(),
             AppRoutes.catalogue: (context) => const CatalogScreen(),
             AppRoutes.panier: (context) => const CartPage(),
@@ -87,6 +91,22 @@ class MyApp extends StatelessWidget {
                 const BienvenueAcheteur(),
             AppRoutes.bienvenue_vendeur: (context) => const BienvenueVendeur(),
           },
+          //_______Cree un nouveau mot de pass_____________
+          onGenerateRoute: (settings) {
+            if (settings.name == AppRoutes.newPassword) {
+              final args = settings.arguments as Map<String, dynamic>;
+
+              return MaterialPageRoute(
+                builder: (_) => CreeNouveauMotdepasse(
+                  token: args["token"],
+                  email: args["email"],
+                ),
+              );
+            }
+            return null;
+          },
+
+          //--------------fin
           theme: buildLightTheme(),
           darkTheme: buildDarkTheme(),
           themeMode: themeStore.mode,

@@ -49,8 +49,6 @@ class _MusiqueScreenState extends State<MusiqueScreen> {
   List<Musique> getUniqueGenres() {
     final Map<String, Musique> uniqueMap = {};
     for (var zic in musiques) {
-      // CORRECTION 1: On gère le cas où le genre est null
-      // Si genre est null, on le classe sous "Autre" ou on l'ignore
       String key = zic.genre ?? "Autre";
 
       if (!uniqueMap.containsKey(key)) {
@@ -64,7 +62,7 @@ class _MusiqueScreenState extends State<MusiqueScreen> {
   List<Musique> getUniqueArtists() {
     final Map<String, Musique> uniqueMap = {};
     for (var zic in musiques) {
-      // artist n'est pas nullable dans votre modèle, donc pas d'erreur ici
+      // artist n'est pas nullable dans notre modèle, donc pas d'erreur ici
       if (!uniqueMap.containsKey(zic.artist)) {
         uniqueMap[zic.artist] = zic;
       }
