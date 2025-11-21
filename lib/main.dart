@@ -15,12 +15,13 @@ import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_catalog_screen.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_panier.dart';
 import 'package:malibots_challenge_eni/screens/home/home_screen.dart';
+// import 'package:malibots_challenge_eni/screens/home/main_screen.dart';
 import 'package:malibots_challenge_eni/screens/onboarding/onboarding_screen.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_google_apple.dart';
 import 'package:malibots_challenge_eni/screens/profile/profile_screen_user.dart';
 import 'package:malibots_challenge_eni/widgets/themes.dart';
 import 'package:provider/provider.dart';
-import 'providers/theme_store.dart'; 
+import 'providers/theme_store.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_choixprofil.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_login.dart';
@@ -28,7 +29,6 @@ import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_inscription.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_inscription_vendeur.dart';
 import 'package:malibots_challenge_eni/screens/paiements/choix_mode.dart';
-import 'package:provider/provider.dart';
 import 'services/produit_service.dart';
 
 void main() {
@@ -36,12 +36,10 @@ void main() {
     MultiProvider(
       providers: [
         Provider<ProduitService>(create: (_) => ProduitService()),
-        // ChangeNotifierProvider(
-        //   create: (_) =>
-        //       ProductsStore(kProducts), // ta liste initiale de Product
-        // ),
         ChangeNotifierProvider(create: (_) => FavoritesStore()),
         ChangeNotifierProvider(create: (_) => ThemeStore()),
+        // Si tu veux activer ProductsStore, décommente la ligne suivante :
+        // ChangeNotifierProvider(create: (_) => ProductsStore(kProducts)),
       ],
       child: const MyApp(),
     ),
@@ -51,7 +49,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeStore>(
@@ -59,10 +56,9 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Anw ka Dambe',
-          initialRoute: AppRoutes.onboarding, 
-          // initialRoute: AppRoutes.admin_dash,
+          initialRoute: AppRoutes.onboarding,
           routes: {
-            AppRoutes.accueil: (context) => MainScreen(),
+            // AppRoutes.accueil:(context) => MainScreen(),
             AppRoutes.onboarding: (context) => const OnboardingScreen(),
             AppRoutes.choixprofil: (context) => const ChoixProfilPage(),
             AppRoutes.connecter: (context) => const Login(),
@@ -76,8 +72,8 @@ class MyApp extends StatelessWidget {
             AppRoutes.panier: (context) => const CartPage(),
             AppRoutes.admin_dash: (context) => const AdminDashboardPage(),
             AppRoutes.choixmodepayemnt: (context) => const PaymentScreen(),
-            AppRoutes.profil_vendeur:(context)  => ProfileScreenUser(),
-            AppRoutes.profil_user:(context)  => ProfileScreenUser(),
+            AppRoutes.profil_vendeur: (context) => ProfileScreenUser(),
+            AppRoutes.profil_user: (context) => ProfileScreenUser(),
             AppRoutes.adminListeUsers: (context) => const UserListPage(),
             AppRoutes.adminListeVendeurs: (context) => const VendeursListePage(),
             AppRoutes.adminListeProduits: (context) => const ProduitsListePage(),
@@ -85,12 +81,18 @@ class MyApp extends StatelessWidget {
             AppRoutes.adminprofile: (context) => const adminprofile(),
             AppRoutes.bienvenue_acheteur: (context) => const BienvenueAcheteur(),
             AppRoutes.bienvenue_vendeur: (context) => const BienvenueVendeur(),
+
+            // Route principale dynamique selon le rôle
+            AppRoutes.main: (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as String;
+              return MainScreen(role: args);
+            },
           },
           theme: buildLightTheme(),
           darkTheme: buildDarkTheme(),
           themeMode: themeStore.mode,
         );
-      }
+      },
     );
   }
 }

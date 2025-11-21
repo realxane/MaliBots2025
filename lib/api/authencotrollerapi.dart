@@ -27,6 +27,18 @@ class AuthController {
       // Sauvegarde du token
       await _storage.saveToken(token);
 
+      // Sauvegarde du rôle si fourni par l'API (clés possibles adaptées)
+      dynamic role;
+      if (user is Map && user['role'] != null) {
+        role = user['role'];
+      } else if (response['role'] != null) {
+        role = response['role'];
+      } else if (response['data'] is Map) {
+        final data = response['data'] as Map;
+        if (data['user'] is Map && data['user']['role'] != null) role = data['user']['role'];
+      }
+      await _storage.saveRole(role?.toString());
+
       
 
       return {

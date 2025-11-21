@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_panier.dart';
 import 'package:malibots_challenge_eni/screens/favoris/app_favoris.dart';
@@ -9,55 +10,74 @@ import 'package:malibots_challenge_eni/screens/home/galerie/galerie_page.dart';
 import 'package:malibots_challenge_eni/screens/home/vendeurpages/vendeur_dashboard.dart';
 import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
 import 'package:malibots_challenge_eni/screens/profile/profile_screen_user.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:malibots_challenge_eni/widgets/themes.dart';
 
 class MainScreen extends StatefulWidget {
+  final String role; // "Acheteur" ou "Vendeur"
+  const MainScreen({super.key, required this.role});
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final Color bogolan = const Color(0xFF7B3F00); // couleur bogolan
+  final Color bogolan = const Color(0xFF7B3F00);
   int _currentIndex = 0;
-  final pages = [
-    HomeScreen(),
-    FavoritesPage(),
-    CartPage(),
-    ProfileScreenUser(),
-    SellerDashboardScreen(), 
-  ];
+
+  late List<Widget> pages;
+  late List<BottomNavigationBarItem> navItems;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.role == "Vendeur") {
+      pages = [
+        const HomeScreen(),
+        FavoritesPage(),
+        CartPage(),
+        ProfileScreenUser(),
+        SellerDashboardScreen(),
+      ];
+      navItems = const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),
+        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoris"),
+        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Panier"),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
+        BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: "Dashboard"),
+      ];
+    } else {
+      // Acheteur
+      pages = [
+        const HomeScreen(),
+        FavoritesPage(),
+        CartPage(),
+        ProfileScreenUser(),
+      ];
+      navItems = const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),
+        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoris"),
+        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Panier"),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
+      ];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;           // <— ICI on crée "scheme"
+    final scheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    return Scaffold(
-      body: pages[_currentIndex], // ✅ afficher la page sélectionnée
 
+    return Scaffold(
+      body: pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() => _currentIndex = index);
-        },
-        backgroundColor: isDark ? scheme.surface : Colors.grey.shade100, // gris en clair, s’adapte en sombre
+        onTap: (index) => setState(() => _currentIndex = index),
+        backgroundColor: isDark ? scheme.surface : Colors.grey.shade100,
         selectedItemColor: scheme.primary,
         unselectedItemColor: scheme.onSurfaceVariant,
-        type: BottomNavigationBarType.fixed, // ✅ Important si + de 3 items
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoris"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: "Panier",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: "Dashboard",
-          ),
-        ],
+        type: BottomNavigationBarType.fixed,
+        items: navItems,
       ),
     );
   }
@@ -71,10 +91,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final Color bogolan = const Color(0xFF7B3F00); // couleur bogolan
-  // final pages = [HomeScreen(),SellerDashboardScreen()];
+  final Color bogolan = const Color(0xFF7B3F00);
+  int citationIndex = 0;
 
-  // Citations du jour
   final List<String> citations = [
     "Aaaah cette vie là, tu recules pour mieux sauter et puis tu glisses.",
     "Ahh les dogons sont foutus",
@@ -83,16 +102,13 @@ class _HomeScreenState extends State<HomeScreen> {
     "Quand il n’y a pas d’ennemi à l’intérieur, l’ennemi extérieur ne peut rien.",
     "Un seul bracelet ne fait pas de bruit.",
   ];
-  int citationIndex = 0;
 
-  // Images du carrousel
   final List<String> carouselImages = [
     'assets/images/Acceuil/plats1.png',
     'assets/images/Acceuil/plats2.png',
     'assets/images/Acceuil/plats3.png',
   ];
 
-  // Données des éléments "À la une"
   List<Map<String, dynamic>> aLaUne = [
     {"image": "assets/images/Acceuil/alaune1.png", "likes": 10, "liked": false},
     {"image": "assets/images/Acceuil/alaune2.jpg", "likes": 6, "liked": false},
@@ -121,46 +137,32 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        automaticallyImplyLeading: false, // Supprime la flèche de retour
+        automaticallyImplyLeading: false,
         iconTheme: IconThemeData(color: bogolan, size: 30),
-
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               "Accueil",
-              style: TextStyle(
-                color: bogolan,
-                fontWeight: FontWeight.w600,
-                fontSize: 20,
-              ),
+              style: TextStyle(color: bogolan, fontWeight: FontWeight.w600, fontSize: 20),
             ),
           ],
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: Icon(Iconsax.notification, color: bogolan),
-            onPressed: () {},
-          ),
+          IconButton(icon: Icon(Iconsax.notification, color: bogolan), onPressed: () {}),
         ],
         leading: Padding(
           padding: const EdgeInsets.only(left: 16),
           child: Image.asset('assets/images/logo_appli.png', height: 30),
         ),
       ),
-
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Carrousel d'images
             CarouselSlider(
-              options: CarouselOptions(
-                height: 200,
-                autoPlay: true,
-                viewportFraction: 1.0,
-              ),
+              options: CarouselOptions(height: 200, autoPlay: true, viewportFraction: 1.0),
               items: carouselImages.map((img) {
                 return Stack(
                   fit: StackFit.expand,
@@ -174,25 +176,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       right: 10,
                       child: GestureDetector(
                         onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            AppRoutes.catalogue,
-                            arguments: 'Types',
-                          );
+                          Navigator.pushNamed(context, AppRoutes.catalogue, arguments: 'Types');
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: bogolan,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            "Découvrir →",
-                            style: TextStyle(color: Colors.white),
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(color: bogolan, borderRadius: BorderRadius.circular(20)),
+                          child: const Text("Découvrir →", style: TextStyle(color: Colors.white)),
                         ),
                       ),
                     ),
@@ -200,264 +189,57 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               }).toList(),
             ),
-
             const SizedBox(height: 20),
-
-            // Catégories
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                "Catégories",
-                style: TextStyle(
-                  color: bogolan,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ),
+            _buildSectionTitle("Catégories"),
             const SizedBox(height: 10),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildCategory(MdiIcons.tshirtV, "Tenues", () {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.catalogue,
-                      arguments: 'Tenues',
-                    );
-                  }),
-                  _buildCategory(Icons.restaurant, "Plats", () {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.catalogue,
-                      arguments: 'Plats',
-                    );
-                  }),
-                  _buildCategory(Iconsax.music, "Musique", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            const MusiqueScreen(), //  navigation vers Musique
-                      ),
-                    );
-                  }),
-                  _buildCategory(Iconsax.story, "Culture", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const CulturePage(), //
-                      ),
-                    );
-                  }),
-                  _buildCategory(Iconsax.shopping_bag, "Accessoires", () {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.catalogue,
-                      arguments: 'Accessoires',
-                    );
-                  }),
-                  _buildCategory(Icons.photo_library, "Galerie", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const GaleriePage(), //
-                      ),
-                    );
-                  }),
-                ],
-              ),
-            ),
-
+            _buildCategoriesRow(context),
             const SizedBox(height: 20),
-
-            // À la une
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                "À la une",
-                style: TextStyle(
-                  color: bogolan,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ),
+            _buildSectionTitle("À la une"),
             const SizedBox(height: 10),
-            SizedBox(
-              height: 200,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: aLaUne.length,
-                itemBuilder: (context, index) {
-                  var item = aLaUne[index];
-                  return GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      width: 150,
-                      margin: const EdgeInsets.only(left: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.shade300,
-                            blurRadius: 5,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(12),
-                                ),
-                                child: Image.asset(
-                                  item["image"],
-                                  height: 120,
-                                  width: 150,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 5,
-                                right: 10,
-                                child: GestureDetector(
-                                  onTap: () => toggleLike(index),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Iconsax.heart5,
-                                        color: item["liked"]
-                                            ? Colors.red
-                                            : Colors.white,
-                                        size: 18,
-                                      ),
-                                      const SizedBox(width: 5),
-                                      Text(
-                                        "${item["likes"]}",
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              "Caractéristiques",
-                              style: TextStyle(
-                                color: bogolan,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-
+            _buildALaUne(),
             const SizedBox(height: 20),
-
-            // Espace culturel
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                "Espace culturel",
-                style: TextStyle(
-                  color: bogolan,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ),
+            _buildSectionTitle("Espace culturel"),
             const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: bogolan,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Iconsax.quote_down, color: Colors.white),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Citation du jour :",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            citations[citationIndex],
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Iconsax.refresh, color: Colors.white),
-                      onPressed: refreshCitation,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
+            _buildCitation(),
             const SizedBox(height: 10),
-
-            Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 20.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => CulturePage()),
-                    );
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        "Explorer la culture",
-                        style: TextStyle(color: bogolan),
-                      ),
-                      Icon(Iconsax.arrow_right_3, color: bogolan),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
+            _buildExplorerCulture(context),
             const SizedBox(height: 30),
           ],
         ),
       ),
+    );
+  }
 
-      //Barre de navigation inférieure
+  Widget _buildSectionTitle(String title) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Text(title, style: TextStyle(color: bogolan, fontWeight: FontWeight.bold, fontSize: 18)),
+      );
+
+  Widget _buildCategoriesRow(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _buildCategory(MdiIcons.tshirtV, "Tenues", () {
+            Navigator.pushNamed(context, AppRoutes.catalogue, arguments: 'Tenues');
+          }),
+          _buildCategory(Icons.restaurant, "Plats", () {
+            Navigator.pushNamed(context, AppRoutes.catalogue, arguments: 'Plats');
+          }),
+          _buildCategory(Iconsax.music, "Musique", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const MusiqueScreen()));
+          }),
+          _buildCategory(Iconsax.story, "Culture", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const CulturePage()));
+          }),
+          _buildCategory(Iconsax.shopping_bag, "Accessoires", () {
+            Navigator.pushNamed(context, AppRoutes.catalogue, arguments: 'Accessoires');
+          }),
+          _buildCategory(Icons.photo_library, "Galerie", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const GaleriePage()));
+          }),
+        ],
+      ),
     );
   }
 
@@ -468,17 +250,115 @@ class _HomeScreenState extends State<HomeScreen> {
         margin: const EdgeInsets.symmetric(horizontal: 8),
         child: Column(
           children: [
-            CircleAvatar(
-              backgroundColor: bogolan,
-              radius: 25,
-              child: Icon(icon, color: Colors.white),
-            ),
+            CircleAvatar(backgroundColor: bogolan, radius: 25, child: Icon(icon, color: Colors.white)),
             const SizedBox(height: 5),
-            Text(
-              label,
-              style: TextStyle(color: bogolan, fontWeight: FontWeight.w600),
-            ),
+            Text(label, style: TextStyle(color: bogolan, fontWeight: FontWeight.w600)),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildALaUne() {
+    return SizedBox(
+      height: 200,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: aLaUne.length,
+        itemBuilder: (context, index) {
+          var item = aLaUne[index];
+          return GestureDetector(
+            onTap: () {},
+            child: Container(
+              width: 150,
+              margin: const EdgeInsets.only(left: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [BoxShadow(color: Colors.grey.shade300, blurRadius: 5, offset: const Offset(0, 3))],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                        child: Image.asset(item["image"], height: 120, width: 150, fit: BoxFit.cover),
+                      ),
+                      Positioned(
+                        bottom: 5,
+                        right: 10,
+                        child: GestureDetector(
+                          onTap: () => toggleLike(index),
+                          child: Row(
+                            children: [
+                              Icon(Iconsax.heart5, color: item["liked"] ? Colors.red : Colors.white, size: 18),
+                              const SizedBox(width: 5),
+                              Text("${item["likes"]}", style: const TextStyle(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text("Caractéristiques", style: TextStyle(color: bogolan, fontWeight: FontWeight.w600)),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCitation() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Container(
+        decoration: BoxDecoration(color: bogolan, borderRadius: BorderRadius.circular(8)),
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Iconsax.quote_down, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Citation du jour :", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text(citations[citationIndex], style: const TextStyle(color: Colors.white)),
+                ],
+              ),
+            ),
+            IconButton(icon: const Icon(Iconsax.refresh, color: Colors.white), onPressed: refreshCitation),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExplorerCulture(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 20.0),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const CulturePage()));
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text("Explorer la culture", style: TextStyle(color: bogolan)),
+              Icon(Iconsax.arrow_right_3, color: bogolan),
+            ],
+          ),
         ),
       ),
     );

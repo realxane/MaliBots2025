@@ -5,6 +5,7 @@ import 'package:malibots_challenge_eni/constants/app_images.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
+import 'package:malibots_challenge_eni/screens/home/home_screen.dart';
 import 'package:malibots_challenge_eni/services/auth_storage.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_large.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_social.dart';
@@ -101,41 +102,47 @@ class _LoginPageState extends State<Login> {
                   child: bouton_large(
 
                     hint: "se connecter",
+                  
                   onPressed: () async {
   setState(() => _isLoading = true);
                    
   try {
-    final controller = AuthController();
+  setState(() => _isLoading = true);
 
-    final result = await controller.login(
-      _emailCtrl.text.trim(),
-      _passwordCtrl.text.trim(),
-    );
+  final controller = AuthController();
+  final result = await controller.login(
+    _emailCtrl.text.trim(),
+    _passwordCtrl.text.trim(),
+  );
 
-    // Vérifier si le login est OK
-    if (result["success"] != true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result["error"] ?? "Erreur inconnue")),
-      );
-      return;
-    }
-
-    // 👍 Login réussi
-    final page = result["homePage"];
-
-    if (page == "admin_dashboard") {
-      Navigator.pushReplacementNamed(context, AppRoutes.admin_dash);
-    } else {
-      Navigator.pushReplacementNamed(context, AppRoutes.accueil);
-    }
-
-  } catch (e) {
+  // Vérifier si le login a réussi
+  if (result["success"] != true) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(e.toString())),
+      SnackBar(content: Text(result["error"] ?? "Erreur inconnue")),
     );
-  } finally {
-    setState(() => _isLoading = false);
+    return;
   }
+
+  // Récupérer la page d'accueil en toute sécurité
+  final page = result["homePage"] as String? ?? "useracheteur";
+  print("Page de redirection : $page"); // utile pour debug
+
+  // Naviguer selon le rôle / page
+  if (page == "admin_dashboard") {
+    Navigator.pushReplacementNamed(context, AppRoutes.admin_dash);
+  } else if (page == "uservendeur") {
+    Navigator.pushReplacementNamed(context, AppRoutes.accueil);
+  } else {
+    Navigator.pushReplacementNamed(context, AppRoutes.main);
+  }
+  
+} catch (e) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text("Erreur : $e")),
+  );
+} finally {
+  setState(() => _isLoading = false);
+}
 }
 
                   ),
