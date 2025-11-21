@@ -15,6 +15,7 @@ import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_catalog_screen.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_panier.dart';
 import 'package:malibots_challenge_eni/screens/home/home_screen.dart';
+import 'package:malibots_challenge_eni/screens/home/hommesrcenneacheteur.dart';
 // import 'package:malibots_challenge_eni/screens/home/main_screen.dart';
 import 'package:malibots_challenge_eni/screens/onboarding/onboarding_screen.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_google_apple.dart';
@@ -58,7 +59,7 @@ class MyApp extends StatelessWidget {
           title: 'Anw ka Dambe',
           initialRoute: AppRoutes.onboarding,
           routes: {
-            // AppRoutes.accueil:(context) => MainScreen(),
+            AppRoutes.accueil:(context) => MainScreen(),
             AppRoutes.onboarding: (context) => const OnboardingScreen(),
             AppRoutes.choixprofil: (context) => const ChoixProfilPage(),
             AppRoutes.connecter: (context) => const Login(),
@@ -81,12 +82,9 @@ class MyApp extends StatelessWidget {
             AppRoutes.adminprofile: (context) => const adminprofile(),
             AppRoutes.bienvenue_acheteur: (context) => const BienvenueAcheteur(),
             AppRoutes.bienvenue_vendeur: (context) => const BienvenueVendeur(),
+            AppRoutes.aceuilacheteur:(context)  => VendeurHomepage()
 
-            // Route principale dynamique selon le rôle
-            AppRoutes.main: (context) {
-              final args = ModalRoute.of(context)!.settings.arguments as String;
-              return MainScreen(role: args);
-            },
+           
           },
           theme: buildLightTheme(),
           darkTheme: buildDarkTheme(),

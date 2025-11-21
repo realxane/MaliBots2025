@@ -5,6 +5,7 @@ class AppRoutes {
   static const String connecter = '/connexion';
   //page s'inscrire
   static const String inscrire = '/inscription';
+  static const String aceuilacheteur='/aceuilacheteur';
   //page s'inscrire vendeur
   static const String inscrire_vendeur = '/inscription_vendeur';
   static const String main='/main';

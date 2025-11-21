@@ -45,7 +45,7 @@ class _BienvenueAcheteurState extends State<BienvenueAcheteur> {
               ),
               onPressed: () {
                 
-                  Navigator.pushReplacementNamed(context, AppRoutes.accueil);
+                  Navigator.pushReplacementNamed(context, AppRoutes.aceuilacheteur);
               },
               child: Text(
                "Explorer maintenant",

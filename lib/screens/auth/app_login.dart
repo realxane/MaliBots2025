@@ -124,16 +124,14 @@ class _LoginPageState extends State<Login> {
   }
 
   // Récupérer la page d'accueil en toute sécurité
-  final page = result["homePage"] as String? ?? "useracheteur";
-  print("Page de redirection : $page"); // utile pour debug
-
+  final page = result["homePage"] ;
   // Naviguer selon le rôle / page
   if (page == "admin_dashboard") {
     Navigator.pushReplacementNamed(context, AppRoutes.admin_dash);
   } else if (page == "uservendeur") {
     Navigator.pushReplacementNamed(context, AppRoutes.accueil);
   } else {
-    Navigator.pushReplacementNamed(context, AppRoutes.main);
+    Navigator.pushReplacementNamed(context, AppRoutes.aceuilacheteur);
   }
   
 } catch (e) {
