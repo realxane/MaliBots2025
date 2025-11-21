@@ -480,7 +480,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: ()  async{
+                        //print(product.id);
+                        //await PanierService().ajouterAuPanier(product, quantite);
                         final hasColors =
                             (widget.availableColors?.isNotEmpty ?? false) &&
                                 _selectedColor != null;

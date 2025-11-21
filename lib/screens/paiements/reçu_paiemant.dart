@@ -1,30 +1,95 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/constants/app_images.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 
+class ReceiptPage extends StatefulWidget {
+  final String paiementId;
 
-class ReceiptPage extends StatelessWidget {
-  const ReceiptPage({super.key});
+  const ReceiptPage({super.key, required this.paiementId});
+
+  @override
+  State<ReceiptPage> createState() => _ReceiptPageState();
+}
+
+class _ReceiptPageState extends State<ReceiptPage> {
+  Map<String, dynamic>? paiement;
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPaiementData();
+  }
+
+  Future<void> _loadPaiementData() async {
+    try {
+      final response = await http.get(
+        Uri.parse("http://127.0.0.1:8000/api/paiements/${widget.paiementId}"),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          paiement = jsonDecode(response.body);
+          loading = false;
+        });
+      } else {
+        setState(() {
+          loading = false;
+        });
+      }
+    } catch (e) {
+      print("Erreur reçu : $e");
+      setState(() => loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (loading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
+
+    if (paiement == null) {
+      return Scaffold(
+        body: Center(
+          child: Text(
+            "Erreur : Paiement introuvable",
+            style: TextStyle(color: Colors.red, fontSize: 18),
+          ),
+        ),
+      );
+    }
+
+    final montant = paiement!["montant"] ?? 0;
+    final frais = montant*0.10;
+    final total = montant + frais;
+    final beneficiaire = paiement!["referenceFournisseur"] ?? "—";
+    final date = paiement!["created_at"] ?? "—";
+
     return Scaffold(
-      // Pas d'AppBar visible dans l'image, on garde le corps centré
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-                // Logo
-                    Center(
-                      child: Image.asset(
-                        AppImages.logo,
-                        height: 64,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-            // Titre de confirmation
+            // Logo
+            Center(
+              child: Image.asset(
+                AppImages.logo,
+                height: 64,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Titre
             const Text(
               'Paiement validé',
               textAlign: TextAlign.center,
@@ -35,25 +100,25 @@ class ReceiptPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 50),
-            
-            // Détails du reçu
+
+            // Détails
             _buildDivider(),
-            _buildReceiptDetail('Montant', '40000f'),
+            _buildReceiptDetail('Montant', '$montant F'),
             _buildDivider(),
-            _buildReceiptDetail('Frais', '100f'),
+            _buildReceiptDetail('Frais', '$frais F'),
             _buildDivider(),
-            _buildReceiptDetail('Montant Total', '40100f', isTotal: true),
+            _buildReceiptDetail('Montant Total', '$total F', isTotal: true),
             _buildDivider(),
-            _buildReceiptDetail('Béneficiaire', 'Faso den gnouma', isDataBold: true),
+            _buildReceiptDetail('Bénéficiaire', beneficiaire, isDataBold: true),
             _buildDivider(),
-            _buildReceiptDetail('Date', '10/10/2025', isDataBold: true),
+            _buildReceiptDetail('Date', date, isDataBold: true),
             _buildDivider(),
-            
+
             const SizedBox(height: 50),
 
-            // Note de bas de page
+            // Note
             const Text(
-              'Reçu géneré par anw ka Dambe',
+              'Reçu généré par anw ka Dambe',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.primary,
@@ -61,19 +126,19 @@ class ReceiptPage extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            
+
             const SizedBox(height: 50),
-            
-            // Bouton "Fermer"
+
+            // Bouton Fermer
             ElevatedButton(
               onPressed: () {
                 Navigator.pushNamed(context, AppRoutes.accueil);
-                // Logique pour fermer la page (ex: Navigator.pop(context))
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 50.0),
+                padding: const EdgeInsets.symmetric(
+                    vertical: 15.0, horizontal: 50.0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -91,8 +156,9 @@ class ReceiptPage extends StatelessWidget {
     );
   }
 
-  // Widget utilitaire pour les lignes de détail du reçu
-  Widget _buildReceiptDetail(String label, String value, {bool isTotal = false, bool isDataBold = false}) {
+  // Ligne du reçu
+  Widget _buildReceiptDetail(String label, String value,
+      {bool isTotal = false, bool isDataBold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
       child: Row(
@@ -100,17 +166,16 @@ class ReceiptPage extends StatelessWidget {
         children: <Widget>[
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               color: AppColors.primary,
               fontSize: 16,
-              fontWeight: FontWeight.normal,
             ),
           ),
           Text(
             value,
             style: TextStyle(
               color: AppColors.primary,
-              fontSize: 17,
+              fontSize: isTotal ? 18 : 17,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -119,7 +184,7 @@ class ReceiptPage extends StatelessWidget {
     );
   }
 
-  // Widget utilitaire pour les séparateurs
+  // Séparateur
   Widget _buildDivider() {
     return const Divider(
       color: AppColors.primary,

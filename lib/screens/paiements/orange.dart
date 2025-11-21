@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/screens/paiements/chargement.dart';
+import 'package:malibots_challenge_eni/screens/paiements/PaiementController.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 
 class OrangeMoneyPaymentPage extends StatefulWidget {
   final int montant;
@@ -14,31 +18,65 @@ class OrangeMoneyPaymentPage extends StatefulWidget {
 class _OrangeMoneyPaymentPageState extends State<OrangeMoneyPaymentPage> {
   final TextEditingController _numeroController = TextEditingController();
   bool _isLoading = false;
+  final paiementController = PaiementController();
 
   void _validerPaiement() async {
-    final numero = _numeroController.text.trim();
-    if (numero.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Veuillez entrer votre numéro Orange Money")),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    // Simule l’envoi au backend
-    await Future.delayed(const Duration(seconds: 2));
-
-    setState(() => _isLoading = false);
-
-    // Redirection vers la page "Paiement en cours"
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PaymentProcessingScreen(totalAmount: 1000,),
-      ),
+  final numero = _numeroController.text.trim();
+  if (numero.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Veuillez entrer votre numéro Orange Money")),
     );
+    return;
   }
+
+  setState(() => _isLoading = true);
+
+  final paiementController = PaiementController();
+  paiementController.setMethode("OrangeMoney");
+  paiementController.setInfos({"numero": numero, "montant": widget.montant});
+
+  try {
+    final url = Uri.parse('https://192.168.0.108:8000/api/paiements'); // endpoint de création de paiement
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ton_token_ici',
+      },
+      body: jsonEncode({
+        "commande_id": paiementController.commandeId,
+        "montant": widget.montant,
+        "methode": "OrangeMoney",
+        "infos": {"numero": numero},
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      // succès
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PaymentProcessingScreen( paiementId: data["paiementId"],totalAmount: widget.montant),
+        ),
+      );
+    } else {
+      print("Erreur : ${response.body}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Erreur lors de la création du paiement")),
+      );
+    }
+  } catch (e) {
+    print(e);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Erreur réseau")),
+    );
+  } finally {
+    setState(() => _isLoading = false);
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +139,7 @@ class _OrangeMoneyPaymentPageState extends State<OrangeMoneyPaymentPage> {
               _isLoading
                   ? const CircularProgressIndicator(color: AppColors.primary)
                   : ElevatedButton(
-                      onPressed: _validerPaiement,
+                      onPressed: (){},//_validerPaiement,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,

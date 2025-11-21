@@ -78,7 +78,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.catalogue: (context) => const CatalogScreen(),
         AppRoutes.panier: (context) => const CartPage(),
         AppRoutes.admin_dash: (context) => const AdminDashboardPage(),
-        AppRoutes.choixmodepayemnt: (context) => const PaymentScreen(),
+       // AppRoutes.choixmodepayemnt: (context) => const PaymentScreen(),
 
         AppRoutes.adminListeUsers: (context) => const UserListPage(),
         AppRoutes.adminListeVendeurs: (context) => const VendeursListePage(),

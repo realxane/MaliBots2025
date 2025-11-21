@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/providers/product_store.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_produit_detail.dart';
+import 'package:malibots_challenge_eni/screens/paiements/PaiementController.dart';
+import 'package:malibots_challenge_eni/screens/paiements/choix_mode.dart';
 import 'package:provider/provider.dart';
+import 'package:malibots_challenge_eni/models/product.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 /// ----------------------
 /// Modèles et contrôleur
@@ -30,6 +36,7 @@ class CartItem {
       ? productId
       : '$productId|$color';
 }
+
 
 class CartController extends ChangeNotifier {
   CartController._();
@@ -282,8 +289,17 @@ class _CartRow extends StatelessWidget {
                         _QtyControl(
                           qty: item.qty,
                           accent: accent,
-                          onMinus: () => CartController.I.decrement(key),
-                          onPlus: () => CartController.I.increment(key),
+                       onPlus: () {
+                        CartController.I.increment(key);
+                        final item = CartController.I.items.firstWhere((e) => e.key == key);
+                          quantite=item.qty;
+                      },
+                      onMinus: () {
+                        CartController.I.decrement(key);
+                        final item = CartController.I.items.firstWhere((e) => e.key == key);
+                          quantite=item.qty;
+                      },
+
                         ),
                       ],
                     ),
@@ -348,6 +364,54 @@ class _CartBottomBar extends StatelessWidget {
   const _CartBottomBar({required this.accent});
   final Color accent;
 
+  /// Créer une commande et rediriger vers la page de paiement
+Future<void> creerCommande(BuildContext context) async {
+  final url = Uri.parse('http://192.168.0.108:8000/api/commandes');
+
+  try {
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer 2|UCI7B7Wxk6xe1j8uB2a96sZXak2PQvIiToHIh0EQ100c6016',
+      },
+      body: jsonEncode({"statut": "en_attente"}),
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      final commandeId = data['commande']['id'];
+      final montantTotal = data['commande']['montantTotal'];
+
+      print("COMMANDE CRÉÉE : $commandeId - $montantTotal F");
+
+      PaiementController().setCommandeId(commandeId);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PaymentScreen(
+            commandeId: commandeId,
+            montant: montantTotal,
+          ),
+        ),
+      );
+    } else {
+      print("Erreur : ${response.body}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Erreur lors de la création de la commande")),
+      );
+    }
+  } catch (e) {
+    print("Exception: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Erreur réseau")),
+    );
+  }
+}
+
+
   @override
   Widget build(BuildContext context) {
     final total = CartController.I.total;
@@ -375,11 +439,13 @@ class _CartBottomBar extends StatelessWidget {
                 height: 40,
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: action de validation (paiement, récap, etc.)
+                    
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Panier validé')),
                     );
-                    Navigator.pushNamed(context, AppRoutes.choixmodepayemnt);
+                   // creerCommande(context);
+                    //Navigator.pushNamed(context, AppRoutes.choixmodepayemnt);
+                  //  Navigation.push(Context,MaterialPageRoute(builder: (context) => PaymentScreen(commandeId: commandeId, montant: montant),))
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accent,
@@ -420,4 +486,78 @@ Color? _parseColor(String? input) {
     return Color(int.parse(hex, radix: 16));
   }
   return null; // si ce n'est pas un hex, on n'affiche qu'un label
+}
+
+
+
+
+ int quantite = 1;
+class PanierService {
+  final String baseUrl = "http://192.168.0.108:8000/api";
+
+  // Parse les produits
+  List<Product> parseProduits(String responseBody) {
+    final data = jsonDecode(responseBody);
+
+    if (!data.containsKey('produits')) {
+      throw Exception("Clé 'produits' absente dans la réponse API");
+    }
+
+    final List produits = data['produits'];
+
+    return produits.map<Product>((json) {
+      return Product(
+        id: json['id'],
+        name: json['name'],
+        region: json['region'],
+        type: json['type'],
+        artisan: json['artisan'],
+        price: json['price'],
+        rating: json['rating'].toDouble(),
+        likes: json['likes'],
+        imageUrl: json['imageUrl'],
+      );
+    }).toList();
+  }
+
+  // Récupérer tous les produits
+  Future<List<Product>> fetchProduits(String token) async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/produits"),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return parseProduits(response.body);
+    } else {
+      print("Erreur API fetch : ${response.body}");
+      throw Exception("Impossible de charger les produits");
+    }
+  }
+
+  // Ajouter un produit au panier
+  Future<void> ajouterAuPanier(Product produit, int quantite) async {
+    final response = await http.post(
+      Uri.parse("$baseUrl/acheteur/panier/items"),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer 3|gIwP7KlgOt8u4AedIbmN0CI55GdmH1kBVvCi2xVt3cc2c7b4',
+      },
+      body: jsonEncode({
+        "produitId": produit.id,
+        //"produitId": "55555555-5555-5555-5555-55555555555",
+        "quantite": quantite,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      print("Produit ajouté au panier !");
+    } else {
+      print("Erreur ajout panier : ${response.body}");
+    }
+  }
 }

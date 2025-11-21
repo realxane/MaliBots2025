@@ -5,6 +5,9 @@ import 'package:malibots_challenge_eni/providers/favoris_store.dart';
 import 'package:provider/provider.dart';
 import 'conte_detail_page.dart';
 import 'proverbe_detail_page.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 
 class CulturePage extends StatefulWidget {
   const CulturePage({super.key});
@@ -17,50 +20,99 @@ class _CulturePageState extends State<CulturePage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  final List<Map<String, String>> contes = [
-    {
-      'titre': 'Sanoun Djai',
-      'resume':
-          'Une princesse qui, le jour de son mariage, perd ses deux parents et devient esclave',
-      'origine': 'Conte malien',
-      'contenu':
-          'Sanoun Djai était une princesse promise à un grand avenir, mais le destin en décida autrement...',
-    },
-    {
-      'titre': 'Abi l’orpheline',
-      'resume':
-          'Abi une orpheline qui perdit ses parents étant jeune et se retrouve maltraitée par sa marâtre',
-      'origine': 'Conte africain',
-      'contenu':
-          'Abi était une jeune fille courageuse qui, malgré les épreuves, sut faire preuve de bonté...',
-    },
-    {
-      'titre': 'Souroukouba ni zoganinba',
-      'resume':
-          'Souroukou est bête et pense que la force résout tout alors que zoganinba est rusé et malin',
-      'origine': 'Conte bambara',
-      'contenu':
-          'Ce conte illustre la supériorité de la ruse sur la force brute...',
-    },
-  ];
+  // final List<Map<String, String>> contes = [
+  //   {
+  //     'titre': 'Sanoun Djai',
+  //     'resume':
+  //         'Une princesse qui, le jour de son mariage, perd ses deux parents et devient esclave',
+  //     'origine': 'Conte malien',
+  //     'contenu':
+  //         'Sanoun Djai était une princesse promise à un grand avenir, mais le destin en décida autrement...',
+  //   },
+  //   {
+  //     'titre': 'Abi l’orpheline',
+  //     'resume':
+  //         'Abi une orpheline qui perdit ses parents étant jeune et se retrouve maltraitée par sa marâtre',
+  //     'origine': 'Conte africain',
+  //     'contenu':
+  //         'Abi était une jeune fille courageuse qui, malgré les épreuves, sut faire preuve de bonté...',
+  //   },
+  //   {
+  //     'titre': 'Souroukouba ni zoganinba',
+  //     'resume':
+  //         'Souroukou est bête et pense que la force résout tout alors que zoganinba est rusé et malin',
+  //     'origine': 'Conte bambara',
+  //     'contenu':
+  //         'Ce conte illustre la supériorité de la ruse sur la force brute...',
+  //   },
+  // ];
 
-  final List<Map<String, String>> proverbes = [
-    {'texte': 'Ahh les dogons sont foutus', 'origine': 'Proverbe sonrhai'},
-    {
-      'texte': 'On ne mord pas la main qui nous nourrit',
-      'origine': 'Proverbe bambara',
-    },
-    {
-      'texte': 'Ni chou ye a dogo a koli baga la a nogolen beta lagara',
-      'origine': 'Proverbe bambara',
-    },
-  ];
+  // final List<Map<String, String>> proverbes = [
+  //   {'texte': 'Ahh les dogons sont foutus', 'origine': 'Proverbe sonrhai'},
+  //   {
+  //     'texte': 'On ne mord pas la main qui nous nourrit',
+  //     'origine': 'Proverbe bambara',
+  //   },
+  //   {
+  //     'texte': 'Ni chou ye a dogo a koli baga la a nogolen beta lagara',
+  //     'origine': 'Proverbe bambara',
+  //   },
+  // ];
 
-  @override
-  void initState() {
-    _tabController = TabController(length: 2, vsync: this);
-    super.initState();
+  // @override
+  // void initState() {
+  //   _tabController = TabController(length: 2, vsync: this);
+  //   super.initState();
+  // }
+
+  // Variables dynamiques pour les données venant du backend
+  List<Map<String, String>> contes = [];
+  List<Map<String, String>> proverbes = [];
+
+  Future<void> loadContes() async {
+  final response = await http.get(Uri.parse('http://127.0.0.1:8000/api/contes'));
+  if (response.statusCode == 200) {
+    final List data = jsonDecode(response.body);
+    setState(() {
+      contes = data.map<Map<String, String>>((item) {
+        return {
+          'titre': item['titre'] ?? '',
+          'resume': item['histoire'] ?? '',
+          'origine': item['langue'] ?? '',
+          'contenu': item['histoire'] ?? '',
+        };
+      }).toList();
+    });
+  } else {
+    print('Erreur lors du chargement des contes');
   }
+}
+
+Future<void> loadProverbes() async {
+  final response = await http.get(Uri.parse('http://127.0.0.1:8000/api/proverbes'));
+  if (response.statusCode == 200) {
+    final List data = jsonDecode(response.body);
+    setState(() {
+      proverbes = data.map<Map<String, String>>((item) {
+        return {
+          'texte': item['texte'] ?? '',
+          'origine': item['langue'] ?? '',
+        };
+      }).toList();
+    });
+  } else {
+    print('Erreur lors du chargement des proverbes');
+  }
+}
+
+@override
+void initState() {
+  super.initState();
+  _tabController = TabController(length: 2, vsync: this);
+ // loadContes();
+  //loadProverbes();
+}
+
 
   @override
   Widget build(BuildContext context) {

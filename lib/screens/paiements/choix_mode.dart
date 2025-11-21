@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
+import 'package:malibots_challenge_eni/screens/paiements/PaiementController.dart';
+import 'package:malibots_challenge_eni/screens/paiements/carteBancaire.dart';
 import 'package:malibots_challenge_eni/screens/paiements/orange.dart';
 import 'package:malibots_challenge_eni/screens/paiements/wave.dart';
 
 class PaymentScreen extends StatefulWidget {
-  const PaymentScreen({super.key});
+  final String commandeId;
+  final int montant;
+
+  const PaymentScreen({
+    super.key,
+    required this.commandeId,
+    required this.montant,
+  });
 
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
@@ -26,23 +35,36 @@ class _PaymentScreenState extends State<PaymentScreen> {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ElevatedButton(
         onPressed: () {
-          setState(() {
-            _selectedPaymentMethod = value;
-            if (value == 'orange_money') {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          OrangeMoneyPaymentPage(montant: 10000)));
-            }
-            if (value == 'wave') {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          WaveMoneyPayment(montant: 20000)));
-            }
-          });
+          setState(() => _selectedPaymentMethod = value);
+
+          // Stocker la méthode et l'id de commande dans le controller
+          final paiementController = PaiementController();
+          paiementController.setMethode(value);
+          paiementController.setCommandeId(widget.commandeId);
+
+          // Naviguer vers la page correspondante
+          if (value == 'OrangeMoney') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => OrangeMoneyPaymentPage(montant: widget.montant),
+              ),
+            );
+          } else if (value == 'Wave') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => WaveMoneyPayment(montant: widget.montant),
+              ),
+            );
+          } else if (value == 'Mastercard') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => CarteBancairePage(montant: widget.montant),
+              ),
+            );
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
@@ -86,16 +108,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Paiement', style: TextStyle(fontWeight: FontWeight.bold,color: AppColors.primary)),
+        title: const Text(
+          'Paiement',
+          style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+        ),
         centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart, size: 30, color: AppColors.primary),
             onPressed: () {
-              Navigator.pushNamed(context,AppRoutes.panier);
+              Navigator.pushNamed(context, AppRoutes.panier);
             },
           ),
         ],
@@ -122,9 +146,21 @@ class _PaymentScreenState extends State<PaymentScreen> {
               alignment: Alignment.center,
               child: Column(
                 children: [
-                  Text('Articles : 13', style: TextStyle(color: AppColors.primary, fontSize: 16, fontWeight: FontWeight.bold) ),
+                  Text(
+                    'Articles : 13', // à remplacer par le vrai nombre si besoin
+                    style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 8),
-                  Text('Total: 40000f', style: TextStyle(color: AppColors.primary, fontSize: 16, fontWeight: FontWeight.bold) ),
+                  Text(
+                    'Total: ${widget.montant} F',
+                    style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
             ),
@@ -143,19 +179,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const SizedBox(height: 20),
 
             // Boutons de mode de paiement
+            _buildPaymentButton(title: 'Orange Money', value: 'OrangeMoney'),
+            _buildPaymentButton(title: 'Wave', value: 'Wave'),
             _buildPaymentButton(
-              title: 'Orange Money',
-              value: 'orange_money',
-            ),
-            _buildPaymentButton(
-              title: 'Wave',
-              value: 'wave',
-            ),
-            _buildPaymentButton(
-              title: 'Carte bancaire',
-              value: 'carte_bancaire',
-              subtitle: 'VISA/mastercard',
-            ),
+                title: 'Carte bancaire', value: 'Mastercard', subtitle: 'VISA/mastercard'),
           ],
         ),
       ),

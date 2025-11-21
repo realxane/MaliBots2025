@@ -4,6 +4,55 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/screens/musiques/music_player_screen.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+Future<bool> envoyerProverbe(String texte, String langue, String region) async {
+  try {
+    final response = await http.post(
+     // Uri.parse('http://192.168.0.108:8000/api/proverbes'),
+      Uri.parse('http://127.0.0.1:8000/api/proverbes'),
+     headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
+      body: jsonEncode({
+        'texte': texte,
+        'langue': langue,
+        'regionId': region,
+      }),
+    );
+
+    return response.statusCode == 201 || response.statusCode == 200;
+  } catch (e) {
+    print('Erreur envoi proverbe: $e');
+    return false;
+  }
+}
+
+
+Future<bool> envoyerConte(String titre, String texte, String langue, String region) async {
+  try {
+    final response = await http.post(
+      Uri.parse('http://127.0.0.1:8000/api/contes'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        },
+      body: jsonEncode({
+        'titre': titre,
+        'histoire': texte,
+        'langue': langue,
+        'regionId': region,
+        'publieParAdminId': '00000000-0000-0000-0000-000000000000'
+      }),
+    );
+    return response.statusCode == 201 || response.statusCode == 200;
+  } catch (e) {
+    print('Erreur envoi conte: $e');
+    return false;
+  }
+}
 
 class CulturesListePage extends StatefulWidget {
   const CulturesListePage({super.key});
@@ -170,121 +219,102 @@ class _CulturesListePageState extends State<CulturesListePage>
   }
 
   // 🔹 Modifier un proverbe
-  void _editProverbe(Map<String, dynamic> item) {
-    final TextEditingController _editController = TextEditingController(
-      text: item['texte'],
-    );
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Modifier le proverbe'),
-        content: TextField(
-          controller: _editController,
-          maxLines: 3,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            labelText: 'Texte du proverbe',
+ void _editProverbe(Map<String, dynamic> item) {
+  final TextEditingController _texteCtrl = TextEditingController(text: item['texte']);
+  final TextEditingController _langueCtrl = TextEditingController(text: item['langue']);
+  final TextEditingController _regionCtrl = TextEditingController(text: item['region']);
+
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Modifier le proverbe'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _texteCtrl,
+            maxLines: 3,
+            decoration: const InputDecoration(labelText: 'Texte'),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler'),
+          TextField(
+            controller: _langueCtrl,
+            decoration: const InputDecoration(labelText: 'Langue'),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
-            onPressed: () {
-              setState(() => item['texte'] = _editController.text);
-              Navigator.pop(context);
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Proverbe modifié')));
-            },
-            child: const Text(
-              'Enregistrer',
-              style: TextStyle(color: Colors.white),
-            ),
+          TextField(
+            controller: _regionCtrl,
+            decoration: const InputDecoration(labelText: 'Région'),
           ),
         ],
       ),
-    );
-  }
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Annuler'),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
+          onPressed: () {
+            setState(() {
+              item['texte'] = _texteCtrl.text;
+              item['langue'] = _langueCtrl.text;
+              item['regionId'] = _regionCtrl.text;
+            });
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Proverbe modifié')),
+            );
+          },
+          child: const Text('Enregistrer', style: TextStyle(color: Colors.white)),
+        ),
+      ],
+    ),
+  );
+}
 
   // 🔹 Modifier un conte
-  void _editConte(Map<String, dynamic> item) {
-    final TextEditingController _titreCtrl = TextEditingController(
-      text: item['titre'],
-    );
-    final TextEditingController _origCtrl = TextEditingController(
-      text: item['origine'],
-    );
-    final TextEditingController _texteCtrl = TextEditingController(
-      text: item['texte'],
-    );
+ void _editConte(Map<String, dynamic> item) {
+  final TextEditingController _titreCtrl = TextEditingController(text: item['titre']);
+  final TextEditingController _langueCtrl = TextEditingController(text: item['langue']);
+  final TextEditingController _regionCtrl = TextEditingController(text: item['region']);
+  final TextEditingController _texteCtrl = TextEditingController(text: item['texte']);
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-          "Modifier le conte",
-          style: TextStyle(color: AppColors.textSecondary),
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text("Modifier le conte"),
+      content: SingleChildScrollView(
+        child: Column(
+          children: [
+            TextField(controller: _titreCtrl, decoration: const InputDecoration(labelText: "Titre")),
+            TextField(controller: _langueCtrl, decoration: const InputDecoration(labelText: "Langue")),
+            TextField(controller: _regionCtrl, decoration: const InputDecoration(labelText: "Région")),
+            TextField(controller: _texteCtrl, decoration: const InputDecoration(labelText: "Texte complet"), maxLines: 6),
+          ],
         ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _titreCtrl,
-                decoration: const InputDecoration(
-                  labelText: "Titre du conte",
-                  fillColor: AppColors.textSecondary,
-                ),
-              ),
-              TextField(
-                controller: _origCtrl,
-                decoration: const InputDecoration(
-                  labelText: "Origine",
-                  fillColor: AppColors.textSecondary,
-                ),
-              ),
-              TextField(
-                controller: _texteCtrl,
-                maxLines: 6,
-                decoration: const InputDecoration(
-                  labelText: "Texte complet du conte",
-                  fillColor: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Annuler"),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
-            onPressed: () {
-              setState(() {
-                item['titre'] = _titreCtrl.text;
-                item['origine'] = _origCtrl.text;
-                item['texte'] = _texteCtrl.text;
-              });
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Conte modifié avec succès')),
-              );
-            },
-            child: const Text(
-              "Enregistrer",
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
       ),
-    );
-  }
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text("Annuler")),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
+          onPressed: () {
+            setState(() {
+              item['titre'] = _titreCtrl.text;
+              item['langue'] = _langueCtrl.text;
+              item['region'] = _regionCtrl.text;
+              item['texte'] = _texteCtrl.text;
+            });
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Conte modifié')),
+            );
+          },
+          child: const Text("Enregistrer", style: TextStyle(color: Colors.white)),
+        ),
+      ],
+    ),
+  );
+}
+
 
   // 🔹 Jouer une musique
   void _playMusic(Map<String, dynamic> item) {
@@ -807,6 +837,7 @@ class _CulturesListePageState extends State<CulturesListePage>
   void _addProverbe() {
     final TextEditingController _textCtrl = TextEditingController();
     final TextEditingController _origCtrl = TextEditingController();
+    final TextEditingController _regionCtrl = TextEditingController();
 
     showDialog(
       context: context,
@@ -823,6 +854,10 @@ class _CulturesListePageState extends State<CulturesListePage>
               controller: _origCtrl,
               decoration: const InputDecoration(labelText: "Origine"),
             ),
+            TextField(
+              controller: _regionCtrl,
+              decoration: const InputDecoration(labelText: "Région"),
+            ),
           ],
         ),
         actions: [
@@ -830,28 +865,44 @@ class _CulturesListePageState extends State<CulturesListePage>
             onPressed: () => Navigator.pop(context),
             child: const Text("Annuler"),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
-            onPressed: () {
-              if (_textCtrl.text.isNotEmpty) {
-                setState(() {
-                  proverbes.add({
-                    'texte': _textCtrl.text,
-                    'origine': _origCtrl.text,
-                    'approuve': false,
-                  });
+           ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
+          onPressed: () async {
+            if (_textCtrl.text.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Le texte du proverbe est requis")),
+              );
+              return;
+            }
+            // 🔥 APPEL DE L'API ICI
+            bool success = await envoyerProverbe(
+              _textCtrl.text,
+              _origCtrl.text,
+              _regionCtrl.text,
+            );
+
+            if (success) {
+              setState(() {
+                proverbes.add({
+                  'texte': _textCtrl.text,
+                  'langue': _origCtrl.text,
+                  'regionId': _regionCtrl.text,
+                  'approuve': false,
                 });
-                Navigator.pop(context);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Le texte du proverbe est requis"),
-                  ),
-                );
-              }
-            },
-            child: const Text("Ajouter", style: TextStyle(color: Colors.white)),
-          ),
+              });
+
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Proverbe ajouté avec succès")),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Erreur lors de l'envoi au serveur")),
+              );
+            }
+          },
+          child: const Text("Ajouter", style: TextStyle(color: Colors.white)),
+        ),
         ],
       ),
     );
@@ -862,6 +913,7 @@ class _CulturesListePageState extends State<CulturesListePage>
     final TextEditingController _titreCtrl = TextEditingController();
     final TextEditingController _texteCtrl = TextEditingController();
     final TextEditingController _origCtrl = TextEditingController();
+    final TextEditingController _regionCtrl = TextEditingController();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -876,7 +928,11 @@ class _CulturesListePageState extends State<CulturesListePage>
               ),
               TextField(
                 controller: _origCtrl,
-                decoration: const InputDecoration(labelText: "Origine"),
+                decoration: const InputDecoration(labelText: "Langue"),
+              ),
+              TextField(
+                controller: _regionCtrl,
+                decoration: const InputDecoration(labelText: "Région"),
               ),
               TextField(
                 controller: _texteCtrl,
@@ -894,20 +950,46 @@ class _CulturesListePageState extends State<CulturesListePage>
             child: const Text("Annuler"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
-            onPressed: () {
+          style: ElevatedButton.styleFrom(backgroundColor: AppColors.textSecondary),
+          onPressed: () async {
+            if (_titreCtrl.text.isEmpty || _texteCtrl.text.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Titre et texte sont obligatoires")),
+              );
+              return;
+            }
+
+            // 🔥 APPEL DE L'API ICI
+            bool success = await envoyerConte(
+              _titreCtrl.text,
+              _texteCtrl.text,
+              _origCtrl.text,
+              _regionCtrl.text,
+            );
+
+            if (success) {
               setState(() {
                 contes.add({
                   'titre': _titreCtrl.text,
                   'texte': _texteCtrl.text,
-                  'origine': _origCtrl.text,
+                  'langue': _origCtrl.text,
+                  'regionId': _regionCtrl.text,
                   'approuve': false,
                 });
               });
+
               Navigator.pop(context);
-            },
-            child: const Text("Ajouter", style: TextStyle(color: Colors.white)),
-          ),
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Conte ajouté avec succès")),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Erreur lors de l'envoi au serveur")),
+              );
+            }
+          },
+          child: const Text("Ajouter", style: TextStyle(color: Colors.white)),
+        ),
         ],
       ),
     );

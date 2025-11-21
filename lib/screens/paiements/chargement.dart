@@ -1,28 +1,67 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/screens/paiements/reçu_paiemant.dart';
 
 class PaymentProcessingScreen extends StatefulWidget {
-  final double totalAmount;
+  final String paiementId;
+  final int totalAmount;
 
-  const PaymentProcessingScreen({super.key, required this.totalAmount});
+  const PaymentProcessingScreen({
+    super.key,
+    required this.paiementId,
+    required this.totalAmount,
+  });
 
   @override
   State<PaymentProcessingScreen> createState() => _PaymentProcessingScreenState();
 }
 
 class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
+  Timer? timer;
+
   @override
   void initState() {
     super.initState();
+    _startCheckingPaiement();
+  }
 
-    // Redirection automatique après 10 secondes
-    Future.delayed(const Duration(seconds: 7), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const ReceiptPage()),
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+
+  // 🔄 Vérification automatique toutes les 3 secondes
+  void _startCheckingPaiement() {
+    timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      try {
+        final response = await http.get(
+          Uri.parse("http://192.168.0.108:8000/api/paiements/${widget.paiementId}"),
         );
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+
+          if (data["statut"] == "success") {
+            timer.cancel();
+
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ReceiptPage(
+                  paiementId: widget.paiementId,
+                ),
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        print("Erreur de vérification : $e");
       }
     });
   }
@@ -46,7 +85,6 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
           children: [
             const SizedBox(height: 30),
 
-            // Texte "Paiement en cours"
             const Text(
               'Paiement en cours',
               style: TextStyle(
@@ -58,14 +96,12 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
             ),
             const SizedBox(height: 80),
 
-            // Cercle dynamique
             const CircularProgressIndicator(
               color: AppColors.primary,
               strokeWidth: 10,
             ),
             const SizedBox(height: 100),
 
-            // Instruction
             const Text(
               'Veuillez confirmer le paiement sur votre téléphone',
               style: TextStyle(
@@ -76,7 +112,6 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
             ),
             const SizedBox(height: 18),
 
-            // Montant
             Text(
               'Total: ${widget.totalAmount.toStringAsFixed(0)} F',
               style: const TextStyle(
@@ -87,7 +122,6 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
             ),
             const SizedBox(height: 30),
 
-            // Boutons centrés
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -109,9 +143,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
             const SizedBox(height: 15),
 
             ElevatedButton(
-              onPressed: () {
-                
-              },
+              onPressed: () {},
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
