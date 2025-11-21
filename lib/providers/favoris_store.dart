@@ -57,9 +57,7 @@ class FavoritesStore extends ChangeNotifier {
     String? auth;
     if (token != null && token.isNotEmpty) {
       final t = token.trim();
-      auth = t.toLowerCase().startsWith('bearer ')
-          ? t
-          : 'Bearer $t';
+      auth = t.toLowerCase().startsWith('bearer ') ? t : 'Bearer $t';
     }
 
     return {
@@ -75,9 +73,7 @@ class FavoritesStore extends ChangeNotifier {
       _productsById[p.id] = p;
     } else {
       _favProductIds.remove(p.id);
-      // On peut garder le produit en cache, ce n’est pas grave.
-      // Si tu veux nettoyer :
-      // _productsById.remove(p.id);
+      // on laisse le produit en cache
     }
     _notifySafely();
   }
@@ -134,8 +130,8 @@ class FavoritesStore extends ChangeNotifier {
         if (jsonBody['data'] is List) {
           list = jsonBody['data'] as List;
         } else {
-          // Sécurité : si ce n’est pas une liste, on log et on ne crash pas.
-          debugPrint('⚠️ [FAVORIS] format inattendu: data != List => ${jsonBody['data']}');
+          debugPrint(
+              '⚠️ [FAVORIS] format inattendu: data != List => ${jsonBody['data']}');
           list = const [];
         }
       } else if (jsonBody is List) {
@@ -149,10 +145,9 @@ class FavoritesStore extends ChangeNotifier {
       for (final raw in list) {
         if (raw is! Map) continue;
 
-        final cibleId = (raw['cibleId'] ?? raw['cible_id'] ?? raw['cible_id'])
-                ?.toString()
-                .trim() ??
-            '';
+        final cibleId =
+            (raw['cibleId'] ?? raw['cible_id'] ?? raw['cible_id'])?.toString().trim() ??
+                '';
 
         if (cibleId.isEmpty) continue;
         ids.add(cibleId);
@@ -160,7 +155,6 @@ class FavoritesStore extends ChangeNotifier {
 
       debugPrint('⭐ [FAVORIS] ids produits trouvés = $ids');
 
-      // Mise à jour locale des IDs
       _favProductIds
         ..clear()
         ..addAll(ids);
@@ -223,14 +217,14 @@ class FavoritesStore extends ChangeNotifier {
 
       Map<String, dynamic> map;
       if (jsonBody is Map<String, dynamic>) {
-        // Cas ressource Laravel standard: { data: {...}, ... }
         if (jsonBody['data'] is Map<String, dynamic>) {
           map = jsonBody['data'] as Map<String, dynamic>;
         } else {
           map = jsonBody;
         }
       } else {
-        debugPrint('⚠️ [FAVORIS] format produit inattendu: ${jsonBody.runtimeType}');
+        debugPrint(
+            '⚠️ [FAVORIS] format produit inattendu: ${jsonBody.runtimeType}');
         return;
       }
 
@@ -268,7 +262,9 @@ class FavoritesStore extends ChangeNotifier {
       debugPrint('⭐ [FAVORIS] status: ${res.statusCode}, body: ${res.body}');
 
       if (res.statusCode == 401 || res.statusCode == 403) {
-        throw Exception('Non autorisé (HTTP ${res.statusCode}) sur /favoris/toggle');
+        throw Exception(
+          'Non autorisé (HTTP ${res.statusCode}) sur /favoris/toggle',
+        );
       }
 
       if (res.statusCode != 200 && res.statusCode != 201) {

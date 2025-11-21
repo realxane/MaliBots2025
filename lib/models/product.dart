@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:malibots_challenge_eni/utils/image_urls.dart';
+
 class Produit {
   final String id;
   final String nom;
@@ -8,10 +10,10 @@ class Produit {
   final String? categorie;         // 'Habit' | 'Plat' | 'Accessoire'
   final String? regionId;          // UUID/code ou label court
   final String? regionName;        // Label lisible (ex: "Bamako")
-  final List<String> images;       // URLs/paths
-  final String? firstImageUrl;     // pré-calculé si dispo
+  final List<String> images;       // URLs/paths (normalisées)
+  final String? firstImageUrl;     // pré-calculé si dispo (normalisé)
   @Deprecated('Compat: backend deprecates imageUrl')
-  final String? imageUrl;          // fallback
+  final String? imageUrl;          // fallback (normalisé)
   final String? statut;            // 'en_attente' | 'valide' | 'refuse' | 'supprime'
   final String? vendeurId;
   final int? stock;
@@ -69,18 +71,22 @@ class Produit {
 
   static String? _s(dynamic v) => v == null ? null : v.toString();
 
+  /// Transforme le champ "images" en liste d'URLs **normalisées**
   static List<String> _images(dynamic v) {
     if (v == null) return const [];
     if (v is List) {
       final out = <MapEntry<int, String>>[];
       for (final e in v) {
         if (e is String) {
-          out.add(MapEntry(999999, e));
+          // URL directe (string)
+          final fixed = normalizeImageRef(e);
+          out.add(MapEntry(999999, fixed));
         } else if (e is Map) {
-          final url = _s(e['url']);
-          if (url != null && url.isNotEmpty) {
+          final rawUrl = _s(e['url']);
+          if (rawUrl != null && rawUrl.isNotEmpty) {
+            final fixed = normalizeImageRef(rawUrl);
             final pos = _i(e['position']) ?? 999999;
-            out.add(MapEntry(pos, url));
+            out.add(MapEntry(pos, fixed));
           }
         }
       }
@@ -88,11 +94,13 @@ class Produit {
       return out.map((e) => e.value).toList();
     }
     if (v is String) {
+      // JSON encodé en string, ou single path
       try {
         final parsed = jsonDecode(v);
         return _images(parsed);
       } catch (_) {
-        return [v];
+        // simple string => on normalise quand même
+        return [normalizeImageRef(v)];
       }
     }
     return const [];
@@ -101,6 +109,7 @@ class Produit {
   factory Produit.fromJson(Map<String, dynamic> json) {
     final j = _unwrap(json);
 
+    // ----- Région -----
     String? regionId = _s(j['regionId'] ?? j['region_id']);
     String? regionName;
     final regionObj = j['region'];
@@ -110,18 +119,28 @@ class Produit {
     }
     regionName ??= _s(j['regionName'] ?? j['region_name']);
 
-    // Vendeur / artisan
+    // ----- Vendeur / artisan -----
     String? sellerName = _s(j['sellerName'] ?? j['seller_name']);
     String? sellerPhone = _s(j['sellerPhone'] ?? j['seller_phone']);
     final vendeurObj = j['vendeur'];
     if (vendeurObj is Map) {
-      sellerName  ??= _s(vendeurObj['nom'] ?? vendeurObj['name']);
+      sellerName ??= _s(vendeurObj['nom'] ?? vendeurObj['name']);
       sellerPhone ??= _s(vendeurObj['telephone_pro'] ?? vendeurObj['telephone']);
     }
 
+    // ----- Images -----
     final imgs = _images(j['images']);
-    final firstFromApi = _s(j['firstImageUrl'] ?? j['first_image_url']);
-    final compatImageUrl = _s(j['imageUrl'] ?? j['image_url']);
+
+    // firstImageUrl / imageUrl (normalisées)
+    final rawFirst = _s(j['firstImageUrl'] ?? j['first_image_url']);
+    final String? firstFromApi = (rawFirst != null && rawFirst.isNotEmpty)
+        ? normalizeImageRef(rawFirst)
+        : null;
+
+    final rawCompat = _s(j['imageUrl'] ?? j['image_url']);
+    final String? compatImageUrl = (rawCompat != null && rawCompat.isNotEmpty)
+        ? normalizeImageRef(rawCompat)
+        : null;
 
     return Produit(
       id: _s(j['id']) ?? '',
@@ -235,7 +254,11 @@ String mapCategorieToUiType(String? cat) {
 extension ProduitUi on Produit {
   String get regionLabel => (regionName ?? regionId ?? '-');
   String get typeUi => mapCategorieToUiType(categorie);
-  String get imageBest => firstImageUrl ?? imageUrl ?? (images.isNotEmpty ? images.first : '');
+
+  /// URL "préférée" déjà normalisée (ou string vide si rien)
+  String get imageBest =>
+      firstImageUrl ?? imageUrl ?? (images.isNotEmpty ? images.first : '');
+
   int get prixInt => (prix ?? 0).round();
   double get ratingSafe => (ratingAvg ?? 0).clamp(0, 5);
   int get likesSafe => ratingCount ?? 0;
