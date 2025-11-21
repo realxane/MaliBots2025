@@ -1,8 +1,22 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import 'package:malibots_challenge_eni/services/auth_storage.dart';
+import 'package:malibots_challenge_eni/models/product.dart';
+
+// ====== MODELE TOP-LEVEL (pas de classe imbriquée) ======
+class RegionRef {
+  final String id;
+  final String name;
+  const RegionRef({required this.id, required this.name});
+
+  factory RegionRef.fromJson(Map<String, dynamic> j) {
+    final id = (j['id'] ?? j['uuid'] ?? j['code']).toString();
+    final name = (j['nom'] ?? j['name'] ?? j['label'] ?? j['libelle'] ?? '').toString();
+    return RegionRef(id: id, name: name);
+  }
+}
 
 class ProduitService {
   final String baseUrl = "http://192.168.1.103:8000/api";
@@ -22,6 +36,35 @@ class ProduitService {
   }
 
   bool _isRemote(String p) => p.startsWith('http://') || p.startsWith('https://');
+
+  Future<void> _debugAuth() async {
+    final t = await currentToken();
+    if (t == null) { debugPrint("Pas de token en storage"); return; }
+    debugPrint("TOKEN=${t.substring(0, 12)}...");
+
+    final me = await http.get(Uri.parse("$baseUrl/me"), headers: _authJsonHeaders(t));
+    debugPrint("GET /me -> ${me.statusCode} ${me.body}");
+
+    final vend = await http.get(Uri.parse("$baseUrl/vendeur/produits"), headers: _authJsonHeaders(t));
+    debugPrint("GET /vendeur/produits -> ${vend.statusCode} ${vend.body}");
+  }
+
+  // ---- fetch des régions (utilise le modèle top-level) ----
+  Future<List<RegionRef>> fetchRegions() async {
+    final resp = await http.get(Uri.parse("$baseUrl/regions"), headers: {
+      'Accept': 'application/json',
+    }).timeout(const Duration(seconds: 20));
+
+    if (resp.statusCode != 200) {
+      throw Exception("Impossible de charger les régions (${resp.statusCode})");
+    }
+    final body = jsonDecode(resp.body);
+    if (body is List) {
+      return body.map((e) => RegionRef.fromJson(e as Map<String, dynamic>)).toList();
+    }
+    final data = (body is Map && body['data'] is List) ? body['data'] as List : const [];
+    return data.map((e) => RegionRef.fromJson(e as Map<String, dynamic>)).toList();
+  }
 
   Future<List<String>> _uploadImagesReturningUrls({
     required List<String> localPaths,
@@ -69,12 +112,12 @@ class ProduitService {
     return out;
   }
 
-  Future<Map<String, dynamic>> createFromUi({
+  Future<Produit> createFromUi({
     required String nom,
     required String description,
     required double prix,
     required String uiCategorie,
-    required String regionLabel,
+    required String regionId,
     required int stock,
     required List<String> imageLocalPathsOrUrls,
     String? couleur,
@@ -84,7 +127,6 @@ class ProduitService {
       throw Exception("Session expirée, reconnectez-vous.");
     }
 
-    // Vérifie le rôle vendeur si disponible
     final role = await currentRole();
     if (role != null && role.toLowerCase() != 'vendeur') {
       throw Exception("Votre compte n’a pas le rôle vendeur.");
@@ -104,7 +146,7 @@ class ProduitService {
       "description": description,
       "prix": prix,
       "categorie": uiCategorie,
-      "region": regionLabel,
+      "regionId": regionId,
       "stock": stock,
       if (couleur != null) "couleur": couleur,
       "images": allUrls,
@@ -117,7 +159,8 @@ class ProduitService {
 
     if (resp.statusCode == 201) {
       final data = jsonDecode(resp.body);
-      return data is Map<String, dynamic> ? data : {"data": data};
+      final map = data is Map<String, dynamic> ? data : {"data": data};
+      return Produit.fromJson(map);
     } else if (resp.statusCode == 422) {
       final data = jsonDecode(resp.body);
       final errors = (data["errors"] as Map<String, dynamic>?)
@@ -127,21 +170,19 @@ class ProduitService {
           "Erreur de validation";
       throw Exception(errors);
     } else if (resp.statusCode == 401 || resp.statusCode == 403) {
-      // renvoyer le message serveur si présent, sinon message clair
-      final msg = _extractMessage(resp.body) ?? "Non autorisé. Vérifie le token et le rôle vendeur.";
-      throw Exception(msg);
+      throw Exception(_extractMessage(resp.body) ?? "Non autorisé. Vérifie le token et le rôle vendeur.");
     } else {
       throw Exception("Erreur ${resp.statusCode}: ${resp.body}");
     }
   }
 
-  Future<Map<String, dynamic>> updateFromUi({
+  Future<Produit> updateFromUi({
     required String id,
     required String nom,
     required String description,
     required double prix,
     required String uiCategorie,
-    required String regionLabel,
+    required String regionId,
     required int stock,
     required List<String> imageLocalPathsOrUrls,
     String? couleur,
@@ -170,7 +211,7 @@ class ProduitService {
       "description": description,
       "prix": prix,
       "categorie": uiCategorie,
-      "region": regionLabel,
+      "regionId": regionId,
       "stock": stock,
       if (couleur != null) "couleur": couleur,
       "images": allUrls,
@@ -183,7 +224,8 @@ class ProduitService {
 
     if (resp.statusCode == 200) {
       final data = jsonDecode(resp.body);
-      return data is Map<String, dynamic> ? data : {"data": data};
+      final map = data is Map<String, dynamic> ? data : {"data": data};
+      return Produit.fromJson(map);
     } else if (resp.statusCode == 422) {
       final data = jsonDecode(resp.body);
       final errors = (data["errors"] as Map<String, dynamic>?)
@@ -193,8 +235,7 @@ class ProduitService {
           "Erreur de validation";
       throw Exception(errors);
     } else if (resp.statusCode == 401 || resp.statusCode == 403) {
-      final msg = _extractMessage(resp.body) ?? "Non autorisé. Vérifie le token et le rôle vendeur.";
-      throw Exception(msg);
+      throw Exception(_extractMessage(resp.body) ?? "Non autorisé. Vérifie le token et le rôle vendeur.");
     } else {
       throw Exception("Erreur ${resp.statusCode}: ${resp.body}");
     }

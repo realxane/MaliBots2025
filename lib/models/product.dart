@@ -22,7 +22,6 @@
 //   });
 // }
 
-// lib/models/product.dart
 import 'dart:convert';
 
 class Produit {
@@ -154,17 +153,17 @@ class Produit {
   }
 
   Map<String, dynamic> toCreateBody() => {
-    'nom': nom,
-    if (description != null) 'description': description,
-    if (prix != null) 'prix': double.parse((prix!).toStringAsFixed(2)),
-    if (categorie != null) 'categorie': categorie,           // Habit | Plat | Accessoire
-    if (regionId != null) 'regionId': regionId,
-    if (imageUrl != null) 'imageUrl': imageUrl,              // fallback si pas encore endpoint images
-    if (statut != null) 'statut': statut,
-    if (vendeurId != null) 'vendeurId': vendeurId,
-    if (stock != null) 'stock': stock,
-    if (artisan != null) 'artisan': artisan,                 // champ UI
-  };
+        'nom': nom,
+        if (description != null) 'description': description,
+        if (prix != null) 'prix': double.parse((prix!).toStringAsFixed(2)),
+        if (categorie != null) 'categorie': categorie, // Habit | Plat | Accessoire
+        if (regionId != null) 'regionId': regionId,
+        if (imageUrl != null) 'imageUrl': imageUrl, // fallback si pas encore endpoint images
+        if (statut != null) 'statut': statut,
+        if (vendeurId != null) 'vendeurId': vendeurId,
+        if (stock != null) 'stock': stock,
+        if (artisan != null) 'artisan': artisan, // champ UI
+      };
 
   Map<String, dynamic> toUpdateBody() => toCreateBody();
 
@@ -211,19 +210,27 @@ class Produit {
 // Helpers UI <-> backend
 String mapUiTypeToCategorie(String ui) {
   switch (ui) {
-    case 'Plats': return 'Plat';
-    case 'Tenues': return 'Habit';
-    case 'Accessoires': return 'Accessoire';
-    default: return 'Accessoire';
+    case 'Plats':
+      return 'Plat';
+    case 'Tenues':
+      return 'Habit';
+    case 'Accessoires':
+      return 'Accessoire';
+    default:
+      return 'Accessoire';
   }
 }
 
 String mapCategorieToUiType(String? cat) {
   switch (cat) {
-    case 'Plat': return 'Plats';
-    case 'Habit': return 'Tenues';
-    case 'Accessoire': return 'Accessoires';
-    default: return 'Accessoires';
+    case 'Plat':
+      return 'Plats';
+    case 'Habit':
+      return 'Tenues';
+    case 'Accessoire':
+      return 'Accessoires';
+    default:
+      return 'Accessoires';
   }
 }
 
@@ -231,10 +238,7 @@ String mapCategorieToUiType(String? cat) {
 extension ProduitUi on Produit {
   String get regionLabel => (regionName ?? regionId ?? '-');
   String get typeUi => mapCategorieToUiType(categorie);
-  String get imageBest =>
-      firstImageUrl ??
-      imageUrl ??
-      (images.isNotEmpty ? images.first : '');
+  String get imageBest => firstImageUrl ?? imageUrl ?? (images.isNotEmpty ? images.first : '');
   int get prixInt => (prix ?? 0).round();
   double get ratingSafe => (ratingAvg ?? 0).clamp(0, 5);
   int get likesSafe => ratingCount ?? 0;
