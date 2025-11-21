@@ -2,7 +2,7 @@
 import 'package:flutter/foundation.dart';
 
 // RENSEIGNE ICI l’IP de ton PC + le port Laravel (artisan serve)
-const String kDevHost = '192.168.1.103';
+const String kDevHost = '10.236.139.37';
 const int kDevPort = 8000;
 const String kDevScheme = 'http'; // 'http' en dev, 'https' si reverse-proxy
 const String kDevBaseOrigin = '$kDevScheme://$kDevHost:$kDevPort';

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:malibots_challenge_eni/services/auth_storage.dart';
 
 class AuthController {
-  final String baseUrl = "http://192.168.1.103:8000/api";
+  final String baseUrl = "http://10.236.139.37:8000/api";
   final _storage = AuthStorage();
 
   Future<Map<String, dynamic>> login({

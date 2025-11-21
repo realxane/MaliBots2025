@@ -1,4 +1,8 @@
+// lib/main.dart
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'package:malibots_challenge_eni/data/list_product.dart';
 import 'package:malibots_challenge_eni/providers/favoris_store.dart';
 import 'package:malibots_challenge_eni/providers/product_store.dart';
@@ -14,13 +18,12 @@ import 'package:malibots_challenge_eni/screens/auth/cree_nouveau_motdepasse.dart
 import 'package:malibots_challenge_eni/screens/auth/mot_de_passe_oublie.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_catalog_screen.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_panier.dart';
-import 'package:malibots_challenge_eni/screens/home/home_screen.dart';
+import 'package:malibots_challenge_eni/screens/home/home_screen.dart'; // ⬅️ Assure-toi que MainScreen est bien ici
 import 'package:malibots_challenge_eni/screens/onboarding/onboarding_screen.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_google_apple.dart';
 import 'package:malibots_challenge_eni/screens/profile/profile_screen_user.dart';
 import 'package:malibots_challenge_eni/widgets/themes.dart';
-import 'package:provider/provider.dart';
-import 'providers/theme_store.dart'; 
+import 'providers/theme_store.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_choixprofil.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_login.dart';
@@ -28,7 +31,6 @@ import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_inscription.dart';
 import 'package:malibots_challenge_eni/screens/auth/app_inscription_vendeur.dart';
 import 'package:malibots_challenge_eni/screens/paiements/choix_mode.dart';
-import 'package:provider/provider.dart';
 import 'services/produit_service.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/catalog_controller.dart';
 
@@ -36,20 +38,32 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        Provider<ProduitService>(create: (_) => ProduitService()),
-        // ChangeNotifierProvider(
-        //   create: (_) =>
-        //       ProductsStore(kProducts), // ta liste initiale de Product
-        // ),
-        ChangeNotifierProvider<CatalogController>(
-          create: (ctx) => CatalogController(ctx.read<ProduitService>()),
+        // Service API produits
+        Provider<ProduitService>(
+          create: (_) => ProduitService(),
         ),
-        ChangeNotifierProvider(
-          create: (_) => FavoritesStore(
-            baseUrl: 'http://192.168.1.103:8000/api', // même baseUrl que ton AuthController
+
+        // Store catalogue (qui utilise ProduitService)
+        ChangeNotifierProvider<CatalogController>(
+          create: (ctx) => CatalogController(
+            ctx.read<ProduitService>(),
           ),
         ),
-        ChangeNotifierProvider(create: (_) => ThemeStore()),
+
+        // Store favoris – version corrigée SANS baseUrl en paramètre
+        ChangeNotifierProvider<FavoritesStore>(
+          create: (_) => FavoritesStore(),
+        ),
+
+        // Thème clair/sombre
+        ChangeNotifierProvider<ThemeStore>(
+          create: (_) => ThemeStore(),
+        ),
+
+        // Si tu veux réactiver ProductsStore basé sur ta liste locale :
+        // ChangeNotifierProvider<ProductsStore>(
+        //   create: (_) => ProductsStore(kProducts),
+        // ),
       ],
       child: const MyApp(),
     ),
@@ -59,7 +73,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeStore>(
@@ -67,38 +80,51 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Anw ka Dambe',
-          initialRoute: AppRoutes.onboarding, 
-          // initialRoute: AppRoutes.admin_dash,
+
+          // Écran/flow de démarrage
+          initialRoute: AppRoutes.onboarding,
+          // initialRoute: AppRoutes.admin_dash, // pour tester l’admin
+
           routes: {
-            AppRoutes.accueil: (context) => MainScreen(),
+            AppRoutes.accueil: (context) => const MainScreen(),
             AppRoutes.onboarding: (context) => const OnboardingScreen(),
             AppRoutes.choixprofil: (context) => const ChoixProfilPage(),
             AppRoutes.connecter: (context) => const Login(),
             AppRoutes.authGoogleApple: (context) => const AuthGoogleApple(),
             AppRoutes.inscrire: (context) => InscriptionPage(),
-            AppRoutes.inscrire_vendeur: (context) => InscriptionVendeurPage(),
+            AppRoutes.inscrire_vendeur: (context) =>
+                InscriptionVendeurPage(),
             AppRoutes.forgotPassword: (context) => MotDePasseOublie(),
             AppRoutes.newPassword: (context) => CreeNouveauMotdepasse(),
             AppRoutes.musique: (context) => const MusiqueScreen(),
             AppRoutes.catalogue: (context) => const CatalogScreen(),
             AppRoutes.panier: (context) => const CartPage(),
             AppRoutes.admin_dash: (context) => const AdminDashboardPage(),
-            AppRoutes.choixmodepayemnt: (context) => const PaymentScreen(),
-            AppRoutes.profil_vendeur:(context)  => ProfileScreenUser(),
-            AppRoutes.profil_user:(context)  => ProfileScreenUser(),
-            AppRoutes.adminListeUsers: (context) => const UserListPage(),
-            AppRoutes.adminListeVendeurs: (context) => const VendeursListePage(),
-            AppRoutes.adminListeProduits: (context) => const ProduitsListePage(),
-            AppRoutes.adminListeCultures: (context) => const CulturesListePage(),
+            AppRoutes.choixmodepayemnt: (context) =>
+                const PaymentScreen(),
+            AppRoutes.profil_vendeur: (context) =>
+                ProfileScreenUser(),
+            AppRoutes.profil_user: (context) => ProfileScreenUser(),
+            AppRoutes.adminListeUsers: (context) =>
+                const UserListPage(),
+            AppRoutes.adminListeVendeurs: (context) =>
+                const VendeursListePage(),
+            AppRoutes.adminListeProduits: (context) =>
+                const ProduitsListePage(),
+            AppRoutes.adminListeCultures: (context) =>
+                const CulturesListePage(),
             AppRoutes.adminprofile: (context) => const adminprofile(),
-            AppRoutes.bienvenue_acheteur: (context) => const BienvenueAcheteur(),
-            AppRoutes.bienvenue_vendeur: (context) => const BienvenueVendeur(),
+            AppRoutes.bienvenue_acheteur: (context) =>
+                const BienvenueAcheteur(),
+            AppRoutes.bienvenue_vendeur: (context) =>
+                const BienvenueVendeur(),
           },
+
           theme: buildLightTheme(),
           darkTheme: buildDarkTheme(),
           themeMode: themeStore.mode,
         );
-      }
+      },
     );
   }
 }

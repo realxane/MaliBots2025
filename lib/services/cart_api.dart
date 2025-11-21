@@ -1,193 +1,262 @@
-// lib/services/cart_api.dart
-import 'dart:async';
 import 'dart:convert';
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart'; // compute
 import 'package:malibots_challenge_eni/services/auth_storage.dart';
+import 'package:malibots_challenge_eni/utils/image_urls.dart';
+
+class ServerCartItem {
+  final String itemId;
+  final String produitId;
+  final String nom;
+  final int price; // prix unitaire en FCFA (int)
+  final int quantite;
+  final String imageUrlBest;
+
+  ServerCartItem({
+    required this.itemId,
+    required this.produitId,
+    required this.nom,
+    required this.price,
+    required this.quantite,
+    required this.imageUrlBest,
+  });
+}
+
+class ServerCart {
+  final String id;
+  final String acheteurId;
+  final List<ServerCartItem> items;
+  final int nbItems;
+  final int subtotal;
+
+  ServerCart({
+    required this.id,
+    required this.acheteurId,
+    required this.items,
+    required this.nbItems,
+    required this.subtotal,
+  });
+}
 
 class CartApi {
   CartApi({required this.baseUrl, AuthStorage? storage})
       : _storage = storage ?? AuthStorage();
 
-  final String baseUrl; // ex: "http://192.168.1.103:8000/api"
+  final String baseUrl;
   final AuthStorage _storage;
 
-  static const Duration _defaultTimeout = Duration(seconds: 10);
-
-  Future<Map<String, String>> _headers() async {
+  Future<Map<String, String>> _authHeaders() async {
     final token = await _storage.readToken();
+    String? auth;
+    if (token != null && token.isNotEmpty) {
+      final t = token.trim();
+      auth = t.toLowerCase().startsWith('bearer ') ? t : 'Bearer $t';
+    }
+
     return {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
-      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+      if (auth != null) 'Authorization': auth,
     };
   }
 
-  // ---------- Parsing asynchrone pour fluidité ----------
-  Future<ApiCart> _parseCartAsync(String body) {
-    return compute(_parseCartImpl, body);
+  // ------------ parsing helpers ------------
+
+  int _intFrom(dynamic v) {
+    if (v == null) return 0;
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    if (v is String) return int.tryParse(v.split('.').first) ?? 0;
+    return 0;
   }
 
-  static ApiCart _parseCartImpl(String body) {
-    final json = jsonDecode(body);
-    return ApiCart.fromJson(json);
+  double _doubleFrom(dynamic v) {
+    if (v == null) return 0;
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v) ?? 0;
+    return 0;
   }
 
-  Future<ApiCart> getCart() async {
-    final uri = Uri.parse('$baseUrl/acheteur/panier');
-    final res = await http
-        .get(uri, headers: await _headers())
-        .timeout(_defaultTimeout);
-    if (res.statusCode == 200) {
-      return _parseCartAsync(res.body);
+  ServerCart _parseCart(Map<String, dynamic> json) {
+    final itemsJson = (json['items'] as List?) ?? const [];
+    final items = <ServerCartItem>[];
+
+    for (final raw in itemsJson) {
+      if (raw is! Map<String, dynamic>) continue;
+
+      final produit = (raw['produit'] as Map?) ?? const {};
+      final produitId = (raw['produitId'] ?? produit['id'] ?? '').toString();
+      final nom = (produit['nom'] ?? 'Article').toString();
+
+      // prixUnitaire vient comme string "2500.00"
+      final prixUnitaire = _doubleFrom(raw['prixUnitaire']);
+      final priceInt = prixUnitaire.round();
+
+      // imageUrl éventuellement relative -> normalizeImageRef
+      final rawImage = (produit['imageUrl'] ?? '').toString();
+      final normalized = normalizeImageRef(rawImage);
+
+      items.add(
+        ServerCartItem(
+          itemId: (raw['id'] ?? '').toString(),
+          produitId: produitId,
+          nom: nom,
+          price: priceInt,
+          quantite: _intFrom(raw['quantite']),
+          imageUrlBest: normalized,
+        ),
+      );
     }
-    throw Exception('HTTP ${res.statusCode}: ${res.body}');
+
+    final subtotalDouble = _doubleFrom(json['subtotal']);
+    final subtotalInt = subtotalDouble.round();
+
+    return ServerCart(
+      id: (json['id'] ?? '').toString(),
+      acheteurId: (json['acheteurId'] ?? '').toString(),
+      items: items,
+      nbItems: _intFrom(json['nbItems']),
+      subtotal: subtotalInt,
+    );
   }
 
-  // POST /acheteur/panier/items
-  Future<ApiCart> addItem({
+  Map<String, dynamic> _extractCartJson(dynamic body) {
+    if (body is! Map<String, dynamic>) {
+      throw Exception('Réponse panier inattendue');
+    }
+
+    // Plusieurs formats possibles côté Laravel
+    if (body['items'] is List) {
+      // { id, acheteurId, items: [...] }
+      return body;
+    }
+    if (body['panier'] is Map<String, dynamic>) {
+      return body['panier'] as Map<String, dynamic>;
+    }
+    if (body['cart'] is Map<String, dynamic>) {
+      return body['cart'] as Map<String, dynamic>;
+    }
+    if (body['data'] is Map<String, dynamic>) {
+      final data = body['data'] as Map<String, dynamic>;
+      if (data['items'] is List) return data;
+    }
+
+    throw Exception('Structure de panier non reconnue: $body');
+  }
+
+  // ------------ endpoints ------------
+
+  /// GET /acheteur/panier
+  Future<ServerCart> getCart() async {
+    final uri = Uri.parse('$baseUrl/acheteur/panier');
+    debugPrint('🧺 [CART] GET $uri');
+
+    final res = await http
+        .get(uri, headers: await _authHeaders())
+        .timeout(const Duration(seconds: 20));
+
+    if (res.statusCode == 401 || res.statusCode == 403) {
+      throw Exception('Non autorisé pour /acheteur/panier (${res.statusCode})');
+    }
+    if (res.statusCode != 200) {
+      throw Exception(
+          'Erreur ${res.statusCode} sur /acheteur/panier: ${res.body}');
+    }
+
+    final raw = res.body.isEmpty ? {} : jsonDecode(res.body);
+    final cartJson = _extractCartJson(raw);
+
+    return _parseCart(cartJson);
+  }
+
+  /// POST /acheteur/panier/items
+  Future<ServerCart> addItem({
     required String produitId,
     required int quantite,
-    num? prixUnitaire,
   }) async {
     final uri = Uri.parse('$baseUrl/acheteur/panier/items');
-    final payload = <String, dynamic>{
+    final payload = {
       'produitId': produitId,
       'quantite': quantite,
-      if (prixUnitaire != null) 'prixUnitaire': prixUnitaire,
     };
-    final res = await http
-        .post(uri, headers: await _headers(), body: jsonEncode(payload))
-        .timeout(_defaultTimeout);
+    debugPrint('🧺 [CART] POST $uri body=$payload');
 
-    if (res.statusCode == 200 || res.statusCode == 201) {
-      return _parseCartAsync(res.body);
+    final res = await http
+        .post(
+          uri,
+          headers: await _authHeaders(),
+          body: jsonEncode(payload),
+        )
+        .timeout(const Duration(seconds: 20));
+
+    if (res.statusCode == 401 || res.statusCode == 403) {
+      throw Exception('Non autorisé pour POST /acheteur/panier/items');
     }
-    throw Exception('HTTP ${res.statusCode}: ${res.body}');
+    if (res.statusCode != 201 && res.statusCode != 200) {
+      throw Exception(
+          'Erreur ${res.statusCode} sur POST /acheteur/panier/items: ${res.body}');
+    }
+
+    // 1) On essaie d'extraire un panier directement de la réponse
+    try {
+      final raw = res.body.isEmpty ? {} : jsonDecode(res.body);
+      final cartJson = _extractCartJson(raw);
+      return _parseCart(cartJson);
+    } catch (e, st) {
+      debugPrint('🧺 [CART] Impossible de parser la réponse POST comme panier: $e\n$st');
+    }
+
+    // 2) Fallback : on recharge le panier complet
+    debugPrint('🧺 [CART] POST sans panier exploitable, fallback GET /acheteur/panier');
+    return getCart();
   }
 
-  // PATCH /acheteur/panier/items/{item}
-  Future<ApiCart> updateItemQty({
+  /// PATCH /acheteur/panier/items/{item}
+  Future<ServerCart> updateItemQty({
     required String itemId,
     required int quantite,
   }) async {
     final uri = Uri.parse('$baseUrl/acheteur/panier/items/$itemId');
     final payload = {'quantite': quantite};
-    final res = await http
-        .patch(uri, headers: await _headers(), body: jsonEncode(payload))
-        .timeout(_defaultTimeout);
+    debugPrint('🧺 [CART] PATCH $uri body=$payload');
 
-    if (res.statusCode == 200) {
-      return _parseCartAsync(res.body);
+    final res = await http
+        .patch(uri,
+            headers: await _authHeaders(), body: jsonEncode(payload))
+        .timeout(const Duration(seconds: 20));
+
+    if (res.statusCode == 401 || res.statusCode == 403) {
+      throw Exception('Non autorisé pour PATCH /acheteur/panier/items/$itemId');
     }
-    throw Exception('HTTP ${res.statusCode}: ${res.body}');
+    if (res.statusCode != 200) {
+      throw Exception(
+          'Erreur ${res.statusCode} sur PATCH /acheteur/panier/items/$itemId: ${res.body}');
+    }
+
+    final raw = res.body.isEmpty ? {} : jsonDecode(res.body);
+    final cartJson = _extractCartJson(raw);
+
+    return _parseCart(cartJson);
   }
 
-  // DELETE /acheteur/panier/items/{item}
+  /// DELETE /acheteur/panier/items/{item}
   Future<void> removeItem({required String itemId}) async {
     final uri = Uri.parse('$baseUrl/acheteur/panier/items/$itemId');
-    final res =
-        await http.delete(uri, headers: await _headers()).timeout(_defaultTimeout);
+    debugPrint('🧺 [CART] DELETE $uri');
+
+    final res = await http
+        .delete(uri, headers: await _authHeaders())
+        .timeout(const Duration(seconds: 20));
+
+    if (res.statusCode == 401 || res.statusCode == 403) {
+      throw Exception(
+          'Non autorisé pour DELETE /acheteur/panier/items/$itemId');
+    }
     if (res.statusCode != 204 && res.statusCode != 200) {
-      throw Exception('HTTP ${res.statusCode}: ${res.body}');
+      throw Exception(
+          'Erreur ${res.statusCode} sur DELETE /acheteur/panier/items/$itemId: ${res.body}');
     }
-  }
-
-  // DELETE /acheteur/panier (vider)
-  Future<void> clear() async {
-    final uri = Uri.parse('$baseUrl/acheteur/panier');
-    final res =
-        await http.delete(uri, headers: await _headers()).timeout(_defaultTimeout);
-    if (res.statusCode != 204 && res.statusCode != 200) {
-      throw Exception('HTTP ${res.statusCode}: ${res.body}');
-    }
-  }
-}
-
-// ---------------- DTOs Panier ----------------
-
-class ApiCart {
-  ApiCart({required this.items});
-  final List<ApiCartItem> items;
-
-  factory ApiCart.fromJson(Map<String, dynamic> json) {
-    final root = (json['data'] is Map) ? json['data'] as Map<String, dynamic> : json;
-    final rawItems = (root['items'] is List) ? (root['items'] as List) : const [];
-    final parsed = <ApiCartItem>[];
-    for (final e in rawItems) {
-      if (e is Map<String, dynamic>) {
-        parsed.add(ApiCartItem.fromJson(e));
-      }
-    }
-    return ApiCart(items: parsed);
-  }
-}
-
-class ApiCartItem {
-  ApiCartItem({
-    required this.itemId,
-    required this.produitId,
-    required this.quantite,
-    required this.nom,
-    required this.price,          // int (FCFA)
-    required this.imageUrlBest,   // asset ou URL
-  });
-
-  final String itemId;     // id PanierItem côté serveur
-  final String produitId;
-  final int quantite;
-  final String nom;
-  final int price;
-  final String imageUrlBest;
-
-  factory ApiCartItem.fromJson(Map<String, dynamic> j) {
-    String _s(dynamic v) => v == null ? '' : v.toString();
-
-    int _i(dynamic v) {
-      if (v == null) return 0;
-      if (v is int) return v;
-      if (v is num) return v.round();
-      if (v is String) {
-        // Nettoyage: garde chiffres, signes et séparateurs, puis parse décimal
-        final cleaned = v.replaceAll(RegExp(r'[^\d,.\-]'), '');
-        if (cleaned.isEmpty) return 0;
-        final normalized = cleaned.replaceAll(',', '.');
-        final d = double.tryParse(normalized);
-        return d?.round() ?? int.tryParse(cleaned.replaceAll(RegExp(r'\D'), '')) ?? 0;
-      }
-      return 0;
-    }
-
-    final produit = (j['produit'] is Map) ? j['produit'] as Map<String, dynamic> : const {};
-
-    // Recherche d'une image plausible
-    String firstImage(Map p) {
-      String _saf(dynamic v) => v == null ? '' : v.toString();
-      final fiu = _saf(p['firstImageUrl'] ?? p['first_image_url']);
-      if (fiu.isNotEmpty) return fiu;
-      final compat = _saf(p['imageUrl'] ?? p['image_url']);
-      if (compat.isNotEmpty) return compat;
-      final imgs = p['images'];
-      if (imgs is List && imgs.isNotEmpty) {
-        final any = imgs.first;
-        if (any is String) return any;
-        if (any is Map && any['url'] != null) return _saf(any['url']);
-      }
-      return '';
-    }
-
-    // Champs possibles selon API
-    final prixUnitaire = _i(j['prixUnitaire'] ?? j['prix_unitaire']);
-    final prixProduit =
-        _i(produit['prix'] ?? produit['prixVente'] ?? produit['prix_vente'] ?? j['prix']);
-
-    return ApiCartItem(
-      itemId: _s(j['id'] ?? j['itemId'] ?? j['item_id']),
-      produitId: _s(j['produitId'] ?? j['produit_id'] ?? produit['id']),
-      quantite: _i(j['quantite'] ?? j['qty'] ?? j['quantity']),
-      nom: _s(produit['nom'] ?? j['nom'] ?? produit['designation'] ?? 'Produit'),
-      price: prixUnitaire != 0 ? prixUnitaire : prixProduit,
-      imageUrlBest: firstImage(produit),
-    );
   }
 }

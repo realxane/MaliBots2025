@@ -11,13 +11,15 @@ import 'package:malibots_challenge_eni/utils/image_urls.dart';
 
 const Color bogolan = Color(0xFF7B3F00);
 
-// ImageProvider générique pour l’aperçu (réseau/fichier)
+// helpers
 bool _isHttp(String s) => s.startsWith('http://') || s.startsWith('https://');
 
 ImageProvider<Object> imageProviderFrom(String raw) {
   final p = normalizeImageRef(raw.trim());
   if (_isHttp(p)) return NetworkImage(p);
-  if (p.startsWith('file://')) return FileImage(File(Uri.parse(p).toFilePath()));
+  if (p.startsWith('file://')) {
+    return FileImage(File(Uri.parse(p).toFilePath()));
+  }
   return FileImage(File(p));
 }
 
@@ -43,7 +45,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
   String _category = 'Habit';
   String _color = 'Bogolan';
 
-  // On stocke des chemins de fichiers OU des URL http(s) (déjà normalisées)
+  // chemins de fichiers OU URLs http(s)
   List<String> _images = [];
 
   List<RegionRef> _regions = [];
@@ -60,11 +62,15 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     final p = widget.product;
     _nameC = TextEditingController(text: p?.nom ?? '');
     _descC = TextEditingController(text: p?.description ?? '');
-    _priceC = TextEditingController(text: p?.prix != null ? p!.prix!.toStringAsFixed(0) : '');
-    _stockC = TextEditingController(text: p?.stock != null ? p!.stock!.toString() : '1');
+    _priceC = TextEditingController(
+      text: p?.prix != null ? p!.prix!.toStringAsFixed(0) : '',
+    );
+    _stockC = TextEditingController(
+      text: p?.stock != null ? p!.stock!.toString() : '1',
+    );
     _category = p?.categorie ?? _category;
 
-    // Normalise d’emblée si on arrive en mode édition
+    // normalisation si édition
     _images = (p?.images ?? const []).map(normalizeImageRef).toList();
 
     _loadRegions(initialRegionLabel: p?.regionName ?? p?.regionId);
@@ -89,8 +95,10 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
       final bytes = await xf.readAsBytes();
       final name = xf.name;
       final dot = name.lastIndexOf('.');
-      final ext = (dot != -1 && dot < name.length - 1) ? name.substring(dot + 1) : 'jpg';
-      final fname = 'picked_${DateTime.now().millisecondsSinceEpoch}_${_rng.nextInt(1 << 32)}.$ext';
+      final ext =
+          (dot != -1 && dot < name.length - 1) ? name.substring(dot + 1) : 'jpg';
+      final fname =
+          'picked_${DateTime.now().millisecondsSinceEpoch}_${_rng.nextInt(1 << 32)}.$ext';
       final file = File('${Directory.systemTemp.path}/$fname');
       await file.writeAsBytes(bytes, flush: true);
       return file.path;
@@ -138,7 +146,8 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
   // ----------------- Sélection images
   Future<void> _pickImages() async {
     try {
-      final List<XFile>? picked = await _picker.pickMultiImage(imageQuality: 85);
+      final List<XFile>? picked =
+          await _picker.pickMultiImage(imageQuality: 85);
       if (picked == null || picked.isEmpty) return;
 
       final List<String> newPaths = [];
@@ -148,8 +157,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
       }
       if (!mounted) return;
       setState(() {
-        // évite les doublons
-        _images = {..._images, ...newPaths}.toList();
+        _images = {..._images, ...newPaths}.toList(); // évite doublons
       });
     } catch (e) {
       if (!mounted) return;
@@ -186,7 +194,8 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     if (token == null || token.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Session expirée. Veuillez vous reconnecter.')),
+        const SnackBar(
+            content: Text('Session expirée. Veuillez vous reconnecter.')),
       );
       return;
     }
@@ -227,18 +236,30 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
 
       if (!mounted) return;
 
-      // Normalise TOUTES les URLs d’images renvoyées par le serveur
+      // Normalise toutes les URLs d’images renvoyées par le serveur
       final Produit fixedServerProduct = serverProduct.copyWith(
         images: serverProduct.images.map(normalizeImageRef).toList(),
+        firstImageUrl: serverProduct.firstImageUrl != null
+            ? normalizeImageRef(serverProduct.firstImageUrl!)
+            : serverProduct.firstImageUrl,
       );
 
-      final hasServerImages = fixedServerProduct.images.isNotEmpty;
+      // Si jamais le backend ne renvoie pas encore d’images,
+      // on garde les chemins locaux pour l’UI immédiate
+      final hasServerImages = fixedServerProduct.images.isNotEmpty ||
+          (fixedServerProduct.firstImageUrl != null &&
+              fixedServerProduct.firstImageUrl!.isNotEmpty);
+
       final Produit productForUi =
-          hasServerImages ? fixedServerProduct : fixedServerProduct.copyWith(images: _images);
+          hasServerImages ? fixedServerProduct : fixedServerProduct.copyWith(
+            images: _images,
+          );
 
       Navigator.of(context, rootNavigator: true).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(isEdit ? 'Produit mis à jour' : 'Produit publié')),
+        SnackBar(
+            content:
+                Text(isEdit ? 'Produit mis à jour' : 'Produit publié')),
       );
 
       if (mounted) {
@@ -287,7 +308,8 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Ajouter les images', style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text('Ajouter les images',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         SizedBox(
           height: 120,
@@ -308,7 +330,8 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                     border: Border.all(color: bogolan.withOpacity(0.2)),
                   ),
                   child: const Center(
-                    child: Icon(Icons.add_a_photo_outlined, color: bogolan, size: 36),
+                    child: Icon(Icons.add_a_photo_outlined,
+                        color: bogolan, size: 36),
                   ),
                 ),
               ),
@@ -336,7 +359,12 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     final regionField = DropdownButtonFormField<RegionRef>(
       value: _selectedRegion,
       decoration: _inputDecoration('Région'),
-      items: _regions.map((r) => DropdownMenuItem<RegionRef>(value: r, child: Text(r.name))).toList(),
+      items: _regions
+          .map((r) => DropdownMenuItem<RegionRef>(
+                value: r,
+                child: Text(r.name),
+              ))
+          .toList(),
       onChanged: _regionsLoading ? null : (v) => setState(() => _selectedRegion = v),
       validator: (_) => _selectedRegion == null ? 'Requis' : null,
     );
@@ -348,7 +376,8 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
             child: const SizedBox(
               width: 18,
               height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2, color: bogolan),
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: bogolan),
             ),
           )
         : const SizedBox.shrink();
@@ -368,7 +397,10 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
               child: DropdownButtonFormField<String>(
                 value: _category,
                 decoration: _inputDecoration('Catégorie'),
-                items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                items: _categories
+                    .map(
+                        (c) => DropdownMenuItem(value: c, child: Text(c)))
+                    .toList(),
                 onChanged: (v) => setState(() => _category = v ?? _category),
               ),
             ),
@@ -379,11 +411,13 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
           Row(
             children: [
               const Expanded(
-                child: Text('Impossible de charger les régions.', style: TextStyle(color: Colors.red)),
+                child: Text('Impossible de charger les régions.',
+                    style: TextStyle(color: Colors.red)),
               ),
               TextButton(
                 onPressed: () => _loadRegions(
-                  initialRegionLabel: widget.product?.regionName ?? widget.product?.regionId,
+                  initialRegionLabel:
+                      widget.product?.regionName ?? widget.product?.regionId,
                 ),
                 child: const Text('Réessayer'),
               ),
@@ -419,27 +453,32 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                   TextFormField(
                     controller: _nameC,
                     decoration: _inputDecoration('Nom du produit'),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Requis' : null,
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Requis' : null,
                   ),
                   const SizedBox(height: 10),
                   TextFormField(
                     controller: _descC,
-                    decoration: _inputDecoration('Description du produit'),
+                    decoration:
+                        _inputDecoration('Description du produit'),
                     maxLines: 3,
                   ),
                   const SizedBox(height: 10),
                   TextFormField(
                     controller: _priceC,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     decoration: _inputDecoration('Prix du produit'),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Requis' : null,
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Requis' : null,
                   ),
                   const SizedBox(height: 10),
                   TextFormField(
                     controller: _stockC,
                     keyboardType: TextInputType.number,
                     decoration: _inputDecoration('Quantité en stock'),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Requis' : null,
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Requis' : null,
                   ),
                   const SizedBox(height: 10),
                   _buildRegionCategoryRow(),
@@ -447,7 +486,10 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                   DropdownButtonFormField<String>(
                     value: _color,
                     decoration: _inputDecoration('Couleur'),
-                    items: _colors.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                    items: _colors
+                        .map((c) =>
+                            DropdownMenuItem(value: c, child: Text(c)))
+                        .toList(),
                     onChanged: (v) => setState(() => _color = v ?? _color),
                   ),
                   const SizedBox(height: 18),
@@ -456,11 +498,14 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: bogolan,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                       onPressed: _submit,
-                      child: Text(isEdit ? 'Mettre à jour' : 'Publier', style: AppTextStyles.button),
+                      child: Text(isEdit ? 'Mettre à jour' : 'Publier',
+                          style: AppTextStyles.button),
                     ),
                   ),
                 ],

@@ -1,9 +1,7 @@
-// lib/screens/catalogue/app_panier.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/providers/product_store.dart';
-import 'package:malibots_challenge_eni/providers/favoris_store.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_produit_detail.dart';
 import 'package:malibots_challenge_eni/services/cart_api.dart';
@@ -35,9 +33,8 @@ class CartItem {
 
   String? serverItemId;
 
-  String get key => (color == null || color!.isEmpty)
-      ? productId
-      : '$productId|$color';
+  String get key =>
+      (color == null || color!.isEmpty) ? productId : '$productId|$color';
 }
 
 class CartController extends ChangeNotifier {
@@ -48,7 +45,8 @@ class CartController extends ChangeNotifier {
 
   List<CartItem> get items => _items.values.toList(growable: false);
 
-  int get total => _items.values.fold(0, (sum, it) => sum + it.price * it.qty);
+  int get total =>
+      _items.values.fold(0, (sum, it) => sum + it.price * it.qty);
 
   void clear() {
     _items.clear();
@@ -167,8 +165,8 @@ class _CartPageState extends State<CartPage> {
   @override
   void initState() {
     super.initState();
-    // Lance l’hydratation après le premier frame (context prêt)
-    WidgetsBinding.instance.addPostFrameCallback((_) => _hydrateFromServer());
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _hydrateFromServer());
   }
 
   @override
@@ -203,7 +201,9 @@ class _CartPageState extends State<CartPage> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(child: Text('Erreur de synchronisation: $_error'))
+              ? Center(
+                  child: Text('Erreur de synchronisation: $_error'),
+                )
               : AnimatedBuilder(
                   animation: CartController.I,
                   builder: (context, _) {
@@ -218,9 +218,11 @@ class _CartPageState extends State<CartPage> {
                       children: [
                         Expanded(
                           child: ListView.separated(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 8),
                             itemCount: items.length,
-                            separatorBuilder: (_, __) => const Divider(height: 1),
+                            separatorBuilder: (_, __) =>
+                                const Divider(height: 1),
                             itemBuilder: (context, index) {
                               final it = items[index];
                               return _CartRow(item: it, accent: accent);
@@ -299,9 +301,25 @@ class _CartRow extends StatelessWidget {
 
     Widget _image(String path) {
       final isUrl = path.startsWith('http');
-      final img = isUrl
-          ? Image.network(path, width: 88, height: 88, fit: BoxFit.cover)
-          : Image.asset(path, width: 88, height: 88, fit: BoxFit.cover);
+      final Widget img = isUrl
+          ? Image.network(
+              path,
+              width: 88,
+              height: 88,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Image.asset(
+                'assets/placeholder.png',
+                width: 88,
+                height: 88,
+                fit: BoxFit.cover,
+              ),
+            )
+          : Image.asset(
+              path,
+              width: 88,
+              height: 88,
+              fit: BoxFit.cover,
+            );
       return ClipRRect(
         borderRadius: BorderRadius.circular(6),
         child: img,
@@ -314,7 +332,8 @@ class _CartRow extends StatelessWidget {
         onTap: _openDetails,
         borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -331,13 +350,16 @@ class _CartRow extends StatelessWidget {
                             item.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                         IconButton(
                           visualDensity: VisualDensity.compact,
                           padding: const EdgeInsets.all(4),
-                          icon: Icon(Icons.close, color: cs.onSurfaceVariant),
+                          icon: Icon(Icons.close,
+                              color: cs.onSurfaceVariant),
                           onPressed: () async {
                             final old = item.qty;
                             CartController.I.remove(key);
@@ -353,8 +375,12 @@ class _CartRow extends StatelessWidget {
                                 qty: old,
                                 serverItemId: item.serverItemId,
                               );
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Erreur suppression: $e')),
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(
+                                SnackBar(
+                                  content:
+                                      Text('Erreur suppression: $e'),
+                                ),
                               );
                             }
                           },
@@ -373,16 +399,23 @@ class _CartRow extends StatelessWidget {
                               height: 12,
                               decoration: BoxDecoration(
                                 color: swatch,
-                                borderRadius: BorderRadius.circular(2),
-                                border: Border.all(color: cs.outlineVariant),
+                                borderRadius:
+                                    BorderRadius.circular(2),
+                                border: Border.all(
+                                  color: cs.outlineVariant,
+                                ),
                               ),
                             )
                           else
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
-                                border: Border.all(color: cs.outlineVariant),
+                                border: Border.all(
+                                  color: cs.outlineVariant,
+                                ),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -397,7 +430,8 @@ class _CartRow extends StatelessWidget {
                       children: [
                         Text(
                           'Prix : ${_formatMoney(item.price)}',
-                          style: const TextStyle(fontWeight: FontWeight.w500),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w500),
                         ),
                         const Spacer(),
                         _QtyControl(
@@ -411,7 +445,8 @@ class _CartRow extends StatelessWidget {
                               await _serverUpdateQty(newQty);
                             } catch (e) {
                               CartController.I.setQty(key, oldQty);
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(
                                 SnackBar(content: Text('Erreur: $e')),
                               );
                             }
@@ -424,7 +459,8 @@ class _CartRow extends StatelessWidget {
                               await _serverUpdateQty(newQty);
                             } catch (e) {
                               CartController.I.setQty(key, oldQty);
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(
                                 SnackBar(content: Text('Erreur: $e')),
                               );
                             }
@@ -467,14 +503,24 @@ class _QtyControl extends StatelessWidget {
           onTap: onMinus,
           child: Container(
             decoration: BoxDecoration(
-              border: Border(left: border, top: border, bottom: border),
+              border: Border(
+                left: border,
+                top: border,
+                bottom: border,
+              ),
               borderRadius: BorderRadius.only(
                 topLeft: radius.topLeft,
                 bottomLeft: radius.bottomLeft,
               ),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            child: Text('−', style: TextStyle(color: accent, fontSize: 16)),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 4,
+            ),
+            child: Text(
+              '−',
+              style: TextStyle(color: accent, fontSize: 16),
+            ),
           ),
         ),
         Container(
@@ -482,7 +528,10 @@ class _QtyControl extends StatelessWidget {
             color: accent,
             border: Border(top: border, bottom: border),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 4,
+          ),
           child: Text(
             '$qty',
             style: TextStyle(
@@ -495,14 +544,24 @@ class _QtyControl extends StatelessWidget {
           onTap: onPlus,
           child: Container(
             decoration: BoxDecoration(
-              border: Border(right: border, top: border, bottom: border),
+              border: Border(
+                right: border,
+                top: border,
+                bottom: border,
+              ),
               borderRadius: BorderRadius.only(
                 topRight: radius.topRight,
                 bottomRight: radius.bottomRight,
               ),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            child: Text('+', style: TextStyle(color: accent, fontSize: 16)),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 4,
+            ),
+            child: Text(
+              '+',
+              style: TextStyle(color: accent, fontSize: 16),
+            ),
           ),
         ),
       ],
@@ -545,7 +604,10 @@ class _CartBottomBar extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Panier validé')),
                     );
-                    Navigator.pushNamed(context, AppRoutes.choixmodepayemnt);
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.choixmodepayemnt,
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accent,

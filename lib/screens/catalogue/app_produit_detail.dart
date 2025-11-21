@@ -1,4 +1,3 @@
-// lib/screens/catalogue/app_produit_detail.dart
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
@@ -10,7 +9,7 @@ import 'package:malibots_challenge_eni/screens/favoris/app_favoris.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:malibots_challenge_eni/services/cart_api.dart';
-import 'package:malibots_challenge_eni/utils/context_x.dart'; // <-- extension partagée
+import 'package:malibots_challenge_eni/utils/context_x.dart';
 
 class Comment {
   final String userName;
@@ -62,7 +61,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       _selectedColor = colors.first;
     }
     _comments = List<Comment>.from(
-      widget.comments ?? [Comment(userName: "Client", text: "Très bon produit !")],
+      widget.comments ??
+          [Comment(userName: "Client", text: "Très bon produit !")],
     );
   }
 
@@ -106,32 +106,36 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
         return Padding(
           padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 12,
-              bottom: MediaQuery.of(ctx).viewInsets.bottom + 16),
+            left: 16,
+            right: 16,
+            top: 12,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+          ),
           child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text('Ajouter un commentaire',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w700, color: accent)),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _commentCtrl,
-                  maxLines: 4,
-                  textInputAction: TextInputAction.done,
-                  decoration: const InputDecoration(
-                      hintText: 'Votre commentaire…',
-                      border: OutlineInputBorder()),
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Ajouter un commentaire',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w700, color: accent)),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _commentCtrl,
+                maxLines: 4,
+                textInputAction: TextInputAction.done,
+                decoration: const InputDecoration(
+                  hintText: 'Votre commentaire…',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 12),
-                Row(children: [
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
                   Expanded(
-                      child: OutlinedButton(
-                          onPressed: () => Navigator.of(ctx).pop(),
-                          child: const Text('Annuler'))),
+                    child: OutlinedButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: const Text('Annuler')),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
@@ -149,12 +153,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 content: Text('Commentaire ajouté')));
                       },
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: accent, foregroundColor: Colors.white),
+                          backgroundColor: accent,
+                          foregroundColor: Colors.white),
                       child: const Text('Publier'),
                     ),
                   ),
-                ]),
-              ]),
+                ],
+              ),
+            ],
+          ),
         );
       },
     );
@@ -175,7 +182,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     final store = context.watch<FavoritesStore>();
     final isFav = store.isProductFavorite(p.id);
-    final canCall = (p.sellerPhone != null && p.sellerPhone!.trim().isNotEmpty);
+    final canCall =
+        (p.sellerPhone != null && p.sellerPhone!.trim().isNotEmpty);
 
     return Scaffold(
       backgroundColor: surface,
@@ -183,16 +191,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         backgroundColor: surface,
         elevation: 0.5,
         title: Text(p.nom,
-            style: TextStyle(color: onSurface, fontWeight: FontWeight.w700)),
+            style:
+                TextStyle(color: onSurface, fontWeight: FontWeight.w700)),
         iconTheme: IconThemeData(color: onSurface),
         actions: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: OutlinedButton(
-              onPressed: canCall ? () => _callSeller(context, p.sellerPhone!) : null,
+              onPressed:
+                  canCall ? () => _callSeller(context, p.sellerPhone!) : null,
               style: OutlinedButton.styleFrom(
                 foregroundColor: accent,
-                backgroundColor: isDark ? cs.surfaceVariant : AppColors.textSecondary,
+                backgroundColor:
+                    isDark ? cs.surfaceVariant : AppColors.textSecondary,
                 side: BorderSide(color: accent),
                 shape: const StadiumBorder(),
               ),
@@ -205,106 +217,122 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ],
       ),
       body: SingleChildScrollView(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        child:
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           AspectRatio(
             aspectRatio: 16 / 9,
-            child: Stack(alignment: Alignment.bottomCenter, children: [
-              CarouselSlider(
-                items: _images
-                    .map((imgPath) => ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: _buildImage(imgPath),
-                        ))
-                    .toList(),
-                options: CarouselOptions(
-                  viewportFraction: 1,
-                  enlargeCenterPage: false,
-                  autoPlay: true,
-                  autoPlayInterval: const Duration(seconds: 4),
-                  onPageChanged: (index, reason) =>
-                      setState(() => _currentImage = index),
-                ),
-              ),
-              Positioned(
-                bottom: 8,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(_images.length, (index) {
-                    final active = index == _currentImage;
-                    return Container(
-                      width: active ? 22 : 8,
-                      height: 8,
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      decoration: BoxDecoration(
-                        color: active
-                            ? accent
-                            : (isDark
-                                ? cs.onSurfaceVariant
-                                : Colors.white.withOpacity(0.8)),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                            color: accent.withOpacity(0.5), width: 0.6),
-                      ),
-                    );
-                  }),
-                ),
-              ),
-            ]),
+            child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  CarouselSlider(
+                    items: _images
+                        .map((imgPath) => ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: _buildImage(imgPath),
+                            ))
+                        .toList(),
+                    options: CarouselOptions(
+                      viewportFraction: 1,
+                      enlargeCenterPage: false,
+                      autoPlay: true,
+                      autoPlayInterval: const Duration(seconds: 4),
+                      onPageChanged: (index, reason) =>
+                          setState(() => _currentImage = index),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 8,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(_images.length, (index) {
+                        final active = index == _currentImage;
+                        return Container(
+                          width: active ? 22 : 8,
+                          height: 8,
+                          margin:
+                              const EdgeInsets.symmetric(horizontal: 3),
+                          decoration: BoxDecoration(
+                            color: active
+                                ? accent
+                                : (isDark
+                                    ? cs.onSurfaceVariant
+                                    : Colors.white.withOpacity(0.8)),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: accent.withOpacity(0.5),
+                                width: 0.6),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                ]),
           ),
-
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Expanded(
-                    child: Text(p.nom,
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    Expanded(
+                      child: Text(
+                        p.nom,
                         style: TextStyle(
-                            fontSize: 22,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: accent,
+                        ),
+                      ),
+                    ),
+                    _Stars(rating: p.ratingSafe, color: Colors.amber),
+                  ]),
+                  const SizedBox(height: 6),
+                  Row(children: [
+                    Icon(Icons.place, color: accent, size: 18),
+                    const SizedBox(width: 6),
+                    Text(p.regionLabel,
+                        style: TextStyle(
+                            color: isDark
+                                ? cs.onSurface
+                                : accent.withOpacity(0.8))),
+                    const SizedBox(width: 12),
+                    Text('•',
+                        style: TextStyle(
+                            color: isDark
+                                ? cs.onSurfaceVariant
+                                : accent.withOpacity(0.5))),
+                    const SizedBox(width: 12),
+                    Icon(Icons.category, color: accent, size: 18),
+                    const SizedBox(width: 6),
+                    Text(p.typeUi,
+                        style: TextStyle(
+                            color: isDark
+                                ? cs.onSurface
+                                : accent.withOpacity(0.8))),
+                  ]),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Artisan: ${p.sellerName ?? p.artisan ?? '—'}',
+                    style:
+                        TextStyle(color: isDark ? cs.onSurface : accent),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(children: [
+                    Text('Prix : ${p.prixInt} F',
+                        style: TextStyle(
+                            fontSize: 18,
                             fontWeight: FontWeight.w800,
-                            color: accent))),
-                _Stars(rating: p.ratingSafe, color: Colors.amber),
-              ]),
-              const SizedBox(height: 6),
-              Row(children: [
-                Icon(Icons.place, color: accent, size: 18),
-                const SizedBox(width: 6),
-                Text(p.regionLabel,
-                    style: TextStyle(
-                        color: isDark ? cs.onSurface : accent.withOpacity(0.8))),
-                const SizedBox(width: 12),
-                Text('•',
-                    style: TextStyle(
-                        color: isDark
-                            ? cs.onSurfaceVariant
-                            : accent.withOpacity(0.5))),
-                const SizedBox(width: 12),
-                Icon(Icons.category, color: accent, size: 18),
-                const SizedBox(width: 6),
-                Text(p.typeUi,
-                    style: TextStyle(
-                        color: isDark ? cs.onSurface : accent.withOpacity(0.8))),
-              ]),
-              const SizedBox(height: 6),
-              Text(
-                'Artisan: ${p.sellerName ?? p.artisan ?? '—'}',
-                style: TextStyle(color: isDark ? cs.onSurface : accent),
-              ),
-              const SizedBox(height: 14),
-              Row(children: [
-                Text('Prix : ${p.prixInt} F',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: accent)),
-                const Spacer(),
-                Icon(isFav ? Icons.favorite : Icons.favorite_border, color: accent),
-                const SizedBox(width: 6),
-                Text('${p.likesSafe}',
-                    style: TextStyle(color: isDark ? cs.onSurface : accent)),
-              ]),
-            ]),
+                            color: accent)),
+                    const Spacer(),
+                    Icon(isFav ? Icons.favorite : Icons.favorite_border,
+                        color: accent),
+                    const SizedBox(width: 6),
+                    Text('${p.likesSafe}',
+                        style: TextStyle(
+                            color: isDark ? cs.onSurface : accent)),
+                  ]),
+                ]),
           ),
-
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text('Commentaires',
@@ -329,13 +357,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             CircleAvatar(
-                                backgroundColor: accent,
-                                foregroundColor: Colors.white,
-                                child: const Icon(Icons.person, size: 18)),
+                              backgroundColor: accent,
+                              foregroundColor: Colors.white,
+                              child:
+                                  const Icon(Icons.person, size: 18),
+                            ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
                                   children: [
                                     Text(c.userName,
                                         style: TextStyle(
@@ -358,121 +389,146 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           const SizedBox(height: 90),
         ]),
       ),
-
       bottomNavigationBar: SafeArea(
         child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          padding:
+              const EdgeInsets.fromLTRB(16, 8, 16, 16),
           color: surface,
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: _openAddCommentSheet,
-                icon: Icon(Icons.add_comment, color: accent),
-                label: Text('Ajouter un commentaire',
-                    style: TextStyle(
-                        color: accent, fontWeight: FontWeight.w600)),
-                style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: accent),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8))),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(children: [
-              OutlinedButton(
-                onPressed: () async {
-                  final store = context.read<FavoritesStore>();
-                  try {
-                    final added = await store.toggleProductRemote(p);
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text(added
-                              ? '${p.nom} ajouté aux favoris'
-                              : '${p.nom} retiré des favoris')),
-                    );
-                    if (added) {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const FavoritesPage()),
-                      );
-                    }
-                  } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Erreur: $e')));
-                    }
-                  }
-                },
-                style: OutlinedButton.styleFrom(
-                  shape: const CircleBorder(),
-                  side: BorderSide(color: accent),
-                  foregroundColor: accent,
-                  padding: const EdgeInsets.all(10),
-                ),
-                child: Icon(isFav ? Icons.favorite : Icons.favorite_border),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    final colorHex =
-                        _selectedColor != null ? _colorToHex(_selectedColor!) : null;
-                    final localKey = (colorHex == null || colorHex.isEmpty)
-                        ? p.id
-                        : '${p.id}|$colorHex';
-
-                    // Optimistic: ajout local + navigation immédiate
-                    CartController.I.addItem(
-                      productId: p.id,
-                      name: p.nom,
-                      color: colorHex,
-                      price: p.prixInt,
-                      assetImagePath: p.imageBest,
-                      qty: 1,
-                    );
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${p.nom} ajouté au panier')),
-                      );
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const CartPage()),
-                      );
-                    }
-
-                    // Réseau: attacher l'id serveur ensuite
-                    try {
-                      final api = CartApi(baseUrl: context.apiBaseUrl);
-                      final serverCart =
-                          await api.addItem(produitId: p.id, quantite: 1);
-                      final match = serverCart.items.firstWhere(
-                        (e) => e.produitId == p.id,
-                        orElse: () => serverCart.items.isNotEmpty
-                            ? serverCart.items.last
-                            : throw Exception('Item serveur introuvable'),
-                      );
-                      CartController.I.attachServerItemId(localKey, match.itemId);
-                    } catch (e) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Sync panier: $e')),
-                        );
-                      }
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: accent,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+          child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _openAddCommentSheet,
+                    icon: Icon(Icons.add_comment, color: accent),
+                    label: Text('Ajouter un commentaire',
+                        style: TextStyle(
+                            color: accent,
+                            fontWeight: FontWeight.w600)),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: accent),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
                   ),
-                  child: const Text('Ajouter au panier'),
                 ),
-              ),
-            ]),
-          ]),
+                const SizedBox(height: 12),
+                Row(children: [
+                  OutlinedButton(
+                    onPressed: () async {
+                      final store = context.read<FavoritesStore>();
+                      try {
+                        final added =
+                            await store.toggleProductRemote(p);
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(added
+                                ? '${p.nom} ajouté aux favoris'
+                                : '${p.nom} retiré des favoris'),
+                          ),
+                        );
+                        if (added) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const FavoritesPage()),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Erreur: $e')),
+                          );
+                        }
+                      }
+                    },
+                    style: OutlinedButton.styleFrom(
+                      shape: const CircleBorder(),
+                      side: BorderSide(color: accent),
+                      foregroundColor: accent,
+                      padding: const EdgeInsets.all(10),
+                    ),
+                    child: Icon(
+                        isFav ? Icons.favorite : Icons.favorite_border),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final colorHex = _selectedColor != null
+                            ? _colorToHex(_selectedColor!)
+                            : null;
+                        final localKey =
+                            (colorHex == null || colorHex.isEmpty)
+                                ? p.id
+                                : '${p.id}|$colorHex';
+
+                        // Optimistic: ajout local + navigation immédiate
+                        CartController.I.addItem(
+                          productId: p.id,
+                          name: p.nom,
+                          color: colorHex,
+                          price: p.prixInt,
+                          assetImagePath: p.imageBest,
+                          qty: 1,
+                        );
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(
+                                    '${p.nom} ajouté au panier')),
+                          );
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => const CartPage()),
+                          );
+                        }
+
+                        // Réseau: attacher l'id serveur ensuite (non bloquant)
+                        try {
+                          final api =
+                              CartApi(baseUrl: context.apiBaseUrl);
+                          final serverCart = await api.addItem(
+                              produitId: p.id, quantite: 1);
+
+                          if (serverCart.items.isEmpty) {
+                            debugPrint(
+                                '🧺 [CART] Panier vide après addItem, on laisse tel quel');
+                            return;
+                          }
+
+                          final match = serverCart.items.firstWhere(
+                            (e) => e.produitId == p.id,
+                            orElse: () => serverCart.items.last,
+                          );
+                          CartController.I.attachServerItemId(
+                              localKey, match.itemId);
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      'Sync panier (non bloquant): $e')),
+                            );
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('Ajouter au panier'),
+                    ),
+                  ),
+                ]),
+              ]),
         ),
       ),
     );
@@ -483,6 +539,7 @@ class _Stars extends StatelessWidget {
   final double rating; // 0..5
   final Color color;
   const _Stars({required this.rating, required this.color});
+
   @override
   Widget build(BuildContext context) {
     final full = rating.floor();
@@ -490,7 +547,9 @@ class _Stars extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (i) {
-        if (i < full) return Icon(Icons.star, color: color, size: 20);
+        if (i < full) {
+          return Icon(Icons.star, color: color, size: 20);
+        }
         if (i == full && hasHalf) {
           return Icon(Icons.star_half, color: color, size: 20);
         }
@@ -503,13 +562,13 @@ class _Stars extends StatelessWidget {
 Future<void> _callSeller(BuildContext context, String phone) async {
   final cleaned = phone.replaceAll(RegExp(r'[^0-9+]'), '');
   if (cleaned.isEmpty) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Numéro indisponible')));
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Numéro indisponible')));
     return;
   }
   final uri = Uri(scheme: 'tel', path: cleaned);
   if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Impossible d’ouvrir l’app Téléphone')));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Impossible d’ouvrir l’app Téléphone')));
   }
 }

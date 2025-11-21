@@ -3,17 +3,20 @@ import 'dart:math';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'package:malibots_challenge_eni/constants/app_text_styles.dart';
 import 'package:malibots_challenge_eni/models/product.dart';
 import 'package:malibots_challenge_eni/screens/home/vendeurpages/modifie_produit.dart';
-// IMPORTANT: on utilise la normalisation centralisée
+import 'package:malibots_challenge_eni/services/produit_service.dart';
+// normalisation partagée
 import 'package:malibots_challenge_eni/utils/image_urls.dart';
 
 const Color bogolan = Color(0xFF7B3F00);
 const Color accent = Color(0xFFCC4B00);
 const Color pale = Color(0xFFF2E9D0);
 
-// Helpers locaux (pas d’URL mapping ici: c’est dans utils/image_urls.dart)
+// Helpers locaux
 bool _isHttp(String s) => s.startsWith('http://') || s.startsWith('https://');
 bool _isFilePath(String s) => s.startsWith('/') || s.startsWith('file://');
 bool _isAsset(String s) => s.startsWith('assets/');
@@ -25,7 +28,8 @@ Uint8List? tryDecodeInlineImage(String src) {
       final base64Part = src.split(',').last;
       return base64Decode(base64Part);
     }
-    if (src.length > 100 && RegExp(r'^[A-Za-z0-9+/=\r\n]+$').hasMatch(src)) {
+    if (src.length > 100 &&
+        RegExp(r'^[A-Za-z0-9+/=\r\n]+$').hasMatch(src)) {
       return base64Decode(src);
     }
     return null;
@@ -35,7 +39,6 @@ Uint8List? tryDecodeInlineImage(String src) {
 }
 
 ImageProvider<Object>? tryImageProvider(String raw) {
-  // Toujours normaliser via le module partagé
   final p = normalizeImageRef(raw.trim());
   if (p.isEmpty) return null;
 
@@ -62,21 +65,8 @@ class SellerDashboardScreen extends StatefulWidget {
 }
 
 class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
-  // Données locales de démo – en vrai, elles viennent de ton backend
-  List<Produit> products = [
-    Produit(
-      id: 'p1',
-      nom: 'Bazin traditionnel',
-      description: 'Tissu bazin du sud, haute qualité',
-      prix: 18000,
-      stock: 10,
-      images: const [], // vide -> placeholder
-      regionName: 'Bamako',
-      categorie: 'Habit',
-    ),
-  ];
-
-  final Map<String, String> _uiColors = {'p1': 'Bogolan'};
+  List<Produit> products = [];
+  final Map<String, String> _uiColors = {};
 
   int ventes = 120;
   int favoris = 80;
@@ -84,6 +74,39 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
   int avis = 30;
 
   final Random _random = Random();
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final service = context.read<ProduitService>();
+      final list = await service.fetchMyProducts(perPage: 100);
+
+      setState(() {
+        products = list;
+        // couleur par défaut
+        for (final p in list) {
+          _uiColors[p.id] = _uiColors[p.id] ?? 'Bogolan';
+        }
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
 
   Future<void> _openAdd() async {
     final res = await Navigator.push<Produit?>(
@@ -91,11 +114,8 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
       MaterialPageRoute(builder: (_) => const AddEditProductScreen()),
     );
     if (res != null) {
-      final normalized = res.copyWith(images: res.images.map(normalizeImageRef).toList());
-      setState(() {
-        products.insert(0, normalized);
-        _uiColors[normalized.id] = _uiColors[normalized.id] ?? 'Bogolan';
-      });
+      // On recharge depuis le backend pour rester cohérent
+      await _loadProducts();
     }
   }
 
@@ -105,12 +125,7 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
       MaterialPageRoute(builder: (_) => AddEditProductScreen(product: p)),
     );
     if (res != null) {
-      final normalized = res.copyWith(images: res.images.map(normalizeImageRef).toList());
-      setState(() {
-        final idx = products.indexWhere((e) => e.id == p.id);
-        if (idx >= 0) products[idx] = normalized;
-        _uiColors[normalized.id] = _uiColors[normalized.id] ?? 'Bogolan';
-      });
+      await _loadProducts();
     }
   }
 
@@ -133,6 +148,8 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                 _uiColors.remove(p.id);
               });
               Navigator.pop(context);
+              // Optionnel: appeler le backend pour supprimer réellement
+              // via ProduitService (non inclus ici).
             },
             child: const Text('Supprimer'),
           ),
@@ -162,12 +179,8 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
 
   // -------- Helpers images
   String _bestImage(Produit p) {
-    if (p.images.isEmpty) return '';
-    for (final s in p.images) {
-      final v = s.trim();
-      if (v.isNotEmpty) return v;
-    }
-    return '';
+    // Utilise le getter défini dans extension ProduitUi
+    return p.imageBest.trim();
   }
 
   Widget _placeholderImg({double w = 85, double h = 85}) => Image.asset(
@@ -187,7 +200,8 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
 
     final provider = tryImageProvider(best);
     if (provider == null) {
-      debugPrint('⚠️ ${p.id}: référence image non supportée "$best" -> placeholder');
+      debugPrint(
+          '⚠️ ${p.id}: référence image non supportée "$best" -> placeholder');
       return _placeholderImg(w: w, h: h);
     }
 
@@ -198,7 +212,8 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
       fit: BoxFit.cover,
       key: ValueKey('img_${p.id}_$best'),
       errorBuilder: (_, err, ___) {
-        debugPrint('❌ ${p.id}: échec rendu image "$best": $err -> placeholder');
+        debugPrint(
+            '❌ ${p.id}: échec rendu image "$best": $err -> placeholder');
         return _placeholderImg(w: w, h: h);
       },
     );
@@ -236,7 +251,8 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                   Wrap(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.brown.shade50,
                           borderRadius: BorderRadius.circular(8),
@@ -244,8 +260,15 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                         child: DropdownButton<String>(
                           value: currentUiColor,
                           underline: const SizedBox.shrink(),
-                          items: const ['Bogolan', 'Rouge', 'Bleu', 'Vert', 'Marron']
-                              .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                          items: const [
+                            'Bogolan',
+                            'Rouge',
+                            'Bleu',
+                            'Vert',
+                            'Marron'
+                          ]
+                              .map((c) =>
+                                  DropdownMenuItem(value: c, child: Text(c)))
                               .toList(),
                           onChanged: (val) {
                             if (val == null) return;
@@ -260,7 +283,8 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                     children: [
                       const Text('Stock: '),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(8),
@@ -277,7 +301,8 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                                   color: bogolan,
                                   borderRadius: BorderRadius.circular(6),
                                 ),
-                                child: const Icon(Icons.add, color: Colors.white, size: 16),
+                                child: const Icon(Icons.add,
+                                    color: Colors.white, size: 16),
                               ),
                             ),
                           ],
@@ -287,7 +312,8 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                       Flexible(
                         child: Text(
                           'Prix : ${p.prixInt} f',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -305,7 +331,8 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                 ),
                 IconButton(
                   onPressed: () => _delete(p),
-                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                  icon:
+                      const Icon(Icons.delete, color: Colors.redAccent),
                 ),
               ],
             ),
@@ -333,14 +360,16 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
         backgroundColor: isDark ? cs.surface : Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: isDark ? cs.onSurface : Colors.black87),
+          icon: Icon(Icons.arrow_back,
+              color: isDark ? cs.onSurface : Colors.black87),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text('Tableau de bord', style: AppTextStyles.titre1),
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -362,24 +391,30 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
               child: Column(
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Statistiques', style: titleStyle),
                       IconButton(
                         onPressed: _refreshStats,
-                        icon: const Icon(Icons.refresh, color: bogolan),
+                        icon: const Icon(Icons.refresh,
+                            color: bogolan),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceAround,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      _statBar('Ventes', ventes, const Color(0xFF7B2B00), 0.86),
+                      _statBar(
+                          'Ventes', ventes, const Color(0xFF7B2B00), 0.86),
                       _statBar('Favoris', favoris, accent, 0.62),
-                      _statBar('Notes', notes, const Color(0xFFFBB800), 0.78),
-                      _statBar('Avis', avis, const Color(0xFF6B4436), 0.4),
+                      _statBar('Notes', notes,
+                          const Color(0xFFFBB800), 0.78),
+                      _statBar('Avis', avis,
+                          const Color(0xFF6B4436), 0.4),
                     ],
                   ),
                 ],
@@ -389,10 +424,25 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
             Text('Produits récents', style: titleStyle),
             const SizedBox(height: 8),
             Expanded(
-              child: ListView.builder(
-                itemCount: products.length,
-                itemBuilder: (_, i) => _productCard(products[i]),
-              ),
+              child: _loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _error != null
+                      ? Center(
+                          child: Text(
+                            _error!,
+                            style: const TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                        )
+                      : products.isEmpty
+                          ? const Center(
+                              child: Text('Aucun produit publié pour le moment.'),
+                            )
+                          : ListView.builder(
+                              itemCount: products.length,
+                              itemBuilder: (_, i) =>
+                                  _productCard(products[i]),
+                            ),
             ),
           ],
         ),
@@ -405,8 +455,9 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
     );
   }
 
-  // NE PAS TOUCHER (barres)
-  Widget _statBar(String label, int value, Color color, double ratio) {
+  // Barres
+  Widget _statBar(
+      String label, int value, Color color, double ratio) {
     final dynamicRatio = (value / 150).clamp(0.1, 1.0);
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -414,7 +465,8 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
         Container(
           width: 48,
           height: 160 * dynamicRatio,
-          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(
+              color: color, borderRadius: BorderRadius.circular(8)),
         ),
         const SizedBox(height: 8),
         Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),

@@ -7,7 +7,7 @@ import 'package:malibots_challenge_eni/services/auth_storage.dart';
 import 'package:malibots_challenge_eni/models/product.dart';
 import 'package:malibots_challenge_eni/utils/image_urls.dart';
 
-// ====== MODELE TOP-LEVEL (pas de classe imbriquée) ======
+// ====== MODELE TOP-LEVEL ======
 class RegionRef {
   final String id;
   final String name;
@@ -15,7 +15,8 @@ class RegionRef {
 
   factory RegionRef.fromJson(Map<String, dynamic> j) {
     final id = (j['id'] ?? j['uuid'] ?? j['code']).toString();
-    final name = (j['nom'] ?? j['name'] ?? j['label'] ?? j['libelle'] ?? '').toString();
+    final name =
+        (j['nom'] ?? j['name'] ?? j['label'] ?? j['libelle'] ?? '').toString();
     return RegionRef(id: id, name: name);
   }
 }
@@ -36,7 +37,7 @@ class PageResult<T> {
 }
 
 class ProduitService {
-  final String baseUrl = "http://192.168.1.103:8000/api";
+  final String baseUrl = "http://10.236.139.37:8000/api";
   final _storage = AuthStorage();
 
   Future<String?> currentToken() => _storage.readToken();
@@ -62,14 +63,16 @@ class ProduitService {
     }
     debugPrint("TOKEN=${t.substring(0, 12)}...");
 
-    final me = await http.get(Uri.parse("$baseUrl/me"), headers: _authJsonHeaders(t));
+    final me =
+        await http.get(Uri.parse("$baseUrl/me"), headers: _authJsonHeaders(t));
     debugPrint("GET /me -> ${me.statusCode} ${me.body}");
 
-    final vend = await http.get(Uri.parse("$baseUrl/vendeur/produits"), headers: _authJsonHeaders(t));
+    final vend = await http.get(Uri.parse("$baseUrl/vendeur/produits"),
+        headers: _authJsonHeaders(t));
     debugPrint("GET /vendeur/produits -> ${vend.statusCode} ${vend.body}");
   }
 
-  // ---- fetch des régions (utilise le modèle top-level) ----
+  // ---- fetch des régions ----
   Future<List<RegionRef>> fetchRegions() async {
     final resp = await http.get(Uri.parse("$baseUrl/regions"), headers: {
       'Accept': 'application/json',
@@ -80,10 +83,15 @@ class ProduitService {
     }
     final body = jsonDecode(resp.body);
     if (body is List) {
-      return body.map((e) => RegionRef.fromJson(e as Map<String, dynamic>)).toList();
+      return body
+          .map((e) => RegionRef.fromJson(e as Map<String, dynamic>))
+          .toList();
     }
-    final data = (body is Map && body['data'] is List) ? body['data'] as List : const [];
-    return data.map((e) => RegionRef.fromJson(e as Map<String, dynamic>)).toList();
+    final data =
+        (body is Map && body['data'] is List) ? body['data'] as List : const [];
+    return data
+        .map((e) => RegionRef.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<String>> _uploadImagesReturningUrls({
@@ -102,10 +110,12 @@ class ProduitService {
         req.files.add(await http.MultipartFile.fromPath('files[]', p));
       }
     } else {
-      req.files.add(await http.MultipartFile.fromPath('file', localPaths.first));
+      req.files
+          .add(await http.MultipartFile.fromPath('file', localPaths.first));
     }
 
-    final streamed = await req.send().timeout(const Duration(seconds: 40));
+    final streamed =
+        await req.send().timeout(const Duration(seconds: 40));
     final resp = await http.Response.fromStream(streamed);
 
     if (resp.statusCode != 200 && resp.statusCode != 201) {
@@ -119,7 +129,8 @@ class ProduitService {
         out = (body['urls'] as List).map((e) => e.toString()).toList();
       } else if (body['data'] is List) {
         out = (body['data'] as List)
-            .map((e) => (e is Map && e['url'] != null) ? e['url'].toString() : null)
+            .map((e) =>
+                (e is Map && e['url'] != null) ? e['url'].toString() : null)
             .whereType<String>()
             .toList();
       } else if (body['url'] != null) {
@@ -158,7 +169,8 @@ class ProduitService {
       (_isRemote(p) ? remote : local).add(p);
     }
 
-    final uploaded = await _uploadImagesReturningUrls(localPaths: local, token: token);
+    final uploaded =
+        await _uploadImagesReturningUrls(localPaths: local, token: token);
     final allUrls = [...remote, ...uploaded];
 
     final payload = {
@@ -190,7 +202,8 @@ class ProduitService {
           "Erreur de validation";
       throw Exception(errors);
     } else if (resp.statusCode == 401 || resp.statusCode == 403) {
-      throw Exception(_extractMessage(resp.body) ?? "Non autorisé. Vérifie le token et le rôle vendeur.");
+      throw Exception(_extractMessage(resp.body) ??
+          "Non autorisé. Vérifie le token et le rôle vendeur.");
     } else {
       throw Exception("Erreur ${resp.statusCode}: ${resp.body}");
     }
@@ -223,7 +236,8 @@ class ProduitService {
       (_isRemote(p) ? remote : local).add(p);
     }
 
-    final uploaded = await _uploadImagesReturningUrls(localPaths: local, token: token);
+    final uploaded =
+        await _uploadImagesReturningUrls(localPaths: local, token: token);
     final allUrls = [...remote, ...uploaded];
 
     final payload = {
@@ -255,7 +269,8 @@ class ProduitService {
           "Erreur de validation";
       throw Exception(errors);
     } else if (resp.statusCode == 401 || resp.statusCode == 403) {
-      throw Exception(_extractMessage(resp.body) ?? "Non autorisé. Vérifie le token et le rôle vendeur.");
+      throw Exception(_extractMessage(resp.body) ??
+          "Non autorisé. Vérifie le token et le rôle vendeur.");
     } else {
       throw Exception("Erreur ${resp.statusCode}: ${resp.body}");
     }
@@ -264,15 +279,16 @@ class ProduitService {
   String? _extractMessage(String body) {
     try {
       final m = jsonDecode(body);
-      if (m is Map && m['message'] != null) return m['message'].toString();
+      if (m is Map && m['message'] != null) {
+        return m['message'].toString();
+      }
     } catch (_) {}
     return null;
   }
 }
 
-// ---------- Dans ProduitService ----------
+// ---------- API Catalogue (public) ----------
 extension CatalogueApi on ProduitService {
-  // Ajuste si ton backend expose un autre chemin (ex: "/catalogue" ou "/products")
   String get _cataloguePath => "$baseUrl/produits";
 
   Future<PageResult<Produit>> fetchCataloguePage({
@@ -283,21 +299,20 @@ extension CatalogueApi on ProduitService {
     String? categorie, // 'Habit' | 'Plat' | 'Accessoire'
     String? sort, // ex: "prix:asc" ou "prix:desc"
   }) async {
-    // Acheteur: pas besoin de token (ressource publique). On n’envoie que Accept.
     final qp = <String, String>{
       'page': '$page',
       'per_page': '$perPage',
-      // côté serveur tu peux filtrer si supporté
       if (q != null && q.trim().isNotEmpty) 'q': q.trim(),
       if (regionId != null && regionId.isNotEmpty) 'regionId': regionId,
       if (categorie != null && categorie.isNotEmpty) 'categorie': categorie,
       if (sort != null && sort.isNotEmpty) 'sort': sort,
-      // utile si l’API n’expose que les produits validés en public
       'statut': 'valide',
     };
 
     final uri = Uri.parse(_cataloguePath).replace(queryParameters: qp);
-    final resp = await http.get(uri, headers: {'Accept': 'application/json'}).timeout(const Duration(seconds: 20));
+    final resp = await http
+        .get(uri, headers: {'Accept': 'application/json'})
+        .timeout(const Duration(seconds: 20));
 
     if (resp.statusCode != 200) {
       throw Exception("Impossible de charger le catalogue (${resp.statusCode})");
@@ -305,10 +320,6 @@ extension CatalogueApi on ProduitService {
 
     final body = resp.body.isEmpty ? {} : jsonDecode(resp.body);
 
-    // On gère plusieurs formes possibles de payload:
-    // - { data: [..], meta: { current_page, last_page, total } }
-    // - { data: { items: [..], meta: {...} } }
-    // - [..]
     List<dynamic> rawList;
     Map<String, dynamic>? meta;
 
@@ -318,7 +329,9 @@ extension CatalogueApi on ProduitService {
     } else if (body is Map) {
       if (body['data'] is List) {
         rawList = body['data'] as List;
-        meta = (body['meta'] is Map) ? body['meta'] as Map<String, dynamic> : null;
+        meta = (body['meta'] is Map)
+            ? body['meta'] as Map<String, dynamic>
+            : null;
       } else if (body['data'] is Map) {
         final dataMap = body['data'] as Map<String, dynamic>;
         if (dataMap['items'] is List) {
@@ -333,44 +346,91 @@ extension CatalogueApi on ProduitService {
             : (body['meta'] as Map<String, dynamic>?);
       } else {
         rawList = const [];
-        meta = (body['meta'] is Map) ? body['meta'] as Map<String, dynamic> : null;
+        meta = (body['meta'] is Map)
+            ? body['meta'] as Map<String, dynamic>
+            : null;
       }
     } else {
       rawList = const [];
       meta = null;
     }
 
-    final items = rawList.whereType<Map<String, dynamic>>().map((m) => Produit.fromJson(m)).toList();
+    final items = rawList
+        .whereType<Map<String, dynamic>>()
+        .map((m) => Produit.fromJson(m))
+        .toList();
 
-    // Déduction pagination
     int currentPage = page;
     bool hasNext;
 
     if (meta != null) {
-      final lastPage = int.tryParse('${meta['last_page'] ?? meta['lastPage'] ?? ''}');
-      final current = int.tryParse('${meta['current_page'] ?? meta['currentPage'] ?? page}');
+      final lastPage =
+          int.tryParse('${meta['last_page'] ?? meta['lastPage'] ?? ''}');
+      final current =
+          int.tryParse('${meta['current_page'] ?? meta['currentPage'] ?? page}');
       currentPage = current ?? page;
 
       if (lastPage != null) {
         hasNext = currentPage < lastPage;
       } else {
-        // fallback: s'il y a au moins perPage items, on suppose qu'il y a une suite
         hasNext = items.length >= perPage;
       }
     } else {
       hasNext = items.length >= perPage;
     }
 
-    final total = int.tryParse('${meta?['total'] ?? meta?['count'] ?? meta?['items_total'] ?? ''}');
+    final total = int.tryParse(
+        '${meta?['total'] ?? meta?['count'] ?? meta?['items_total'] ?? ''}');
 
-    // Normalise toutes les URLs d’images (cohérent avec ton Add/Edit)
     final fixedItems = items
         .map((p) => p.copyWith(
               images: p.images.map(normalizeImageRef).toList(),
-              firstImageUrl: p.firstImageUrl != null ? normalizeImageRef(p.firstImageUrl!) : null,
+              firstImageUrl: p.firstImageUrl != null
+                  ? normalizeImageRef(p.firstImageUrl!)
+                  : p.firstImageUrl,
             ))
         .toList();
 
-    return PageResult(items: fixedItems, page: currentPage, hasNext: hasNext, total: total);
+    return PageResult(
+        items: fixedItems, page: currentPage, hasNext: hasNext, total: total);
+  }
+}
+
+// ---------- API vendeur : liste de MES produits ----------
+extension VendeurApi on ProduitService {
+  Future<List<Produit>> fetchMyProducts({int perPage = 50}) async {
+    final token = await currentToken();
+    if (token == null || token.trim().isEmpty) {
+      throw Exception("Session expirée, reconnectez-vous.");
+    }
+
+    final uri = Uri.parse("$baseUrl/vendeur/produits")
+        .replace(queryParameters: {'perPage': '$perPage'});
+
+    final resp = await http
+        .get(uri, headers: _authJsonHeaders(token))
+        .timeout(const Duration(seconds: 20));
+
+    if (resp.statusCode != 200) {
+      throw Exception(
+          "Impossible de charger vos produits (${resp.statusCode})");
+    }
+
+    final body = resp.body.isEmpty ? {} : jsonDecode(resp.body);
+    final rawList =
+        (body is Map && body['data'] is List) ? body['data'] as List : const [];
+
+    final items = rawList
+        .whereType<Map<String, dynamic>>()
+        .map((m) => Produit.fromJson(m))
+        .map((p) => p.copyWith(
+              images: p.images.map(normalizeImageRef).toList(),
+              firstImageUrl: p.firstImageUrl != null
+                  ? normalizeImageRef(p.firstImageUrl!)
+                  : p.firstImageUrl,
+            ))
+        .toList();
+
+    return items;
   }
 }

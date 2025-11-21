@@ -10,49 +10,66 @@ import 'package:malibots_challenge_eni/screens/home/vendeurpages/vendeur_dashboa
 import 'package:malibots_challenge_eni/screens/musiques/musique_screen.dart';
 import 'package:malibots_challenge_eni/screens/profile/profile_screen_user.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:malibots_challenge_eni/widgets/themes.dart';
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final Color bogolan = const Color(0xFF7B3F00); // couleur bogolan
+  final Color bogolan = const Color(0xFF7B3F00);
   int _currentIndex = 0;
-  final pages = [
-    HomeScreen(),
-    FavoritesPage(),
-    CartPage(),
-    ProfileScreenUser(),
-    SellerDashboardScreen(), 
-  ];
+
+  late final List<Widget> _pages; // *** évite d’avoir une liste const figée
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = const [
+      HomeScreen(),
+      FavoritesPage(),
+      CartPage(),
+      ProfileScreenUser(),
+      SellerDashboardScreen(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;           // <— ICI on crée "scheme"
+    final scheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    return Scaffold(
-      body: pages[_currentIndex], // ✅ afficher la page sélectionnée
 
+    return Scaffold(
+      body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() => _currentIndex = index);
         },
-        backgroundColor: isDark ? scheme.surface : Colors.grey.shade100, // gris en clair, s’adapte en sombre
+        backgroundColor: isDark ? scheme.surface : Colors.grey.shade100,
         selectedItemColor: scheme.primary,
         unselectedItemColor: scheme.onSurfaceVariant,
-        type: BottomNavigationBarType.fixed, // ✅ Important si + de 3 items
+        type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoris"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "Accueil",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: "Favoris",
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
             label: "Panier",
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: "Profil",
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
             label: "Dashboard",
@@ -71,10 +88,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final Color bogolan = const Color(0xFF7B3F00); // couleur bogolan
-  // final pages = [HomeScreen(),SellerDashboardScreen()];
+  final Color bogolan = const Color(0xFF7B3F00);
 
-  // Citations du jour
   final List<String> citations = [
     "Aaaah cette vie là, tu recules pour mieux sauter et puis tu glisses.",
     "Ahh les dogons sont foutus",
@@ -85,14 +100,12 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
   int citationIndex = 0;
 
-  // Images du carrousel
   final List<String> carouselImages = [
     'assets/images/Acceuil/plats1.png',
     'assets/images/Acceuil/plats2.png',
     'assets/images/Acceuil/plats3.png',
   ];
 
-  // Données des éléments "À la une"
   List<Map<String, dynamic>> aLaUne = [
     {"image": "assets/images/Acceuil/alaune1.png", "likes": 10, "liked": false},
     {"image": "assets/images/Acceuil/alaune2.jpg", "likes": 6, "liked": false},
@@ -121,9 +134,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        automaticallyImplyLeading: false, // Supprime la flèche de retour
+        automaticallyImplyLeading: false,
         iconTheme: IconThemeData(color: bogolan, size: 30),
-
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -149,7 +161,6 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Image.asset('assets/images/logo_appli.png', height: 30),
         ),
       ),
-
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,8 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>
-                            const MusiqueScreen(), //  navigation vers Musique
+                        builder: (_) => const MusiqueScreen(),
                       ),
                     );
                   }),
@@ -247,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const CulturePage(), //
+                        builder: (_) => const CulturePage(),
                       ),
                     );
                   }),
@@ -262,7 +272,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const GaleriePage(), //
+                        builder: (_) => const GaleriePage(),
                       ),
                     );
                   }),
@@ -411,7 +421,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(height: 4),
                           Text(
                             citations[citationIndex],
-                            style: const TextStyle(color: Colors.white),
+                            style:
+                                const TextStyle(color: Colors.white),
                           ),
                         ],
                       ),
@@ -435,7 +446,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CulturePage()),
+                      MaterialPageRoute(
+                        builder: (context) => const CulturePage(),
+                      ),
                     );
                   },
                   child: Row(
@@ -456,12 +469,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-
-      //Barre de navigation inférieure
     );
   }
 
-  Widget _buildCategory(IconData icon, String label, VoidCallback onTap) {
+  Widget _buildCategory(
+    IconData icon,
+    String label,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -476,7 +491,10 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 5),
             Text(
               label,
-              style: TextStyle(color: bogolan, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: bogolan,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),

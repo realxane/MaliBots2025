@@ -8,7 +8,7 @@ import 'package:malibots_challenge_eni/models/uservendeur.dart';
 class Userscontrollervendeur {
   // Mets la même baseUrl partout (ex: AppConfig.apiBaseUrl sans /api à la fin si tu concatènes /api ensuite)
   // final String baseUrl = "http://192.168.1.103:8000";
-  final String baseUrl = "http://192.168.1.103:8000";
+  final String baseUrl = "http://10.236.139.37:8000";
 
   Future<Uservendeur> registervendeur({
     required String nom,

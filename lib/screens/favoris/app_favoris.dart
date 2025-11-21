@@ -21,6 +21,8 @@ class FavoritesPage extends StatelessWidget {
     final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
 
+    final canPop = Navigator.of(context).canPop();
+
     return DefaultTabController(
       length: 5,
       child: Scaffold(
@@ -28,10 +30,13 @@ class FavoritesPage extends StatelessWidget {
           backgroundColor: isDark ? cs.surface : Colors.white,
           foregroundColor: isDark ? cs.onSurface : brown,
           elevation: 0.5,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
+          leading: canPop
+              ? IconButton(
+                  // *** on ne fait pop que si possible
+                  icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                  onPressed: () => Navigator.of(context).maybePop(),
+                )
+              : null,
           title: Text(
             'Favoris',
             style: TextStyle(
@@ -66,19 +71,22 @@ class FavoritesPage extends StatelessWidget {
   }
 }
 
+// ---------- Onglet ARTICLES ----------
+
 class _ArticlesTab extends StatefulWidget {
   const _ArticlesTab();
+
   @override
   State<_ArticlesTab> createState() => _ArticlesTabState();
 }
 
-class _ArticlesTabState extends State<_ArticlesTab> with AutomaticKeepAliveClientMixin {
+class _ArticlesTabState extends State<_ArticlesTab>
+    with AutomaticKeepAliveClientMixin {
   bool _loaded = false;
 
   @override
   void initState() {
     super.initState();
-    // Déclenche un refresh uniquement si la liste locale est vide
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final store = context.read<FavoritesStore>();
       if (!_loaded && store.productFavorites.isEmpty) {
@@ -106,7 +114,8 @@ class _ArticlesTabState extends State<_ArticlesTab> with AutomaticKeepAliveClien
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final sepColor = isDark ? theme.colorScheme.outlineVariant : const Color(0xFFEDEDED);
+    final sepColor =
+        isDark ? theme.colorScheme.outlineVariant : const Color(0xFFEDEDED);
 
     return RefreshIndicator(
       onRefresh: () => context.read<FavoritesStore>().refreshProductFavorites(),
@@ -134,11 +143,16 @@ class _ArticlesTabState extends State<_ArticlesTab> with AutomaticKeepAliveClien
             },
             onToggleFavorite: () async {
               try {
-                final added = await context.read<FavoritesStore>().toggleProductRemote(p);
+                final added =
+                    await context.read<FavoritesStore>().toggleProductRemote(p);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(added
-                      ? '${p.nom} ajouté aux favoris'
-                      : '${p.nom} retiré des favoris')),
+                  SnackBar(
+                    content: Text(
+                      added
+                          ? '${p.nom} ajouté aux favoris'
+                          : '${p.nom} retiré des favoris',
+                    ),
+                  ),
                 );
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -148,7 +162,9 @@ class _ArticlesTabState extends State<_ArticlesTab> with AutomaticKeepAliveClien
             },
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => ProductDetailPage(product: p)),
+                MaterialPageRoute(
+                  builder: (_) => ProductDetailPage(product: p),
+                ),
               );
             },
           );
@@ -168,9 +184,8 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final subtle = isDark
-        ? theme.colorScheme.onSurfaceVariant
-        : Colors.brown.shade300;
+    final subtle =
+        isDark ? theme.colorScheme.onSurfaceVariant : Colors.brown.shade300;
 
     return Center(
       child: Text(
@@ -180,6 +195,8 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
+
+// ---------- Onglet PROVERBES ----------
 
 class _ProverbesTab extends StatelessWidget {
   const _ProverbesTab();
@@ -193,10 +210,8 @@ class _ProverbesTab extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final sepColor =
-        isDark ? cs.outlineVariant : const Color(0xFFEDEDED);
-    final subtle =
-        isDark ? cs.onSurfaceVariant : Colors.brown.shade300;
+    final sepColor = isDark ? cs.outlineVariant : const Color(0xFFEDEDED);
+    final subtle = isDark ? cs.onSurfaceVariant : Colors.brown.shade300;
 
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -206,18 +221,27 @@ class _ProverbesTab extends StatelessWidget {
         final p = items[i];
         final id = p['id'] ?? store.proverbeIdFrom(p);
         return ListTile(
-          title: Text(p['texte'] ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
-          subtitle: Text(p['origine'] ?? '', style: TextStyle(color: subtle)),
+          title: Text(
+            p['texte'] ?? '',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(
+            p['origine'] ?? '',
+            style: TextStyle(color: subtle),
+          ),
           trailing: IconButton(
             icon: const Icon(Icons.delete_outline),
             color: isDark ? cs.primary : AppColors.primary,
-            onPressed: () => context.read<FavoritesStore>().removeProverbe(id),
+            onPressed: () =>
+                context.read<FavoritesStore>().removeProverbe(id),
           ),
         );
       },
     );
   }
 }
+
+// ---------- Onglet CONTES ----------
 
 class _ContesTab extends StatelessWidget {
   const _ContesTab();
@@ -231,8 +255,7 @@ class _ContesTab extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final sepColor =
-        isDark ? cs.outlineVariant : const Color(0xFFEDEDED);
+    final sepColor = isDark ? cs.outlineVariant : const Color(0xFFEDEDED);
 
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -242,8 +265,15 @@ class _ContesTab extends StatelessWidget {
         final c = items[i];
         final id = c['id'] ?? store.conteIdFrom(c);
         return ListTile(
-          title: Text(c['titre'] ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
-          subtitle: Text(c['resume'] ?? '', maxLines: 2, overflow: TextOverflow.ellipsis),
+          title: Text(
+            c['titre'] ?? '',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(
+            c['resume'] ?? '',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
           trailing: IconButton(
             icon: const Icon(Icons.delete_outline),
             color: isDark ? cs.primary : AppColors.primary,
@@ -251,7 +281,9 @@ class _ContesTab extends StatelessWidget {
           ),
           onTap: () {
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => ConteDetailPage(conte: c)),
+              MaterialPageRoute(
+                builder: (_) => ConteDetailPage(conte: c),
+              ),
             );
           },
         );
@@ -259,6 +291,8 @@ class _ContesTab extends StatelessWidget {
     );
   }
 }
+
+// ---------- Onglet GALERIE ----------
 
 class _GalerieTab extends StatelessWidget {
   const _GalerieTab();
@@ -282,18 +316,24 @@ class _GalerieTab extends StatelessWidget {
       itemBuilder: (context, i) {
         final p = items[i];
         final id = store.photoIdFrom(p);
+        final List imgs = (p['images'] as List?) ?? const [];
+        final imgPath =
+            imgs.isNotEmpty ? imgs.first.toString() : 'assets/placeholder.png';
+
         return Stack(
           children: [
             GestureDetector(
               onTap: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => PhotoDetailPage(photo: p)),
+                  MaterialPageRoute(
+                    builder: (_) => PhotoDetailPage(photo: p),
+                  ),
                 );
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.asset(
-                  p['images'][0],
+                  imgPath,
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: double.infinity,
@@ -308,7 +348,8 @@ class _GalerieTab extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 child: IconButton(
                   icon: const Icon(Icons.delete_outline, color: Colors.white),
-                  onPressed: () => context.read<FavoritesStore>().removePhoto(id),
+                  onPressed: () =>
+                      context.read<FavoritesStore>().removePhoto(id),
                   tooltip: 'Retirer',
                 ),
               ),
@@ -317,14 +358,18 @@ class _GalerieTab extends StatelessWidget {
               left: 8,
               bottom: 8,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   p['titre'] ?? '',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
@@ -334,6 +379,8 @@ class _GalerieTab extends StatelessWidget {
     );
   }
 }
+
+// ---------- Onglet MUSIQUES ----------
 
 class _MusiquesTab extends StatelessWidget {
   const _MusiquesTab();
@@ -347,10 +394,8 @@ class _MusiquesTab extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final sepColor =
-        isDark ? cs.outlineVariant : const Color(0xFFEDEDED);
-    final subtle =
-        isDark ? cs.onSurfaceVariant : Colors.brown.shade300;
+    final sepColor = isDark ? cs.outlineVariant : const Color(0xFFEDEDED);
+    final subtle = isDark ? cs.onSurfaceVariant : Colors.brown.shade300;
 
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -364,7 +409,8 @@ class _MusiquesTab extends StatelessWidget {
         ImageProvider imgProvider;
         final img = t['img'];
         if (img == null) {
-          imgProvider = const AssetImage('assets/img_music_placeholder.jpg');
+          imgProvider =
+              const AssetImage('assets/img_music_placeholder.jpg');
         } else if (img.toString().startsWith('assets/')) {
           imgProvider = AssetImage(img);
         } else {
@@ -372,8 +418,15 @@ class _MusiquesTab extends StatelessWidget {
         }
 
         return ListTile(
-          leading: CircleAvatar(backgroundImage: imgProvider, radius: 24),
-          title: Text(t['title'] ?? 'Titre inconnu', maxLines: 1, overflow: TextOverflow.ellipsis),
+          leading: CircleAvatar(
+            backgroundImage: imgProvider,
+            radius: 24,
+          ),
+          title: Text(
+            t['title'] ?? 'Titre inconnu',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           subtitle: Text(
             t['artist'] ?? 'Artiste inconnu',
             maxLines: 1,
@@ -381,15 +434,21 @@ class _MusiquesTab extends StatelessWidget {
             style: TextStyle(color: subtle),
           ),
           trailing: IconButton(
-            icon: Icon(isFav ? Icons.favorite : Icons.favorite_border,
-                color: isDark ? cs.primary : AppColors.primary),
+            icon: Icon(
+              isFav ? Icons.favorite : Icons.favorite_border,
+              color: isDark ? cs.primary : AppColors.primary,
+            ),
             onPressed: () => context.read<FavoritesStore>().toggleMusic(t),
-            tooltip: isFav ? 'Retirer des favoris' : 'Ajouter aux favoris',
+            tooltip:
+                isFav ? 'Retirer des favoris' : 'Ajouter aux favoris',
           ),
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => MusicPlayerScreen(tracks: items, index: i),
+                builder: (_) => MusicPlayerScreen(
+                  tracks: items,
+                  index: i,
+                ),
               ),
             );
           },
