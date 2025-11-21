@@ -25,7 +25,6 @@ class FavoritesPage extends StatelessWidget {
       length: 5,
       child: Scaffold(
         appBar: AppBar(
-          // Clair: strictement comme avant, Sombre: couleurs du thème
           backgroundColor: isDark ? cs.surface : Colors.white,
           foregroundColor: isDark ? cs.onSurface : brown,
           elevation: 0.5,
@@ -79,13 +78,14 @@ class _ArticlesTabState extends State<_ArticlesTab> with AutomaticKeepAliveClien
   @override
   void initState() {
     super.initState();
-    _refresh();
-  }
-
-  Future<void> _refresh() async {
-    if (_loaded) return;
-    _loaded = true;
-    await context.read<FavoritesStore>().refreshProductFavorites();
+    // Déclenche un refresh uniquement si la liste locale est vide
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final store = context.read<FavoritesStore>();
+      if (!_loaded && store.productFavorites.isEmpty) {
+        _loaded = true;
+        store.refreshProductFavorites();
+      }
+    });
   }
 
   @override
@@ -96,6 +96,9 @@ class _ArticlesTabState extends State<_ArticlesTab> with AutomaticKeepAliveClien
 
     if (store.loadingProducts && items.isEmpty) {
       return const Center(child: CircularProgressIndicator());
+    }
+    if (store.lastError != null && items.isEmpty) {
+      return Center(child: Text('Erreur: ${store.lastError}'));
     }
     if (items.isEmpty) {
       return const _EmptyState();
@@ -174,7 +177,7 @@ class _EmptyState extends StatelessWidget {
         'Aucun favori ici…',
         style: TextStyle(color: subtle),
       ),
-    ); 
+    );
   }
 }
 
@@ -316,7 +319,7 @@ class _GalerieTab extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primary, // identique en clair
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(

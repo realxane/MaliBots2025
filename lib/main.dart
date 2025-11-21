@@ -44,7 +44,11 @@ void main() {
         ChangeNotifierProvider<CatalogController>(
           create: (ctx) => CatalogController(ctx.read<ProduitService>()),
         ),
-        ChangeNotifierProvider(create: (_) => FavoritesStore()),
+        ChangeNotifierProvider(
+          create: (_) => FavoritesStore(
+            baseUrl: 'http://192.168.1.103:8000/api', // même baseUrl que ton AuthController
+          ),
+        ),
         ChangeNotifierProvider(create: (_) => ThemeStore()),
       ],
       child: const MyApp(),

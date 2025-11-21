@@ -1,7 +1,7 @@
-// lib/providers/favoris_store.dart
 import 'dart:collection';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:malibots_challenge_eni/models/product.dart';
@@ -22,6 +22,28 @@ class FavoritesStore extends ChangeNotifier {
 
   bool loadingProducts = false;
   String? lastError;
+
+  // ---------- Helpers ----------
+  bool _disposed = false;
+  bool _notifyScheduled = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  // Toujours notifier en fin de frame et coalescer les notifications
+  void _notifySafely() {
+    if (_disposed || !hasListeners || _notifyScheduled) return;
+    _notifyScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notifyScheduled = false;
+      if (!_disposed && hasListeners) {
+        notifyListeners();
+      }
+    });
+  }
 
   List<Produit> get productFavorites =>
       _favProductIds.map((id) => _productsById[id]).whereType<Produit>().toList(growable: false);
@@ -44,14 +66,15 @@ class FavoritesStore extends ChangeNotifier {
     } else {
       _favProductIds.remove(p.id);
     }
-    notifyListeners();
+    _notifySafely();
   }
 
   // Charge la liste des favoris PRODUIT depuis /favoris?type=Produit
   Future<void> refreshProductFavorites() async {
+    if (loadingProducts) return;
     loadingProducts = true;
     lastError = null;
-    notifyListeners();
+    _notifySafely();
 
     try {
       final uri = Uri.parse('$baseUrl/favoris')
@@ -73,21 +96,26 @@ class FavoritesStore extends ChangeNotifier {
         ids.add(cibleId);
       }
 
-      _favProductIds
-        ..clear()
-        ..addAll(ids);
+      // Synchronise uniquement si on a des ids (ou si on n’a encore rien en local)
+      if (ids.isNotEmpty || _favProductIds.isEmpty) {
+        _favProductIds
+          ..clear()
+          ..addAll(ids);
+      }
 
-      // Hydratation produits
+      // Hydratation produits manquants
+      final futures = <Future<void>>[];
       for (final id in _favProductIds) {
         if (!_productsById.containsKey(id)) {
-          await _fetchProductById(id);
+          futures.add(_fetchProductById(id));
         }
       }
+      if (futures.isNotEmpty) await Future.wait(futures);
     } catch (e) {
       lastError = e.toString();
     } finally {
       loadingProducts = false;
-      notifyListeners();
+      _notifySafely();
     }
   }
 
@@ -109,7 +137,9 @@ class FavoritesStore extends ChangeNotifier {
   Future<bool> toggleProductRemote(Produit p) async {
     final already = isProductFavorite(p.id);
 
-    _setFavoriteLocal(p, fav: !already); // optimistic
+    // Optimistic
+    _setFavoriteLocal(p, fav: !already);
+
     try {
       final uri = Uri.parse('$baseUrl/favoris/toggle');
       final res = await http.post(
@@ -122,20 +152,43 @@ class FavoritesStore extends ChangeNotifier {
         throw Exception('HTTP ${res.statusCode}: ${res.body}');
       }
 
-      final json = jsonDecode(res.body);
-      final toggled = (json is Map ? (json['toggled'] ?? json['status']) : null)
-          .toString(); // "added" | "removed"
-      final added = toggled == 'added' || (!already && toggled.isEmpty);
+      final body = res.body.isNotEmpty ? jsonDecode(res.body) : null;
 
+      bool? addedFromResponse;
+      if (body is Map) {
+        final raw = body['toggled'] ??
+            body['status'] ??
+            body['added'] ??
+            body['isFavorite'] ??
+            body['favorite'] ??
+            body['favori'] ??
+            body['is_favorite'];
+        if (raw is bool) {
+          addedFromResponse = raw;
+        } else if (raw is num) {
+          addedFromResponse = raw != 0;
+        } else if (raw is String) {
+          final s = raw.toLowerCase();
+          if (s == 'added' || s == 'created' || s == 'true' || s == '1' || s == 'ajoute' || s == 'ok') {
+            addedFromResponse = true;
+          } else if (s == 'removed' || s == 'deleted' || s == 'false' || s == '0' || s == 'retire') {
+            addedFromResponse = false;
+          }
+        }
+      }
+
+      // Si le serveur n’est pas clair, on garde l’optimistic (!already).
+      final added = addedFromResponse ?? (!already);
+
+      // Si le serveur contredit l’optimistic, on corrige.
       if (added != !already) {
-        // Corrige si le backend répond différemment de l’optimistic
         _setFavoriteLocal(p, fav: added);
       }
 
       if (added) _productsById[p.id] = p;
       return added;
     } catch (e) {
-      // rollback
+      // rollback complet
       _setFavoriteLocal(p, fav: already);
       lastError = e.toString();
       rethrow;
@@ -149,12 +202,11 @@ class FavoritesStore extends ChangeNotifier {
 
   Future<Produit> _lazyLoadProduct(String id) async {
     await _fetchProductById(id);
-    // Si l'API /produits/{id} échoue ou ne renvoie rien, on construit un objet minimal
     return _productsById[id] ??
         Produit(
           id: id,
           nom: 'Article $id',
-          prix: 0,                 // double?
+          prix: 0,
           images: const [],
           firstImageUrl: 'assets/placeholder.png',
           ratingAvg: 0,
@@ -166,7 +218,7 @@ class FavoritesStore extends ChangeNotifier {
     await toggleProductRemoteById(productId);
   }
 
-  // ======== Le reste du store (culture, galerie, musiques) reste inchangé ========
+  // ======== Le reste du store (culture, galerie, musiques) ========
 
   // --- Contes & Proverbes (stockés localement) ---
   final Map<String, Map<String, String>> _conteFavorites = {};
@@ -179,6 +231,7 @@ class FavoritesStore extends ChangeNotifier {
   bool isProverbeFavorite(String id) => _proverbeFavorites.containsKey(id);
   bool isConteFavoriteByMap(Map<String, String> c) => isConteFavorite(conteIdFrom(c));
   bool isProverbeFavoriteByMap(Map<String, String> p) => isProverbeFavorite(proverbeIdFrom(p));
+
   void toggleConte(Map<String, String> c) {
     final id = conteIdFrom(c);
     if (_conteFavorites.containsKey(id)) {
@@ -186,8 +239,9 @@ class FavoritesStore extends ChangeNotifier {
     } else {
       _conteFavorites[id] = {...c, 'id': id};
     }
-    notifyListeners();
+    _notifySafely();
   }
+
   void toggleProverbe(Map<String, String> p) {
     final id = proverbeIdFrom(p);
     if (_proverbeFavorites.containsKey(id)) {
@@ -195,20 +249,23 @@ class FavoritesStore extends ChangeNotifier {
     } else {
       _proverbeFavorites[id] = {...p, 'id': id};
     }
-    notifyListeners();
+    _notifySafely();
   }
+
   void removeConte(String id) {
     _conteFavorites.remove(id);
-    notifyListeners();
+    _notifySafely();
   }
+
   void removeProverbe(String id) {
     _proverbeFavorites.remove(id);
-    notifyListeners();
+    _notifySafely();
   }
 
   // --- Galerie ---
   final List<Map<String, dynamic>> _photoFavorites = [];
   List<Map<String, dynamic>> get photoFavorites => List.unmodifiable(_photoFavorites);
+
   String photoIdFrom(Map<String, dynamic> photo) {
     final titre = (photo['titre'] ?? '').toString().trim().toLowerCase();
     final firstImg = (photo['images'] is List && photo['images'].isNotEmpty)
@@ -216,56 +273,66 @@ class FavoritesStore extends ChangeNotifier {
         : '';
     return '${titre}__$firstImg';
   }
+
   bool isPhotoFavorite(String photoId) {
     return _photoFavorites.any((p) => photoIdFrom(p) == photoId);
   }
+
   bool isPhotoFavoriteBy(Map<String, dynamic> photo) {
     return isPhotoFavorite(photoIdFrom(photo));
   }
+
   void togglePhoto(Map<String, dynamic> photo) {
     final id = photoIdFrom(photo);
     if (isPhotoFavorite(id)) {
       removePhoto(id);
     } else {
       _photoFavorites.add(photo);
-      notifyListeners();
+      _notifySafely();
     }
   }
+
   void removePhoto(String photoId) {
     _photoFavorites.removeWhere((p) => photoIdFrom(p) == photoId);
-    notifyListeners();
+    _notifySafely();
   }
+
   void clearPhotoFavorites() {
     _photoFavorites.clear();
-    notifyListeners();
+    _notifySafely();
   }
 
   // --- Musiques ---
   final List<Map<String, dynamic>> _musicFavorites = [];
   List<Map<String, dynamic>> get musicFavorites => List.unmodifiable(_musicFavorites);
+
   String musicIdFrom(Map<String, dynamic> track) {
     final path = (track['path'] ?? '').toString();
     final title = (track['title'] ?? '').toString().trim().toLowerCase();
     final artist = (track['artist'] ?? '').toString().trim().toLowerCase();
     return '${path}__${title}__${artist}';
   }
+
   bool isMusicFavorite(String musicId) => _musicFavorites.any((m) => musicIdFrom(m) == musicId);
   bool isMusicFavoriteBy(Map<String, dynamic> track) => isMusicFavorite(musicIdFrom(track));
+
   void toggleMusic(Map<String, dynamic> track) {
     final id = musicIdFrom(track);
     if (isMusicFavorite(id)) {
       removeMusic(id);
     } else {
       _musicFavorites.add(track);
-      notifyListeners();
+      _notifySafely();
     }
   }
+
   void removeMusic(String musicId) {
     _musicFavorites.removeWhere((m) => musicIdFrom(m) == musicId);
-    notifyListeners();
+    _notifySafely();
   }
+
   void clearMusicFavorites() {
     _musicFavorites.clear();
-    notifyListeners();
+    _notifySafely();
   }
 }

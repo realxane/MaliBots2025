@@ -1,10 +1,15 @@
+// lib/screens/catalogue/app_panier.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:malibots_challenge_eni/constants/app_colors.dart';
 import 'package:malibots_challenge_eni/providers/product_store.dart';
+import 'package:malibots_challenge_eni/providers/favoris_store.dart';
 import 'package:malibots_challenge_eni/routes/app_routes.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_produit_detail.dart';
+import 'package:malibots_challenge_eni/services/cart_api.dart';
 import 'package:malibots_challenge_eni/widgets/buttons/bouton_retour.dart';
 import 'package:provider/provider.dart';
+import 'package:malibots_challenge_eni/utils/context_x.dart';
 
 /// ----------------------
 /// Modèles et contrôleur
@@ -14,18 +19,21 @@ class CartItem {
   CartItem({
     required this.productId,
     required this.name,
-    this.color, // hex (#A0522D) ou nom
-    required this.price, // en unités (ex: 18000 pour 18000f)
-    required this.assetImagePath, // peut être asset OU URL
+    this.color,
+    required this.price,
+    required this.assetImagePath,
     this.qty = 1,
+    this.serverItemId,
   });
 
   final String productId;
   final String name;
   final String? color;
   final int price;
-  final String assetImagePath; // asset path OU URL
+  final String assetImagePath;
   int qty;
+
+  String? serverItemId;
 
   String get key => (color == null || color!.isEmpty)
       ? productId
@@ -42,15 +50,20 @@ class CartController extends ChangeNotifier {
 
   int get total => _items.values.fold(0, (sum, it) => sum + it.price * it.qty);
 
+  void clear() {
+    _items.clear();
+    notifyListeners();
+  }
+
   void addItem({
     required String productId,
     required String name,
     String? color,
     required int price,
-    required String assetImagePath, // accepte aussi des URLs
+    required String assetImagePath,
     int qty = 1,
+    String? serverItemId,
   }) {
-    // On accepte désormais aussi les URLs (plus d'assert bloquante).
     final temp = CartItem(
       productId: productId,
       name: name,
@@ -58,12 +71,32 @@ class CartController extends ChangeNotifier {
       price: price,
       assetImagePath: assetImagePath,
       qty: qty,
+      serverItemId: serverItemId,
     );
     final k = temp.key;
     if (_items.containsKey(k)) {
       _items[k]!.qty += qty;
+      _items[k]!.serverItemId ??= serverItemId;
     } else {
       _items[k] = temp;
+    }
+    notifyListeners();
+  }
+
+  void attachServerItemId(String key, String serverItemId) {
+    final it = _items[key];
+    if (it == null) return;
+    it.serverItemId = serverItemId;
+    notifyListeners();
+  }
+
+  void setQty(String key, int qty) {
+    final it = _items[key];
+    if (it == null) return;
+    if (qty <= 0) {
+      _items.remove(key);
+    } else {
+      it.qty = qty;
     }
     notifyListeners();
   }
@@ -90,19 +123,53 @@ class CartController extends ChangeNotifier {
     _items.remove(key);
     notifyListeners();
   }
-
-  void clear() {
-    _items.clear();
-    notifyListeners();
-  }
 }
 
 /// ----------------------
 /// Page Panier (UI)
 /// ----------------------
 
-class CartPage extends StatelessWidget {
+class CartPage extends StatefulWidget {
   const CartPage({super.key});
+
+  @override
+  State<CartPage> createState() => _CartPageState();
+}
+
+class _CartPageState extends State<CartPage> {
+  bool _loading = true;
+  String? _error;
+
+  Future<void> _hydrateFromServer() async {
+    try {
+      final api = CartApi(baseUrl: context.apiBaseUrl);
+      final serverCart = await api.getCart();
+
+      CartController.I.clear();
+      for (final it in serverCart.items) {
+        CartController.I.addItem(
+          productId: it.produitId,
+          name: it.nom,
+          price: it.price,
+          assetImagePath: it.imageUrlBest,
+          qty: it.quantite,
+          serverItemId: it.itemId,
+        );
+      }
+      _error = null;
+    } catch (e) {
+      _error = _prettyNetworkError(e);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Lance l’hydratation après le premier frame (context prêt)
+    WidgetsBinding.instance.addPostFrameCallback((_) => _hydrateFromServer());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,9 +188,7 @@ class CartPage extends StatelessWidget {
         elevation: 0.5,
         leading: Navigator.canPop(context)
             ? fleche_retour(
-                onPressed: () {
-                  Navigator.of(context).maybePop();
-                },
+                onPressed: () => Navigator.of(context).maybePop(),
               )
             : null,
         title: const Text('Mon panier'),
@@ -135,34 +200,38 @@ class CartPage extends StatelessWidget {
           ),
         ],
       ),
-      body: AnimatedBuilder(
-        animation: CartController.I,
-        builder: (context, _) {
-          final items = CartController.I.items;
-          if (items.isEmpty) {
-            return const Center(
-              child: Text('Votre panier est vide.'),
-            );
-          }
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text('Erreur de synchronisation: $_error'))
+              : AnimatedBuilder(
+                  animation: CartController.I,
+                  builder: (context, _) {
+                    final items = CartController.I.items;
+                    if (items.isEmpty) {
+                      return const Center(
+                        child: Text('Votre panier est vide.'),
+                      );
+                    }
 
-          return Column(
-            children: [
-              Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  itemCount: items.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
-                  itemBuilder: (context, index) {
-                    final it = items[index];
-                    return _CartRow(item: it, accent: accent);
+                    return Column(
+                      children: [
+                        Expanded(
+                          child: ListView.separated(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            itemCount: items.length,
+                            separatorBuilder: (_, __) => const Divider(height: 1),
+                            itemBuilder: (context, index) {
+                              final it = items[index];
+                              return _CartRow(item: it, accent: accent);
+                            },
+                          ),
+                        ),
+                        _CartBottomBar(accent: accent),
+                      ],
+                    );
                   },
                 ),
-              ),
-              _CartBottomBar(accent: accent),
-            ],
-          );
-        },
-      ),
     );
   }
 }
@@ -196,6 +265,38 @@ class _CartRow extends StatelessWidget {
       );
     }
 
+    Future<void> _serverUpdateQty(int newQty) async {
+      final api = CartApi(baseUrl: context.apiBaseUrl);
+
+      final id = item.serverItemId;
+      if (id == null || id.isEmpty) {
+        final cart = await api.getCart();
+        final match = cart.items.firstWhere(
+          (e) => e.produitId == item.productId,
+          orElse: () => throw Exception('Item serveur introuvable'),
+        );
+        CartController.I.attachServerItemId(key, match.itemId);
+        await api.updateItemQty(itemId: match.itemId, quantite: newQty);
+      } else {
+        await api.updateItemQty(itemId: id, quantite: newQty);
+      }
+    }
+
+    Future<void> _serverDelete() async {
+      final api = CartApi(baseUrl: context.apiBaseUrl);
+      final id = item.serverItemId;
+      if (id != null && id.isNotEmpty) {
+        await api.removeItem(itemId: id);
+      } else {
+        final cart = await api.getCart();
+        final match = cart.items.firstWhere(
+          (e) => e.produitId == item.productId,
+          orElse: () => throw Exception('Item serveur introuvable'),
+        );
+        await api.removeItem(itemId: match.itemId);
+      }
+    }
+
     Widget _image(String path) {
       final isUrl = path.startsWith('http');
       final img = isUrl
@@ -210,7 +311,7 @@ class _CartRow extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: _openDetails, // Rend toute la ligne cliquable
+        onTap: _openDetails,
         borderRadius: BorderRadius.circular(8),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
@@ -219,12 +320,10 @@ class _CartRow extends StatelessWidget {
             children: [
               _image(item.assetImagePath),
               const SizedBox(width: 10),
-              // Infos produit
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Ligne titre + supprimer
                     Row(
                       children: [
                         Expanded(
@@ -239,13 +338,31 @@ class _CartRow extends StatelessWidget {
                           visualDensity: VisualDensity.compact,
                           padding: const EdgeInsets.all(4),
                           icon: Icon(Icons.close, color: cs.onSurfaceVariant),
-                          onPressed: () => CartController.I.remove(key),
+                          onPressed: () async {
+                            final old = item.qty;
+                            CartController.I.remove(key);
+                            try {
+                              await _serverDelete();
+                            } catch (e) {
+                              CartController.I.addItem(
+                                productId: item.productId,
+                                name: item.name,
+                                color: item.color,
+                                price: item.price,
+                                assetImagePath: item.assetImagePath,
+                                qty: old,
+                                serverItemId: item.serverItemId,
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Erreur suppression: $e')),
+                              );
+                            }
+                          },
                           tooltip: 'Supprimer',
                         ),
                       ],
                     ),
                     const SizedBox(height: 6),
-                    // Couleur
                     if (item.color != null && item.color!.isNotEmpty)
                       Row(
                         children: [
@@ -269,14 +386,13 @@ class _CartRow extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                item.color!, // label texte (ex: "Marron")
+                                item.color!,
                                 style: const TextStyle(fontSize: 12),
                               ),
                             ),
                         ],
                       ),
                     const SizedBox(height: 6),
-                    // Prix + quantité
                     Row(
                       children: [
                         Text(
@@ -287,8 +403,32 @@ class _CartRow extends StatelessWidget {
                         _QtyControl(
                           qty: item.qty,
                           accent: accent,
-                          onMinus: () => CartController.I.decrement(key),
-                          onPlus: () => CartController.I.increment(key),
+                          onMinus: () async {
+                            final newQty = item.qty - 1;
+                            final oldQty = item.qty;
+                            CartController.I.decrement(key);
+                            try {
+                              await _serverUpdateQty(newQty);
+                            } catch (e) {
+                              CartController.I.setQty(key, oldQty);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Erreur: $e')),
+                              );
+                            }
+                          },
+                          onPlus: () async {
+                            final newQty = item.qty + 1;
+                            final oldQty = item.qty;
+                            CartController.I.increment(key);
+                            try {
+                              await _serverUpdateQty(newQty);
+                            } catch (e) {
+                              CartController.I.setQty(key, oldQty);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Erreur: $e')),
+                              );
+                            }
+                          },
                         ),
                       ],
                     ),
@@ -438,12 +578,24 @@ String _formatMoney(int value) {
 
 Color? _parseColor(String? input) {
   if (input == null) return null;
-  // Accepte "#RRGGBB" ou "#AARRGGBB"
   final hex = input.replaceAll('#', '');
   if (hex.length == 6) {
     return Color(int.parse('FF$hex', radix: 16));
   } else if (hex.length == 8) {
     return Color(int.parse(hex, radix: 16));
   }
-  return null; // si ce n'est pas un hex, on n'affiche qu'un label
+  return null;
+}
+
+// --------- message d'erreur réseau plus clair ---------
+String _prettyNetworkError(Object e) {
+  if (e is TimeoutException ||
+      e.toString().contains('TimeoutException')) {
+    return 'Délai dépassé. Le serveur ne répond pas.';
+  }
+  final msg = e.toString();
+  if (msg.contains('SocketException')) {
+    return 'Serveur injoignable. Vérifiez le Wi‑Fi, l’IP et le port.';
+  }
+  return msg;
 }

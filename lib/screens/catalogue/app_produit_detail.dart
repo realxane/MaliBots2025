@@ -9,6 +9,8 @@ import 'package:malibots_challenge_eni/screens/catalogue/app_panier.dart';
 import 'package:malibots_challenge_eni/screens/favoris/app_favoris.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
+import 'package:malibots_challenge_eni/services/cart_api.dart';
+import 'package:malibots_challenge_eni/utils/context_x.dart'; // <-- extension partagée
 
 class Comment {
   final String userName;
@@ -43,14 +45,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   List<String> get _images {
     final imgs = <String>[];
-    final best = widget.product.imageBest; // extension du modèle
+    final best = widget.product.imageBest;
     if (best.isNotEmpty) imgs.add(best);
     if ((widget.additionalImages?.isNotEmpty ?? false)) {
       imgs.addAll(widget.additionalImages!);
     }
-    // Fallback sûr si aucune image
     if (imgs.isEmpty) imgs.add('assets/placeholder.png');
-    // Uniques
     return imgs.toSet().toList();
   }
 
@@ -62,10 +62,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       _selectedColor = colors.first;
     }
     _comments = List<Comment>.from(
-      widget.comments ??
-          [
-            Comment(userName: "Client", text: "Très bon produit !"),
-          ],
+      widget.comments ?? [Comment(userName: "Client", text: "Très bon produit !")],
     );
   }
 
@@ -77,27 +74,30 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Widget _buildImage(String path) {
     if (path.isEmpty) {
-      return Image.asset('assets/placeholder.png', fit: BoxFit.cover, width: double.infinity);
+      return Image.asset('assets/placeholder.png',
+          fit: BoxFit.cover, width: double.infinity);
     }
     if (path.startsWith('http')) {
       return Image.network(
         path,
         fit: BoxFit.cover,
         width: double.infinity,
-        errorBuilder: (_, __, ___) =>
-            Image.asset('assets/placeholder.png', fit: BoxFit.cover, width: double.infinity),
+        errorBuilder: (_, __, ___) => Image.asset('assets/placeholder.png',
+            fit: BoxFit.cover, width: double.infinity),
       );
     }
     return Image.asset(path, fit: BoxFit.cover, width: double.infinity);
   }
 
-  String _colorToHex(Color c) => '#${c.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+  String _colorToHex(Color c) =>
+      '#${c.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
 
   void _openAddCommentSheet() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) {
         final theme = Theme.of(ctx);
         final cs = theme.colorScheme;
@@ -105,38 +105,56 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         final accent = isDark ? cs.primary : AppColors.primary;
 
         return Padding(
-          padding: EdgeInsets.only(left: 16, right: 16, top: 12, bottom: MediaQuery.of(ctx).viewInsets.bottom + 16),
-          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text('Ajouter un commentaire', style: TextStyle(fontWeight: FontWeight.w700, color: accent)),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _commentCtrl,
-              maxLines: 4,
-              textInputAction: TextInputAction.done,
-              decoration: const InputDecoration(hintText: 'Votre commentaire…', border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 12),
-            Row(children: [
-              Expanded(child: OutlinedButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Annuler'))),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    final text = _commentCtrl.text.trim();
-                    if (text.isEmpty) return;
-                    setState(() {
-                      _comments.insert(0, Comment(userName: 'Vous', text: text));
-                    });
-                    _commentCtrl.clear();
-                    Navigator.of(ctx).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Commentaire ajouté')));
-                  },
-                  style: ElevatedButton.styleFrom(backgroundColor: accent, foregroundColor: Colors.white),
-                  child: const Text('Publier'),
+          padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 12,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 16),
+          child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Ajouter un commentaire',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, color: accent)),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _commentCtrl,
+                  maxLines: 4,
+                  textInputAction: TextInputAction.done,
+                  decoration: const InputDecoration(
+                      hintText: 'Votre commentaire…',
+                      border: OutlineInputBorder()),
                 ),
-              ),
-            ]),
-          ]),
+                const SizedBox(height: 12),
+                Row(children: [
+                  Expanded(
+                      child: OutlinedButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: const Text('Annuler'))),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final text = _commentCtrl.text.trim();
+                        if (text.isEmpty) return;
+                        setState(() {
+                          _comments.insert(
+                              0, Comment(userName: 'Vous', text: text));
+                        });
+                        _commentCtrl.clear();
+                        Navigator.of(ctx).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Commentaire ajouté')));
+                      },
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: accent, foregroundColor: Colors.white),
+                      child: const Text('Publier'),
+                    ),
+                  ),
+                ]),
+              ]),
         );
       },
     );
@@ -152,20 +170,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     final accent = isDark ? cs.primary : AppColors.primary;
     final surface = isDark ? cs.surface : Colors.white;
     final onSurface = isDark ? cs.onSurface : accent;
-    final chipBg = isDark ? cs.surfaceVariant.withOpacity(0.6) : const Color(0xFFF3E6E0);
+    final chipBg =
+        isDark ? cs.surfaceVariant.withOpacity(0.6) : const Color(0xFFF3E6E0);
 
-    final canCall = (p.sellerPhone != null && p.sellerPhone!.trim().isNotEmpty);
-
-    // Récupération du store pour l’état favoris (réactif)
     final store = context.watch<FavoritesStore>();
     final isFav = store.isProductFavorite(p.id);
+    final canCall = (p.sellerPhone != null && p.sellerPhone!.trim().isNotEmpty);
 
     return Scaffold(
       backgroundColor: surface,
       appBar: AppBar(
         backgroundColor: surface,
         elevation: 0.5,
-        title: Text(p.nom, style: TextStyle(color: onSurface, fontWeight: FontWeight.w700)),
+        title: Text(p.nom,
+            style: TextStyle(color: onSurface, fontWeight: FontWeight.w700)),
         iconTheme: IconThemeData(color: onSurface),
         actions: [
           Padding(
@@ -203,7 +221,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   enlargeCenterPage: false,
                   autoPlay: true,
                   autoPlayInterval: const Duration(seconds: 4),
-                  onPageChanged: (index, reason) => setState(() => _currentImage = index),
+                  onPageChanged: (index, reason) =>
+                      setState(() => _currentImage = index),
                 ),
               ),
               Positioned(
@@ -217,9 +236,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       height: 8,
                       margin: const EdgeInsets.symmetric(horizontal: 3),
                       decoration: BoxDecoration(
-                        color: active ? accent : (isDark ? cs.onSurfaceVariant : Colors.white.withOpacity(0.8)),
+                        color: active
+                            ? accent
+                            : (isDark
+                                ? cs.onSurfaceVariant
+                                : Colors.white.withOpacity(0.8)),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: accent.withOpacity(0.5), width: 0.6),
+                        border: Border.all(
+                            color: accent.withOpacity(0.5), width: 0.6),
                       ),
                     );
                   }),
@@ -232,20 +256,33 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             padding: const EdgeInsets.all(16),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                Expanded(child: Text(p.nom, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: accent))),
+                Expanded(
+                    child: Text(p.nom,
+                        style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: accent))),
                 _Stars(rating: p.ratingSafe, color: Colors.amber),
               ]),
               const SizedBox(height: 6),
               Row(children: [
                 Icon(Icons.place, color: accent, size: 18),
                 const SizedBox(width: 6),
-                Text(p.regionLabel, style: TextStyle(color: isDark ? cs.onSurface : accent.withOpacity(0.8))),
+                Text(p.regionLabel,
+                    style: TextStyle(
+                        color: isDark ? cs.onSurface : accent.withOpacity(0.8))),
                 const SizedBox(width: 12),
-                Text('•', style: TextStyle(color: isDark ? cs.onSurfaceVariant : accent.withOpacity(0.5))),
+                Text('•',
+                    style: TextStyle(
+                        color: isDark
+                            ? cs.onSurfaceVariant
+                            : accent.withOpacity(0.5))),
                 const SizedBox(width: 12),
                 Icon(Icons.category, color: accent, size: 18),
                 const SizedBox(width: 6),
-                Text(p.typeUi, style: TextStyle(color: isDark ? cs.onSurface : accent.withOpacity(0.8))),
+                Text(p.typeUi,
+                    style: TextStyle(
+                        color: isDark ? cs.onSurface : accent.withOpacity(0.8))),
               ]),
               const SizedBox(height: 6),
               Text(
@@ -254,18 +291,27 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
               const SizedBox(height: 14),
               Row(children: [
-                Text('Prix : ${p.prixInt} F', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: accent)),
+                Text('Prix : ${p.prixInt} F',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: accent)),
                 const Spacer(),
                 Icon(isFav ? Icons.favorite : Icons.favorite_border, color: accent),
                 const SizedBox(width: 6),
-                Text('${p.likesSafe}', style: TextStyle(color: isDark ? cs.onSurface : accent)),
+                Text('${p.likesSafe}',
+                    style: TextStyle(color: isDark ? cs.onSurface : accent)),
               ]),
             ]),
           ),
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text('Commentaires', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: accent)),
+            child: Text('Commentaires',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: accent)),
           ),
           const SizedBox(height: 8),
           Padding(
@@ -276,18 +322,34 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     (c) => Container(
                       margin: const EdgeInsets.only(bottom: 10),
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: chipBg, borderRadius: BorderRadius.circular(10)),
-                      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        CircleAvatar(backgroundColor: accent, foregroundColor: Colors.white, child: const Icon(Icons.person, size: 18)),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text(c.userName, style: TextStyle(fontWeight: FontWeight.w700, color: accent)),
-                            const SizedBox(height: 4),
-                            Text(c.text, style: TextStyle(color: isDark ? cs.onSurface : Colors.black87)),
+                      decoration: BoxDecoration(
+                          color: chipBg,
+                          borderRadius: BorderRadius.circular(10)),
+                      child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                                backgroundColor: accent,
+                                foregroundColor: Colors.white,
+                                child: const Icon(Icons.person, size: 18)),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(c.userName,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            color: accent)),
+                                    const SizedBox(height: 4),
+                                    Text(c.text,
+                                        style: TextStyle(
+                                            color: isDark
+                                                ? cs.onSurface
+                                                : Colors.black87)),
+                                  ]),
+                            ),
                           ]),
-                        ),
-                      ]),
                     ),
                   )
                   .toList(),
@@ -307,8 +369,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               child: OutlinedButton.icon(
                 onPressed: _openAddCommentSheet,
                 icon: Icon(Icons.add_comment, color: accent),
-                label: Text('Ajouter un commentaire', style: TextStyle(color: accent, fontWeight: FontWeight.w600)),
-                style: OutlinedButton.styleFrom(side: BorderSide(color: accent), padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                label: Text('Ajouter un commentaire',
+                    style: TextStyle(
+                        color: accent, fontWeight: FontWeight.w600)),
+                style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: accent),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8))),
               ),
             ),
             const SizedBox(height: 12),
@@ -317,18 +385,23 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 onPressed: () async {
                   final store = context.read<FavoritesStore>();
                   try {
-                    if (!store.isProductFavorite(p.id)) {
-                      await store.toggleProductRemote(p);
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${p.nom} ajouté aux favoris')));
-                      }
-                    }
-                    if (mounted) {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FavoritesPage()));
+                    final added = await store.toggleProductRemote(p);
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(added
+                              ? '${p.nom} ajouté aux favoris'
+                              : '${p.nom} retiré des favoris')),
+                    );
+                    if (added) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const FavoritesPage()),
+                      );
                     }
                   } catch (e) {
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Erreur: $e')));
                     }
                   }
                 },
@@ -343,23 +416,57 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${p.nom} ajouté au panier !')));
+                  onPressed: () async {
+                    final colorHex =
+                        _selectedColor != null ? _colorToHex(_selectedColor!) : null;
+                    final localKey = (colorHex == null || colorHex.isEmpty)
+                        ? p.id
+                        : '${p.id}|$colorHex';
+
+                    // Optimistic: ajout local + navigation immédiate
                     CartController.I.addItem(
                       productId: p.id,
                       name: p.nom,
-                      color: _selectedColor != null ? _colorToHex(_selectedColor!) : null,
+                      color: colorHex,
                       price: p.prixInt,
                       assetImagePath: p.imageBest,
                       qty: 1,
                     );
-                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CartPage()));
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${p.nom} ajouté au panier')),
+                      );
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const CartPage()),
+                      );
+                    }
+
+                    // Réseau: attacher l'id serveur ensuite
+                    try {
+                      final api = CartApi(baseUrl: context.apiBaseUrl);
+                      final serverCart =
+                          await api.addItem(produitId: p.id, quantite: 1);
+                      final match = serverCart.items.firstWhere(
+                        (e) => e.produitId == p.id,
+                        orElse: () => serverCart.items.isNotEmpty
+                            ? serverCart.items.last
+                            : throw Exception('Item serveur introuvable'),
+                      );
+                      CartController.I.attachServerItemId(localKey, match.itemId);
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Sync panier: $e')),
+                        );
+                      }
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accent,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                   ),
                   child: const Text('Ajouter au panier'),
                 ),
@@ -384,7 +491,9 @@ class _Stars extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (i) {
         if (i < full) return Icon(Icons.star, color: color, size: 20);
-        if (i == full && hasHalf) return Icon(Icons.star_half, color: color, size: 20);
+        if (i == full && hasHalf) {
+          return Icon(Icons.star_half, color: color, size: 20);
+        }
         return Icon(Icons.star_border, color: color, size: 20);
       }),
     );
@@ -394,11 +503,13 @@ class _Stars extends StatelessWidget {
 Future<void> _callSeller(BuildContext context, String phone) async {
   final cleaned = phone.replaceAll(RegExp(r'[^0-9+]'), '');
   if (cleaned.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Numéro indisponible')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Numéro indisponible')));
     return;
   }
   final uri = Uri(scheme: 'tel', path: cleaned);
   if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Impossible d’ouvrir l’app Téléphone')));
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Impossible d’ouvrir l’app Téléphone')));
   }
 }
