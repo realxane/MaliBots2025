@@ -1,27 +1,3 @@
-// class Product {
-//   final String id;
-//   final String name;
-//   final String region;     // Bamako, Kayes, Koulikoro, Sikasso, Segou, Mopti, Tombouctou, Gao, Kidal
-//   final String type;       // Nourriture, Habits, Accessoires
-//   final String artisan;    // Nom de l’artisan
-//   final int price;         // en FCFA
-//   final double rating;     // 0..5
-//   final int likes;
-//   final String imageUrl;
-
-//   Product({
-//     required this.id,
-//     required this.name,
-//     required this.region,
-//     required this.type,
-//     required this.artisan,
-//     required this.price,
-//     required this.rating,
-//     required this.likes,
-//     required this.imageUrl,
-//   });
-// }
-
 import 'dart:convert';
 
 class Produit {
@@ -42,7 +18,11 @@ class Produit {
   final double? ratingAvg;         // 0..5
   final int? ratingCount;          // nb d’avis/likes
 
-  // Ajout pour compat UI
+  // Ajouts
+  final String? sellerName;        // nom du vendeur (artisan)
+  final String? sellerPhone;       // téléphone pro > téléphone
+
+  // Compat UI éventuelle
   final String? artisan;
 
   const Produit({
@@ -61,6 +41,8 @@ class Produit {
     this.stock,
     this.ratingAvg,
     this.ratingCount,
+    this.sellerName,
+    this.sellerPhone,
     this.artisan,
   });
 
@@ -128,6 +110,15 @@ class Produit {
     }
     regionName ??= _s(j['regionName'] ?? j['region_name']);
 
+    // Vendeur / artisan
+    String? sellerName = _s(j['sellerName'] ?? j['seller_name']);
+    String? sellerPhone = _s(j['sellerPhone'] ?? j['seller_phone']);
+    final vendeurObj = j['vendeur'];
+    if (vendeurObj is Map) {
+      sellerName  ??= _s(vendeurObj['nom'] ?? vendeurObj['name']);
+      sellerPhone ??= _s(vendeurObj['telephone_pro'] ?? vendeurObj['telephone']);
+    }
+
     final imgs = _images(j['images']);
     final firstFromApi = _s(j['firstImageUrl'] ?? j['first_image_url']);
     final compatImageUrl = _s(j['imageUrl'] ?? j['image_url']);
@@ -148,6 +139,8 @@ class Produit {
       stock: _i(j['stock']),
       ratingAvg: _d(j['rating_avg'] ?? j['ratingAvg']),
       ratingCount: _i(j['rating_count'] ?? j['ratingCount']),
+      sellerName: sellerName,
+      sellerPhone: sellerPhone,
       artisan: _s(j['artisan']),
     );
   }
@@ -167,7 +160,7 @@ class Produit {
 
   Map<String, dynamic> toUpdateBody() => toCreateBody();
 
-  // copyWith pratique (utile dans l’admin)
+  // copyWith pratique
   Produit copyWith({
     String? id,
     String? nom,
@@ -184,6 +177,8 @@ class Produit {
     int? stock,
     double? ratingAvg,
     int? ratingCount,
+    String? sellerName,
+    String? sellerPhone,
     String? artisan,
   }) {
     return Produit(
@@ -202,6 +197,8 @@ class Produit {
       stock: stock ?? this.stock,
       ratingAvg: ratingAvg ?? this.ratingAvg,
       ratingCount: ratingCount ?? this.ratingCount,
+      sellerName: sellerName ?? this.sellerName,
+      sellerPhone: sellerPhone ?? this.sellerPhone,
       artisan: artisan ?? this.artisan,
     );
   }

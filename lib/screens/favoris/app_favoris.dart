@@ -67,46 +67,95 @@ class FavoritesPage extends StatelessWidget {
   }
 }
 
-class _ArticlesTab extends StatelessWidget {
+class _ArticlesTab extends StatefulWidget {
   const _ArticlesTab();
+  @override
+  State<_ArticlesTab> createState() => _ArticlesTabState();
+}
+
+class _ArticlesTabState extends State<_ArticlesTab> with AutomaticKeepAliveClientMixin {
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  Future<void> _refresh() async {
+    if (_loaded) return;
+    _loaded = true;
+    await context.read<FavoritesStore>().refreshProductFavorites();
+  }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final store = context.watch<FavoritesStore>();
     final items = store.productFavorites;
 
+    if (store.loadingProducts && items.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
     if (items.isEmpty) {
       return const _EmptyState();
     }
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final sepColor =
-        isDark ? theme.colorScheme.outlineVariant : const Color(0xFFEDEDED);
+    final sepColor = isDark ? theme.colorScheme.outlineVariant : const Color(0xFFEDEDED);
 
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      separatorBuilder: (_, __) => Divider(height: 1, color: sepColor),
-      itemCount: items.length,
-      itemBuilder: (context, i) {
-        final p = items[i];
-        final isFav = store.isProductFavorite(p.id);
-        return FavoriteProductTile(
-          product: p,
-          isFavorite: isFav,
-          onRemove: () => context.read<FavoritesStore>().removeProduct(p.id),
-          onToggleFavorite: () => context.read<FavoritesStore>().toggleProduct(p),
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ProductDetailPage(product: p),
-              ),
-            );
-          },
-        );
-      },
+    return RefreshIndicator(
+      onRefresh: () => context.read<FavoritesStore>().refreshProductFavorites(),
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        separatorBuilder: (_, __) => Divider(height: 1, color: sepColor),
+        itemCount: items.length,
+        itemBuilder: (context, i) {
+          final p = items[i];
+          final isFav = store.isProductFavorite(p.id);
+          return FavoriteProductTile(
+            product: p,
+            isFavorite: isFav,
+            onRemove: () async {
+              try {
+                await context.read<FavoritesStore>().removeProductRemote(p.id);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('${p.nom} retiré des favoris')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Erreur: $e')),
+                );
+              }
+            },
+            onToggleFavorite: () async {
+              try {
+                final added = await context.read<FavoritesStore>().toggleProductRemote(p);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(added
+                      ? '${p.nom} ajouté aux favoris'
+                      : '${p.nom} retiré des favoris')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Erreur: $e')),
+                );
+              }
+            },
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => ProductDetailPage(product: p)),
+              );
+            },
+          );
+        },
+      ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class _EmptyState extends StatelessWidget {
@@ -125,7 +174,7 @@ class _EmptyState extends StatelessWidget {
         'Aucun favori ici…',
         style: TextStyle(color: subtle),
       ),
-    );
+    ); 
   }
 }
 
