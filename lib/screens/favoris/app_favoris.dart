@@ -1,14 +1,15 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:malibots_challenge_eni/constants/app_colors.dart';
+import 'package:malibots_challenge_eni/models/musique.dart';
+import 'package:malibots_challenge_eni/models/photo.dart';
+import 'package:malibots_challenge_eni/models/product.dart';
+import 'package:malibots_challenge_eni/providers/favoris_store.dart';
 import 'package:malibots_challenge_eni/screens/catalogue/app_produit_detail.dart';
 import 'package:malibots_challenge_eni/screens/home/culture/conte_detail_page.dart';
 import 'package:malibots_challenge_eni/screens/home/galerie/photo_detail_page.dart';
 import 'package:malibots_challenge_eni/screens/musiques/music_player_screen.dart';
-import 'package:provider/provider.dart';
-import 'package:malibots_challenge_eni/constants/app_colors.dart';
-import 'package:malibots_challenge_eni/providers/favoris_store.dart';
 import 'package:malibots_challenge_eni/widgets/favorite_product_tile.dart';
+import 'package:provider/provider.dart';
 
 class FavoritesPage extends StatelessWidget {
   const FavoritesPage({super.key});
@@ -32,7 +33,6 @@ class FavoritesPage extends StatelessWidget {
           elevation: 0.5,
           leading: canPop
               ? IconButton(
-                  // *** on ne fait pop que si possible
                   icon: const Icon(Icons.arrow_back_ios_new, size: 18),
                   onPressed: () => Navigator.of(context).maybePop(),
                 )
@@ -48,6 +48,7 @@ class FavoritesPage extends StatelessWidget {
             labelColor: isDark ? cs.primary : brown,
             unselectedLabelColor: isDark ? cs.onSurfaceVariant : null,
             indicatorColor: isDark ? cs.primary : brown,
+            isScrollable: true,
             tabs: const [
               Tab(text: 'Articles'),
               Tab(text: 'Musiques'),
@@ -100,7 +101,7 @@ class _ArticlesTabState extends State<_ArticlesTab>
   Widget build(BuildContext context) {
     super.build(context);
     final store = context.watch<FavoritesStore>();
-    final items = store.productFavorites;
+    final List<Produit> items = store.productFavorites;
 
     if (store.loadingProducts && items.isEmpty) {
       return const Center(child: CircularProgressIndicator());
@@ -132,10 +133,12 @@ class _ArticlesTabState extends State<_ArticlesTab>
             onRemove: () async {
               try {
                 await context.read<FavoritesStore>().removeProductRemote(p.id);
+                if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('${p.nom} retiré des favoris')),
                 );
               } catch (e) {
+                if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Erreur: $e')),
                 );
@@ -145,6 +148,7 @@ class _ArticlesTabState extends State<_ArticlesTab>
               try {
                 final added =
                     await context.read<FavoritesStore>().toggleProductRemote(p);
+                if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
@@ -155,6 +159,7 @@ class _ArticlesTabState extends State<_ArticlesTab>
                   ),
                 );
               } catch (e) {
+                if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Erreur: $e')),
                 );
@@ -177,21 +182,75 @@ class _ArticlesTabState extends State<_ArticlesTab>
   bool get wantKeepAlive => true;
 }
 
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+// ---------- Onglet MUSIQUES (modèle Musique) ----------
+
+class _MusiquesTab extends StatelessWidget {
+  const _MusiquesTab();
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final subtle =
-        isDark ? theme.colorScheme.onSurfaceVariant : Colors.brown.shade300;
+    final store = context.watch<FavoritesStore>();
+    final List<Musique> items = store.musicFavorites;
 
-    return Center(
-      child: Text(
-        'Aucun favori ici…',
-        style: TextStyle(color: subtle),
-      ),
+    if (items.isEmpty) return const _EmptyState();
+
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      separatorBuilder: (_, __) =>
+          const Divider(height: 1, color: Color(0xFFEDEDED)),
+      itemCount: items.length,
+      itemBuilder: (context, i) {
+        final musique = items[i];
+        final isFav = store.isMusicFavoriteBy(musique);
+
+        ImageProvider imgProvider;
+        if (musique.urlImage != null && musique.urlImage!.isNotEmpty) {
+          imgProvider = NetworkImage(musique.urlImage!);
+        } else {
+          imgProvider =
+              const AssetImage('assets/images/music_placeholder.png');
+        }
+
+        return ListTile(
+          leading: CircleAvatar(
+            radius: 24,
+            backgroundColor: Colors.grey[200],
+            backgroundImage: imgProvider,
+            onBackgroundImageError: (_, __) {},
+            child: (musique.urlImage == null || musique.urlImage!.isEmpty)
+                ? const Icon(Icons.music_note, color: Colors.grey)
+                : null,
+          ),
+          title: Text(
+            musique.titre,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Text(
+            musique.artist,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: Colors.brown.shade300),
+          ),
+          trailing: IconButton(
+            icon: Icon(
+              isFav ? Icons.favorite : Icons.favorite_border,
+              color: AppColors.primary,
+            ),
+            onPressed: () =>
+                context.read<FavoritesStore>().toggleMusic(musique),
+            tooltip: isFav ? 'Retirer des favoris' : 'Ajouter aux favoris',
+          ),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MusicPlayerScreen(tracks: items, index: i),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
@@ -300,7 +359,7 @@ class _GalerieTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final store = context.watch<FavoritesStore>();
-    final items = store.photoFavorites;
+    final List<Photo> items = store.photoFavorites;
 
     if (items.isEmpty) return const _EmptyState();
 
@@ -315,10 +374,10 @@ class _GalerieTab extends StatelessWidget {
       ),
       itemBuilder: (context, i) {
         final p = items[i];
-        final id = store.photoIdFrom(p);
-        final List imgs = (p['images'] as List?) ?? const [];
-        final imgPath =
-            imgs.isNotEmpty ? imgs.first.toString() : 'assets/placeholder.png';
+        final id = p.id;
+        final imageUrl = p.images.isNotEmpty
+            ? p.images.first.url
+            : 'https://via.placeholder.com/150';
 
         return Stack(
           children: [
@@ -332,11 +391,14 @@ class _GalerieTab extends StatelessWidget {
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  imgPath,
+                child: Image.network(
+                  imageUrl,
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: double.infinity,
+                  errorBuilder: (context, error, stackTrace) => const Center(
+                    child: Icon(Icons.broken_image, color: Colors.grey),
+                  ),
                 ),
               ),
             ),
@@ -347,7 +409,8 @@ class _GalerieTab extends StatelessWidget {
                 color: Colors.black54,
                 borderRadius: BorderRadius.circular(20),
                 child: IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.white),
+                  icon:
+                      const Icon(Icons.delete_outline, color: Colors.white),
                   onPressed: () =>
                       context.read<FavoritesStore>().removePhoto(id),
                   tooltip: 'Retirer',
@@ -365,7 +428,7 @@ class _GalerieTab extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  p['titre'] ?? '',
+                  p.titre,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -380,80 +443,18 @@ class _GalerieTab extends StatelessWidget {
   }
 }
 
-// ---------- Onglet MUSIQUES ----------
+// ---------- Empty state ----------
 
-class _MusiquesTab extends StatelessWidget {
-  const _MusiquesTab();
+class _EmptyState extends StatelessWidget {
+  const _EmptyState();
 
   @override
   Widget build(BuildContext context) {
-    final store = context.watch<FavoritesStore>();
-    final items = store.musicFavorites;
-    if (items.isEmpty) return const _EmptyState();
-
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-    final sepColor = isDark ? cs.outlineVariant : const Color(0xFFEDEDED);
-    final subtle = isDark ? cs.onSurfaceVariant : Colors.brown.shade300;
-
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      separatorBuilder: (_, __) => Divider(height: 1, color: sepColor),
-      itemCount: items.length,
-      itemBuilder: (context, i) {
-        final t = items[i];
-        final id = store.musicIdFrom(t);
-        final isFav = store.isMusicFavorite(id);
-
-        ImageProvider imgProvider;
-        final img = t['img'];
-        if (img == null) {
-          imgProvider =
-              const AssetImage('assets/img_music_placeholder.jpg');
-        } else if (img.toString().startsWith('assets/')) {
-          imgProvider = AssetImage(img);
-        } else {
-          imgProvider = FileImage(File(img));
-        }
-
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundImage: imgProvider,
-            radius: 24,
-          ),
-          title: Text(
-            t['title'] ?? 'Titre inconnu',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle: Text(
-            t['artist'] ?? 'Artiste inconnu',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: subtle),
-          ),
-          trailing: IconButton(
-            icon: Icon(
-              isFav ? Icons.favorite : Icons.favorite_border,
-              color: isDark ? cs.primary : AppColors.primary,
-            ),
-            onPressed: () => context.read<FavoritesStore>().toggleMusic(t),
-            tooltip:
-                isFav ? 'Retirer des favoris' : 'Ajouter aux favoris',
-          ),
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => MusicPlayerScreen(
-                  tracks: items,
-                  index: i,
-                ),
-              ),
-            );
-          },
-        );
-      },
+    return Center(
+      child: Text(
+        'Aucun favori ici…',
+        style: TextStyle(color: Colors.brown.shade300),
+      ),
     );
   }
 }

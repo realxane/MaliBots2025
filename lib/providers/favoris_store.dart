@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 
 import 'package:malibots_challenge_eni/config/api_config.dart';
 import 'package:malibots_challenge_eni/models/product.dart';
+import 'package:malibots_challenge_eni/models/photo.dart';
+import 'package:malibots_challenge_eni/models/musique.dart';
 import 'package:malibots_challenge_eni/services/auth_storage.dart';
 
 class FavoritesStore extends ChangeNotifier {
@@ -73,14 +75,12 @@ class FavoritesStore extends ChangeNotifier {
       _productsById[p.id] = p;
     } else {
       _favProductIds.remove(p.id);
-      // on laisse le produit en cache
     }
     _notifySafely();
   }
 
   // --------- CHARGEMENT DES FAVORIS PRODUITS ---------
 
-  /// Charge la liste des favoris Produit depuis GET /favoris?type=Produit
   Future<void> refreshProductFavorites() async {
     if (loadingProducts) return;
     loadingProducts = true;
@@ -124,14 +124,14 @@ class FavoritesStore extends ChangeNotifier {
         throw Exception('JSON invalide pour /favoris: ${e.toString()}');
       }
 
-      // Laravel paginator: { data: [...], meta: {...}, links: {...} }
       List list;
       if (jsonBody is Map<String, dynamic>) {
         if (jsonBody['data'] is List) {
           list = jsonBody['data'] as List;
         } else {
           debugPrint(
-              '⚠️ [FAVORIS] format inattendu: data != List => ${jsonBody['data']}');
+            '⚠️ [FAVORIS] format inattendu: data != List => ${jsonBody['data']}',
+          );
           list = const [];
         }
       } else if (jsonBody is List) {
@@ -146,8 +146,7 @@ class FavoritesStore extends ChangeNotifier {
         if (raw is! Map) continue;
 
         final cibleId =
-            (raw['cibleId'] ?? raw['cible_id'] ?? raw['cible_id'])?.toString().trim() ??
-                '';
+            (raw['cibleId'] ?? raw['cible_id'])?.toString().trim() ?? '';
 
         if (cibleId.isEmpty) continue;
         ids.add(cibleId);
@@ -159,7 +158,6 @@ class FavoritesStore extends ChangeNotifier {
         ..clear()
         ..addAll(ids);
 
-      // Charger les produits manquants
       final futures = <Future<void>>[];
       for (final id in _favProductIds) {
         if (!_productsById.containsKey(id)) {
@@ -189,7 +187,8 @@ class FavoritesStore extends ChangeNotifier {
           .timeout(const Duration(seconds: 20));
 
       debugPrint(
-          '⭐ [FAVORIS] /produits/$id -> ${res.statusCode} body: ${res.body}');
+        '⭐ [FAVORIS] /produits/$id -> ${res.statusCode} body: ${res.body}',
+      );
 
       if (res.statusCode == 404) {
         debugPrint('⚠️ [FAVORIS] produit $id introuvable (404)');
@@ -197,7 +196,8 @@ class FavoritesStore extends ChangeNotifier {
       }
       if (res.statusCode != 200) {
         debugPrint(
-            '❌ [FAVORIS] fetch product $id: HTTP ${res.statusCode}: ${res.body}');
+          '❌ [FAVORIS] fetch product $id: HTTP ${res.statusCode}: ${res.body}',
+        );
         return;
       }
 
@@ -211,7 +211,8 @@ class FavoritesStore extends ChangeNotifier {
         jsonBody = jsonDecode(res.body);
       } catch (e) {
         debugPrint(
-            '❌ [FAVORIS] JSON invalide pour /produits/$id: ${e.toString()}');
+          '❌ [FAVORIS] JSON invalide pour /produits/$id: ${e.toString()}',
+        );
         return;
       }
 
@@ -224,7 +225,8 @@ class FavoritesStore extends ChangeNotifier {
         }
       } else {
         debugPrint(
-            '⚠️ [FAVORIS] format produit inattendu: ${jsonBody.runtimeType}');
+          '⚠️ [FAVORIS] format produit inattendu: ${jsonBody.runtimeType}',
+        );
         return;
       }
 
@@ -241,7 +243,6 @@ class FavoritesStore extends ChangeNotifier {
   Future<bool> toggleProductRemote(Produit p) async {
     final already = isProductFavorite(p.id);
 
-    // Optimistic update
     _setFavoriteLocal(p, fav: !already);
 
     try {
@@ -314,7 +315,6 @@ class FavoritesStore extends ChangeNotifier {
       if (added) _productsById[p.id] = p;
       return added;
     } catch (e) {
-      // rollback en cas d’erreur
       _setFavoriteLocal(p, fav: already);
       lastError = e.toString();
       debugPrint('❌ [FAVORIS] toggle error: $e');
@@ -346,7 +346,9 @@ class FavoritesStore extends ChangeNotifier {
     await toggleProductRemoteById(productId);
   }
 
-  // ======== Contes & Proverbes (local) ========
+  // ====================================================================
+  // 2. Favoris pour la culture (Contes & Proverbes)
+  // ====================================================================
 
   final Map<String, Map<String, String>> _conteFavorites = {};
   final Map<String, Map<String, String>> _proverbeFavorites = {};
@@ -400,30 +402,27 @@ class FavoritesStore extends ChangeNotifier {
     _notifySafely();
   }
 
-  // ======== Galerie (local) ========
+  // ====================================================================
+  // 3. Galerie: favoris de photos (modèle Photo)
+  // ====================================================================
 
-  final List<Map<String, dynamic>> _photoFavorites = [];
-  List<Map<String, dynamic>> get photoFavorites =>
-      List.unmodifiable(_photoFavorites);
+  final List<Photo> _photoFavorites = [];
 
-  String photoIdFrom(Map<String, dynamic> photo) {
-    final titre = (photo['titre'] ?? '').toString().trim().toLowerCase();
-    final firstImg = (photo['images'] is List && photo['images'].isNotEmpty)
-        ? (photo['images'][0] ?? '').toString()
-        : '';
-    return '${titre}__$firstImg';
-  }
+  List<Photo> get photoFavorites => List.unmodifiable(_photoFavorites);
+
+  String getPhotoId(Photo photo) => photo.id;
 
   bool isPhotoFavorite(String photoId) {
-    return _photoFavorites.any((p) => photoIdFrom(p) == photoId);
+    return _photoFavorites.any((p) => p.id == photoId);
   }
 
-  bool isPhotoFavoriteBy(Map<String, dynamic> photo) {
-    return isPhotoFavorite(photoIdFrom(photo));
+  bool isPhotoFavoriteBy(Photo photo) {
+    return isPhotoFavorite(getPhotoId(photo));
   }
 
-  void togglePhoto(Map<String, dynamic> photo) {
-    final id = photoIdFrom(photo);
+  void togglePhoto(Photo photo) {
+    final id = getPhotoId(photo);
+
     if (isPhotoFavorite(id)) {
       removePhoto(id);
     } else {
@@ -433,7 +432,7 @@ class FavoritesStore extends ChangeNotifier {
   }
 
   void removePhoto(String photoId) {
-    _photoFavorites.removeWhere((p) => photoIdFrom(p) == photoId);
+    _photoFavorites.removeWhere((p) => p.id == photoId);
     _notifySafely();
   }
 
@@ -442,37 +441,29 @@ class FavoritesStore extends ChangeNotifier {
     _notifySafely();
   }
 
-  // ======== Musiques (local) ========
+  // ====================================================================
+  // 4. Favoris Musiques (modèle Musique)
+  // ====================================================================
 
-  final List<Map<String, dynamic>> _musicFavorites = [];
-  List<Map<String, dynamic>> get musicFavorites =>
-      List.unmodifiable(_musicFavorites);
+  final List<Musique> _musicFavorites = [];
 
-  String musicIdFrom(Map<String, dynamic> track) {
-    final path = (track['path'] ?? '').toString();
-    final title = (track['title'] ?? '').toString().trim().toLowerCase();
-    final artist = (track['artist'] ?? '').toString().trim().toLowerCase();
-    return '${path}__${title}__${artist}';
-  }
+  List<Musique> get musicFavorites => List.unmodifiable(_musicFavorites);
 
-  bool isMusicFavorite(String musicId) =>
-      _musicFavorites.any((m) => musicIdFrom(m) == musicId);
+  bool isMusicFavoriteBy(Musique music) =>
+      _musicFavorites.any((m) => m.id == music.id);
 
-  bool isMusicFavoriteBy(Map<String, dynamic> track) =>
-      isMusicFavorite(musicIdFrom(track));
-
-  void toggleMusic(Map<String, dynamic> track) {
-    final id = musicIdFrom(track);
-    if (isMusicFavorite(id)) {
-      removeMusic(id);
+  void toggleMusic(Musique music) {
+    final isExisting = isMusicFavoriteBy(music);
+    if (isExisting) {
+      _musicFavorites.removeWhere((m) => m.id == music.id);
     } else {
-      _musicFavorites.add(track);
-      _notifySafely();
+      _musicFavorites.add(music);
     }
+    _notifySafely();
   }
 
   void removeMusic(String musicId) {
-    _musicFavorites.removeWhere((m) => musicIdFrom(m) == musicId);
+    _musicFavorites.removeWhere((m) => m.id == musicId);
     _notifySafely();
   }
 
