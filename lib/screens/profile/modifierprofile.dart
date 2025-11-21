@@ -30,22 +30,29 @@ void initState() {
   _loadUser();
 }
 Future<void> _loadUser() async {
-     try {
+  try {
     final user = await controller.getProfile();
-    if (!mounted) return; // Vérifie que le widget est encore actif
+    if (!mounted) return;
+
+    // Vérifie si l'image existe et est non vide
+    String? imageUrl;
+    if (user?['image_path'] != null && user!['image_path'].toString().isNotEmpty) {
+      imageUrl = 'http://10.236.139.1:8000/storage/${user['image_path']}';
+    }
 
     setState(() {
-      _nameController.text = user?['nom'] ?? '';
-      _imageUrl = user?['image_path'];
+      if (user != null) {
+        _nameController.text = user['nom'] ?? '';
+        _imageUrl = imageUrl;
       _isloadprofile = false;
+      }
     });
   } catch (e) {
-    setState(() {
-      _isloadprofile = false;
-    });
+    setState(() => _isloadprofile = false);
     debugPrint("Erreur lors du chargement du profil: $e");
   }
-  }
+}
+
 
   Future<void> _pickImage(ImageSource source) async {
     final picked = await _picker.pickImage(source: source, imageQuality: 70);
@@ -136,26 +143,38 @@ Future<void> _loadUser() async {
               child: Center(
                 child: Stack(
                   children: [
-                    ClipOval(
-                      child: _imageFile != null
-                          ? Image.file(
-                              _imageFile!,
-                              width: 100,
-                              height: 100,
-                              fit: BoxFit.cover,
-                            ) 
-                          : (_imageUrl != null && _imageUrl!.isNotEmpty) 
-                            ? Image.network('http://10.236.139.1:8000/storage/profile_images/$_imageUrl',
-                          height: 100,width:
-                           100,fit: 
-                           BoxFit.cover,)
-                           : Image.asset(
-                            "assets/images/profil.jpeg",
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                         ),
-                    ),
+                   ClipOval(
+  child: _imageFile != null
+      ? Image.file(
+          _imageFile!,
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
+        )
+      : (_imageUrl != null)
+          ? Image.network(
+              _imageUrl!,
+              width: 100,
+              height: 100,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                // Affiche un placeholder si l'image ne charge pas
+                return Image.asset(
+                  "assets/images/profil.jpeg",
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.cover,
+                );
+              },
+            )
+          : Image.asset(
+              "assets/images/profil.jpeg",
+              width: 100,
+              height: 100,
+              fit: BoxFit.cover,
+            ),
+),
+
                     Positioned(
                       bottom: 0,
                       right: 0,

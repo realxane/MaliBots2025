@@ -48,7 +48,7 @@ class Adminapicontroller {
 
   /// Filtrer par rôle
   Future<Map<String, dynamic>> getUsersByRole(String role) async {
-    final resultat=api.get('/admin/user/{$role}');
+    final resultat=api.get('/admin/user/$role');
     return resultat;
   }
 }
